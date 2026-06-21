@@ -290,3 +290,101 @@ p {
 .search-input {
   padding-left: 2.25rem !important;
 }
+
+/* Nyxa CSS Logo */
+.nyxa-logo-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.nyxa-logo-n {
+  position: relative;
+  width: 50px;
+  height: 65px;
+  background-color: transparent;
+}
+
+.nyxa-logo-n.large {
+  width: 140px;
+  height: 180px;
+}
+
+.nyxa-logo-bar-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 33.33%;
+  background-color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* Letters inside the left column */
+.nyxa-logo-bar-left span {
+  color: var(--background);
+  font-family: var(--font-display);
+  font-weight: 900;
+  line-height: 1.0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.nyxa-logo-n:not(.large) .nyxa-logo-bar-left span {
+  font-size: 8px;
+  letter-spacing: -0.05em;
+}
+
+.nyxa-logo-n.large .nyxa-logo-bar-left span {
+  font-size: 22px;
+  letter-spacing: -0.05em;
+}
+
+.nyxa-logo-bar-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 33.33%;
+  background-color: var(--foreground);
+  z-index: 10;
+}
+
+.nyxa-logo-bar-diagonal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: var(--foreground);
+  clip-path: polygon(33.33% 0%, 60% 0%, 100% 100%, 73.33% 100%);
+  z-index: 5;
+}
+
+.nyxa-logo-tagline {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  color: var(--foreground);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.nyxa-logo-n:not(.large) + .nyxa-logo-tagline {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  margin-top: 0.5rem;
+}
+
+.nyxa-logo-n.large + .nyxa-logo-tagline {
+  font-size: 22px;
+  letter-spacing: 0.28em;
+  margin-top: 1.75rem;
+}
+
