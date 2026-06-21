@@ -26,18 +26,14 @@ export default function RootLayout({
       <head>
         <title>Nyxa. - The Exchange Layer for the AI Economy</title>
         <meta name="description" content="Marketplace platform for Tasks, Agents, and APIs." />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="flex flex-col min-h-screen bg-[var(--background)] text-[var(--foreground)]">
         {/* Navigation Header */}
         <header className="border-b border-[var(--border)] px-6 py-4 bg-[var(--background)] sticky top-0 z-50">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo */}
-            <a href="/" className="flex items-center gap-3 text-decoration-none group">
-              <img 
-                src="/logo.png" 
-                alt="Nyxa Logo" 
-                className="h-8 w-8 object-contain"
-              />
+            <a href="/" className="flex items-center text-decoration-none group">
               <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
                 Nyxa.
               </span>

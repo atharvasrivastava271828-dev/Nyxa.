@@ -111,12 +111,12 @@ p {
   }
 }
 
-/* Cards: stark borders, information dense, Stripe/Linear style */
+/* Cards: stark borders, information dense, Stripe/Linear/Apple style */
 .nyxa-card {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
   padding: 1.5rem;
-  border-radius: 4px; /* Slightly softened corners for human touch */
+  border-radius: 12px; /* Apple squircle/rounded corner style */
   transition: border-color 0.15s ease;
   display: flex;
   flex-direction: column;
@@ -144,7 +144,7 @@ p {
   font-family: var(--font-display);
   font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  border-radius: 8px; /* Apple rounded inputs */
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -162,7 +162,7 @@ p {
   font-weight: 500;
   font-size: 0.85rem;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: 8px; /* Apple rounded buttons */
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid var(--border);
@@ -204,6 +204,7 @@ p {
   border: 1px solid var(--border);
   color: var(--muted);
   text-transform: uppercase;
+  border-radius: 6px; /* Softened badge corners */
 }
 
 .nyxa-badge-active {
@@ -236,7 +237,7 @@ p {
   overflow-x: auto;
   border: 1px solid var(--border);
   margin-top: 1rem;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .nyxa-table {
