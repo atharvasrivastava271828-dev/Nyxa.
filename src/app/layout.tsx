@@ -33,17 +33,13 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo */}
             <a href="/" className="flex items-center gap-3 text-decoration-none group">
-              <div className="nyxa-logo-n" style={{ width: '22px', height: '29px' }}>
-                <div className="nyxa-logo-bar-left">
-                  <span style={{ fontSize: '4.5px', lineHeight: '1.0', letterSpacing: '-0.05em' }}>Y</span>
-                  <span style={{ fontSize: '4.5px', lineHeight: '1.0', letterSpacing: '-0.05em' }}>X</span>
-                  <span style={{ fontSize: '4.5px', lineHeight: '1.0', letterSpacing: '-0.05em' }}>A</span>
-                </div>
-                <div className="nyxa-logo-bar-diagonal"></div>
-                <div className="nyxa-logo-bar-right"></div>
-              </div>
-              <span className="tech-mono font-bold tracking-widest text-xl text-[var(--foreground)]">
-                NYXA.
+              <img 
+                src="/logo.png" 
+                alt="Nyxa Logo" 
+                className="h-8 w-8 object-contain"
+              />
+              <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
+                Nyxa.
               </span>
             </a>
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Narrow:ital,wght@0,400..700;1,400..700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
 @import "tailwindcss";
 
@@ -11,7 +11,7 @@
   --muted: #52525b;
   --accent: #000000;
   --success: #097969;
-  --font-display: 'Bahnschrift Condensed', 'Bahnschrift', 'Archivo Narrow', 'Arial Narrow', sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'Share Tech Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -32,38 +32,37 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-display);
-  font-size: 16px;
-  line-height: 1.5;
-  letter-spacing: 0.02em;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
   margin: 0;
   padding: 0;
 }
 
-/* Headings: Architectural, structured, strong */
+/* Headings: Clean, modern, humanistic */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--foreground);
   margin-top: 0;
   margin-bottom: 0.5em;
 }
 
 h1 {
-  font-size: 2.5rem;
-  line-height: 1.1;
+  font-size: 2.25rem;
+  line-height: 1.2;
 }
 
 h2 {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 0.25rem;
-  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
 h3 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
 }
 
 p {
@@ -71,13 +70,12 @@ p {
   margin-bottom: 1rem;
   color: var(--muted);
   font-family: var(--font-display);
-  font-weight: 400;
 }
 
 /* Monospace metrics, tags, IDs */
 .tech-mono {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   letter-spacing: 0;
 }
 
@@ -85,7 +83,7 @@ p {
 .nyxa-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2.5rem 1.5rem;
 }
 
 /* Grid systems */
@@ -104,12 +102,12 @@ p {
 .nyxa-grid-sidebar {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 @media (min-width: 1024px) {
   .nyxa-grid-sidebar {
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 300px 1fr;
   }
 }
 
@@ -118,7 +116,7 @@ p {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
   padding: 1.5rem;
-  border-radius: 0; /* Pure square sharp corners for architectural structure */
+  border-radius: 4px; /* Slightly softened corners for human touch */
   transition: border-color 0.15s ease;
   display: flex;
   flex-direction: column;
@@ -132,11 +130,10 @@ p {
 .nyxa-label {
   display: block;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
+  color: var(--foreground);
+  margin-bottom: 0.35rem;
 }
 
 .nyxa-input, .nyxa-select, .nyxa-textarea {
@@ -145,9 +142,9 @@ p {
   border: 1px solid var(--border);
   color: var(--foreground);
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
-  border-radius: 0;
+  border-radius: 4px;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -162,12 +159,10 @@ p {
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.9rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 0;
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid var(--border);
@@ -203,9 +198,9 @@ p {
 .nyxa-badge {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 400;
-  padding: 0.15rem 0.5rem;
+  padding: 0.15rem 0.4rem;
   border: 1px solid var(--border);
   color: var(--muted);
   text-transform: uppercase;
@@ -224,9 +219,7 @@ p {
 /* Navigation items */
 .nav-link {
   color: var(--muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
   text-decoration: none;
   font-size: 0.9rem;
   border-bottom: 1px solid transparent;
@@ -243,6 +236,7 @@ p {
   overflow-x: auto;
   border: 1px solid var(--border);
   margin-top: 1rem;
+  border-radius: 4px;
 }
 
 .nyxa-table {
@@ -254,18 +248,17 @@ p {
 .nyxa-table th {
   background-color: var(--secondary-bg);
   font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 600;
   font-size: 0.8rem;
-  letter-spacing: 0.05em;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
+  color: var(--muted);
 }
 
 .nyxa-table td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .nyxa-table tr:last-child td {
@@ -290,101 +283,3 @@ p {
 .search-input {
   padding-left: 2.25rem !important;
 }
-
-/* Nyxa CSS Logo */
-.nyxa-logo-container {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.nyxa-logo-n {
-  position: relative;
-  width: 50px;
-  height: 65px;
-  background-color: transparent;
-}
-
-.nyxa-logo-n.large {
-  width: 140px;
-  height: 180px;
-}
-
-.nyxa-logo-bar-left {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 33.33%;
-  background-color: var(--foreground);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-/* Letters inside the left column */
-.nyxa-logo-bar-left span {
-  color: var(--background);
-  font-family: var(--font-display);
-  font-weight: 900;
-  line-height: 1.0;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.nyxa-logo-n:not(.large) .nyxa-logo-bar-left span {
-  font-size: 8px;
-  letter-spacing: -0.05em;
-}
-
-.nyxa-logo-n.large .nyxa-logo-bar-left span {
-  font-size: 22px;
-  letter-spacing: -0.05em;
-}
-
-.nyxa-logo-bar-right {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 33.33%;
-  background-color: var(--foreground);
-  z-index: 10;
-}
-
-.nyxa-logo-bar-diagonal {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background-color: var(--foreground);
-  clip-path: polygon(33.33% 0%, 60% 0%, 100% 100%, 73.33% 100%);
-  z-index: 5;
-}
-
-.nyxa-logo-tagline {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  color: var(--foreground);
-  font-weight: 700;
-  letter-spacing: 0.28em;
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.nyxa-logo-n:not(.large) + .nyxa-logo-tagline {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  margin-top: 0.5rem;
-}
-
-.nyxa-logo-n.large + .nyxa-logo-tagline {
-  font-size: 22px;
-  letter-spacing: 0.28em;
-  margin-top: 1.75rem;
-}
-

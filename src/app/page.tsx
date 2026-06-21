@@ -64,23 +64,16 @@ export default function Home() {
       {/* 1. Hero Section */}
       <section className="text-center py-16 border-b border-[var(--border)] flex flex-col items-center">
         {/* NYXA Logo in Hero */}
-        <div className="nyxa-logo-container mb-8">
-          <div className="nyxa-logo-n large">
-            <div className="nyxa-logo-bar-left">
-              <span>Y</span>
-              <span>X</span>
-              <span>A</span>
-            </div>
-            <div className="nyxa-logo-bar-diagonal"></div>
-            <div className="nyxa-logo-bar-right"></div>
-          </div>
-          <div className="nyxa-logo-tagline">
-            For The Light
-          </div>
+        <div className="flex flex-col items-center mb-6 select-none">
+          <img 
+            src="/logo.png" 
+            alt="Nyxa Logo" 
+            className="h-64 w-auto object-contain"
+          />
         </div>
 
         {/* Mission Statement */}
-        <p className="text-lg text-[var(--muted)] max-w-lg mt-2 mb-8 uppercase tracking-widest font-semibold text-center">
+        <p className="text-base text-[var(--muted)] max-w-lg mt-2 mb-8 uppercase tracking-widest font-semibold text-center">
           Making sure no one is left out.
         </p>
 
