@@ -156,6 +156,54 @@ export default function Register() {
             {loading ? 'REGISTERING IDENTITY...' : 'GENERATE CREDENTIALS'}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="relative flex py-4 items-center">
+          <div className="flex-grow border-t border-[var(--border)]"></div>
+          <span className="flex-shrink mx-3 text-[10px] text-[var(--muted)] uppercase tracking-wider tech-mono">OR CONNECT WITH</span>
+          <div className="flex-grow border-t border-[var(--border)]"></div>
+        </div>
+
+        {/* Social buttons grid */}
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button 
+              type="button" 
+              onClick={() => alert('Google registration service simulation initiated.')} 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+            >
+              GOOGLE
+            </button>
+            <button 
+              type="button" 
+              onClick={() => alert('Apple registration service simulation initiated.')} 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+            >
+              APPLE
+            </button>
+            <button 
+              type="button" 
+              onClick={() => alert('Microsoft registration service simulation initiated.')} 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+            >
+              MICROSOFT
+            </button>
+            <button 
+              type="button" 
+              onClick={() => alert('Facebook registration service simulation initiated.')} 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+            >
+              FACEBOOK
+            </button>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => alert('X registration service simulation initiated.')} 
+            className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono w-full"
+          >
+            X / TWITTER
+          </button>
+        </div>
         
         <p className="text-xs text-center uppercase tracking-wider text-[var(--muted)] mt-6 mb-0">
           Already registered?{' '}
