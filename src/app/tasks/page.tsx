@@ -30,17 +30,22 @@ interface Match {
 export default function TasksMarketplace() {
   const router = useRouter();
   
-  // Client state
+  // Client session
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userRoles, setUserRoles] = useState<{ is_buyer: boolean } | null>(null);
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  
+  // New task form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [budget, setBudget] = useState('');
   
-  // Matching state
+  // Matching panel state
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   
@@ -48,7 +53,7 @@ export default function TasksMarketplace() {
   const [matchingLoading, setMatchingLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Session verification and loading tasks
+  // 1. Session verification & load tasks
   useEffect(() => {
     const id = localStorage.getItem('nyxa_user_id');
     const name = localStorage.getItem('nyxa_user_name');
@@ -62,6 +67,38 @@ export default function TasksMarketplace() {
     
     fetchTasks();
   }, []);
+
+  // Handle query parameter search
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const search = params.get('search');
+      if (search) {
+        setSearchTerm(search);
+      }
+    }
+  }, [tasks]);
+
+  // Handle search and status filtering
+  useEffect(() => {
+    let result = tasks;
+
+    if (searchTerm.trim() !== '') {
+      const query = searchTerm.toLowerCase();
+      result = result.filter(
+        task =>
+          task.title.toLowerCase().includes(query) ||
+          task.description.toLowerCase().includes(query) ||
+          (task.requirements?.tags && task.requirements.tags.some(tag => tag.toLowerCase().includes(query)))
+      );
+    }
+
+    if (statusFilter !== 'all') {
+      result = result.filter(task => task.status.toLowerCase() === statusFilter.toLowerCase());
+    }
+
+    setFilteredTasks(result);
+  }, [searchTerm, statusFilter, tasks]);
 
   const fetchTasks = async () => {
     try {
@@ -124,6 +161,11 @@ export default function TasksMarketplace() {
 
   // 3. Match Agents logic
   const handleViewMatches = async (taskId: string) => {
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
+      return;
+    }
+    
     setSelectedTaskId(taskId);
     setMatchingLoading(true);
     setMatches([]);
@@ -170,7 +212,7 @@ export default function TasksMarketplace() {
         body: JSON.stringify({
           taskId: task.id,
           buyerUserId: userId,
-          sellerUserId: match.agents.id, // For MVP, we assign developer / agent owner as seller
+          sellerUserId: match.agents.id,
           amount: task.budget
         })
       });
@@ -181,14 +223,13 @@ export default function TasksMarketplace() {
       }
 
       // Simulate Successful Checkout Verification (Mock Razorpay Success Handler)
-      // In production, this would pop the Razorpay Checkout Modal and verify the signature callback.
       const verifyRes = await fetch('/api/payments/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           razorpayOrderId: data.order.id,
           razorpayPaymentId: `pay_mock_${Math.random().toString(36).substring(7)}`,
-          razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM' // Mock pass-through
+          razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
         })
       });
 
@@ -206,149 +247,232 @@ export default function TasksMarketplace() {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '1rem' }}>
-      <h1>Task Marketplace</h1>
-      <p>Browse open tasks or post a new one. NYXA AI will extract goals and find the best matches.</p>
+    <div className="nyxa-container">
+      <div className="border-b border-[var(--border)] pb-6 mb-8">
+        <h1>TASK MARKETPLACE</h1>
+        <p className="m-0 text-sm">
+          Browse active jobs or list a new computational request. The Nyxa. AI router will extract capability markers and index optimal solvers.
+        </p>
+      </div>
 
-      {userId ? (
-        <p style={{ background: '#e0f2f1', padding: '0.5rem', borderRadius: '4px' }}>
-          Logged in as: <strong>{userName}</strong> (ID: {userId.slice(0, 8)}...)
-        </p>
-      ) : (
-        <p style={{ background: '#fff3e0', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ffe0b2' }}>
-          ⚠️ You are viewing as a guest. Please <a href="/login" style={{ color: '#e65100', fontWeight: 'bold' }}>Login</a> to post or interact.
-        </p>
+      {/* Guest Alert Banner */}
+      {!userId && (
+        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm uppercase tracking-wide flex justify-between items-center">
+          <span>⚠️ GUEST ACCESS STATE &bull; LOGIN REQUIRED FOR TRANSACTION AND SUBMISSION CONTROL</span>
+          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">LOGIN &rarr;</a>
+        </div>
       )}
 
-      {/* Post a Task Form */}
-      <section style={{ marginTop: '2rem', border: '1px solid #ccc', borderRadius: '8px', padding: '1.5rem', background: '#fcfcfc' }}>
-        <h2>Post a New Task</h2>
-        {error && (
-          <div style={{ padding: '0.75rem', background: '#ffebee', color: '#c62828', borderRadius: '4px', marginBottom: '1rem' }}>
-            {error}
-          </div>
-        )}
-        <form onSubmit={handlePostTask}>
-          <div>
-            <label>Task Title:</label><br />
-            <input 
-              type="text" 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Need deep competitor research"
-              required 
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Detailed Description (Goals & Capability markers):</label><br />
-            <textarea 
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. Write a python script to pull analytics data, run design UI and UI/UX audits, and export to CSV."
-              rows={4} 
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            ></textarea>
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Task Budget (USD):</label><br />
-            <input 
-              type="number" 
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              placeholder="50"
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={{ 
-              marginTop: '1.25rem', 
-              padding: '0.75rem 1.5rem', 
-              background: '#0070f3', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: 'pointer' 
-            }}
-          >
-            {loading ? 'Posting & Extracting tags...' : 'Post Task'}
-          </button>
-        </form>
-      </section>
+      {/* Dashboard Sub-Info */}
+      {userId && (
+        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center">
+          <span>ACTIVE SESSION: {userName} ({userId.slice(0, 8)}...)</span>
+          <span className="text-[var(--success)]">&bull; SECURED ESCROW HANDLERS ENABLED</span>
+        </div>
+      )}
 
-      {/* Open Tasks List */}
-      <section style={{ marginTop: '3rem' }}>
-        <h2>Active & Open Tasks</h2>
-        <div style={{ display: 'grid', gap: '1.5rem', marginTop: '1rem' }}>
-          {tasks.length === 0 ? (
-            <p style={{ color: '#777' }}>No tasks found in the catalog.</p>
+      {/* Structured Layout Grid */}
+      <div className="nyxa-grid-sidebar">
+        {/* Left Sidebar: Controls & Post Task form */}
+        <aside className="flex flex-col gap-6">
+          {/* Marketplace Search & Filter Panel */}
+          <div className="nyxa-card">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4">CATALOG FILTER</h3>
+            
+            <div className="flex flex-col gap-4">
+              {/* Search */}
+              <div>
+                <label className="nyxa-label">Keyword Query</label>
+                <div className="search-container">
+                  <span className="search-icon tech-mono text-xs">[FIND]</span>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search title, tags..."
+                    className="nyxa-input search-input text-sm tech-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="nyxa-label">Status Filter</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="nyxa-select text-sm"
+                >
+                  <option value="all">ALL STATES</option>
+                  <option value="open">OPEN (UNASSIGNED)</option>
+                  <option value="matched">MATCHED</option>
+                  <option value="in_progress">IN PROGRESS</option>
+                  <option value="submitted">SUBMITTED (IN REVIEW)</option>
+                  <option value="completed">COMPLETED</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Post New Task Form */}
+          <div className="nyxa-card">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4">POST A NEW TASK</h3>
+            {error && (
+              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+                {error}
+              </div>
+            )}
+            
+            <form onSubmit={handlePostTask} className="flex flex-col gap-4">
+              <div>
+                <label className="nyxa-label">Task Title</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Competitor pricing audits..."
+                  required
+                  className="nyxa-input text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="nyxa-label">Goal Specifications (AI extraction targets)</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Need script to scrape competitor rates. Tags automatically extracted: #research, #programming..."
+                  rows={4}
+                  required
+                  className="nyxa-textarea text-sm"
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="nyxa-label">Locked Escrow Budget (USD)</label>
+                <input
+                  type="number"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  placeholder="75"
+                  required
+                  className="nyxa-input text-sm tech-mono"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || (!!userRoles && !userRoles.is_buyer)}
+                className="nyxa-btn nyxa-btn-primary w-full text-xs"
+              >
+                {loading ? 'ANALYZING SPECS...' : 'PUBLISH & ESCROW FUND'}
+              </button>
+              
+              {userRoles && !userRoles.is_buyer && (
+                <span className="text-[10px] text-red-500 uppercase text-center mt-1">
+                  Buyer role required to publish tasks
+                </span>
+              )}
+            </form>
+          </div>
+        </aside>
+
+        {/* Right Main Panel: Task Cards list */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg tracking-wider mb-2 uppercase border-b border-[var(--border)] pb-2 flex justify-between items-center">
+            <span>ACTIVE ESCROW FILES</span>
+            <span className="tech-mono text-xs text-[var(--muted)]">INDEX COUNT: {filteredTasks.length}</span>
+          </h2>
+
+          {filteredTasks.length === 0 ? (
+            <div className="border border-[var(--border)] p-12 text-center text-sm uppercase tracking-wider text-[var(--muted)]">
+              No active tasks matches the current filter settings.
+            </div>
           ) : (
-            tasks.map(task => (
-              <div key={task.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '1rem', background: '#fff' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3>{task.title}</h3>
-                  <span style={{ 
-                    padding: '0.25rem 0.5rem', 
-                    borderRadius: '4px', 
-                    fontSize: '0.8rem', 
-                    fontWeight: 'bold',
-                    background: task.status === 'open' ? '#e8f5e9' : '#e3f2fd',
-                    color: task.status === 'open' ? '#2e7d32' : '#1565c0'
-                  }}>
-                    {task.status.toUpperCase()}
+            filteredTasks.map(task => (
+              <div key={task.id} className="nyxa-card">
+                {/* Header */}
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <h3 className="mb-1">{task.title}</h3>
+                    <span className="tech-mono text-xs text-[var(--muted)] select-all">UUID: {task.id}</span>
+                  </div>
+                  <span className={`nyxa-badge ${task.status === 'open' ? 'nyxa-badge-success' : 'nyxa-badge-active'}`}>
+                    {task.status}
                   </span>
                 </div>
-                <p style={{ color: '#444', marginTop: '0.5rem' }}>{task.description}</p>
-                
-                {task.requirements?.tags && (
-                  <div style={{ marginTop: '0.5rem' }}>
+
+                {/* Description */}
+                <p className="text-sm mt-3 leading-relaxed mb-4 flex-grow">{task.description}</p>
+
+                {/* Tags */}
+                {task.requirements?.tags && task.requirements.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {task.requirements.tags.map(tag => (
-                      <span key={tag} style={{ marginRight: '0.5rem', background: '#eee', padding: '0.15rem 0.4rem', fontSize: '0.75rem', borderRadius: '3px' }}>
+                      <span key={tag} className="tech-mono text-xs bg-[var(--secondary-bg)] px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)]">
                         #{tag}
                       </span>
                     ))}
                   </div>
                 )}
-                
-                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong>Budget: ${task.budget}</strong>
+
+                {/* Bottom line: budget and actions */}
+                <div className="flex justify-between items-center border-t border-[var(--border)] pt-4 mt-auto">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Escrow Value</span>
+                    <strong className="tech-mono text-lg">${task.budget.toFixed(2)}</strong>
+                  </div>
+
                   {task.status === 'open' && (
-                    <button 
+                    <button
                       onClick={() => handleViewMatches(task.id)}
-                      style={{ padding: '0.5rem 1rem', background: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                      className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4"
                     >
-                      Find Matches
+                      {selectedTaskId === task.id ? 'CLOSE RESOLUTIONS' : 'RESOLVE SOLVERS'}
                     </button>
                   )}
                 </div>
 
                 {/* Inline Matches Display */}
                 {selectedTaskId === task.id && (
-                  <div style={{ marginTop: '1rem', padding: '1rem', background: '#f5f5f5', borderRadius: '6px', borderTop: '2px solid #333' }}>
-                    <h4>Ranked Matching Agents:</h4>
+                  <div className="mt-6 border-t border-2 border-[var(--foreground)] pt-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="m-0 text-sm tracking-wider">INDEXED SOLVERS</h4>
+                      <span className="tech-mono text-xs text-[var(--muted)]">[ RANKED BY RATING & PRICE ]</span>
+                    </div>
+
                     {matchingLoading ? (
-                      <p>Calculating scores...</p>
+                      <div className="py-6 text-center text-xs uppercase tracking-wider tech-mono text-[var(--muted)]">
+                        Calculating scores using algorithm: 50 + (Rating × 10) + (Jobs × 0.2) - (Price × 0.1)...
+                      </div>
                     ) : matches.length === 0 ? (
-                      <p>No agents currently possess the required capability tags.</p>
+                      <div className="py-6 border border-dashed border-[var(--border)] text-center text-xs uppercase tracking-wider text-[var(--muted)]">
+                        No active agents match the extracted capability profiles.
+                      </div>
                     ) : (
-                      <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.5rem' }}>
+                      <div className="flex flex-col gap-3">
                         {matches.map(match => (
-                          <div key={match.id} style={{ background: '#fff', border: '1px solid #eee', padding: '0.75rem', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <strong>{match.agents.name}</strong> 
-                              <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#ff9800' }}>★ {match.agents.score.toFixed(1)}</span>
-                              <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>({match.agents.total_transactions} completed)</span>
-                              <br /><small>Price: ${match.agents.price_demand} | Match Confidence: {match.match_score.toFixed(1)}%</small>
+                          <div
+                            key={match.id}
+                            className="border border-[var(--border)] p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-[var(--secondary-bg)]"
+                          >
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <strong className="text-sm">{match.agents.name}</strong>
+                                <span className="tech-mono text-xs bg-[var(--foreground)] text-[var(--background)] px-1.5 py-0.5">
+                                  {match.match_score.toFixed(0)}% MATCH
+                                </span>
+                              </div>
+                              <span className="text-xs text-[var(--muted)]">
+                                RATING: ★ {match.agents.score.toFixed(1)} &bull; {match.agents.total_transactions} JOBS &bull; DEMAND: ${match.agents.price_demand}/run
+                              </span>
                             </div>
-                            <button 
+                            
+                            <button
                               onClick={() => handleHireAgent(task, match)}
-                              style={{ padding: '0.4rem 0.8rem', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                              className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-3 whitespace-nowrap self-start sm:self-center"
                             >
-                              Hire & Pay Escrow
+                              LOCK ESCROW & HIRE
                             </button>
                           </div>
                         ))}
@@ -359,8 +483,8 @@ export default function TasksMarketplace() {
               </div>
             ))
           )}
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

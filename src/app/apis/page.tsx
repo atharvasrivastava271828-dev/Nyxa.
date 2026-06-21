@@ -13,10 +13,19 @@ interface DeveloperApi {
 }
 
 export default function ApiMarketplace() {
+  // Client session
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [userRoles, setUserRoles] = useState<{ is_developer: boolean } | null>(null);
 
   const [apis, setApis] = useState<DeveloperApi[]>([]);
+  const [filteredApis, setFilteredApis] = useState<DeveloperApi[]>([]);
+  
+  // Search & Filter
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Form Fields
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [endpointUrl, setEndpointUrl] = useState('');
@@ -26,18 +35,43 @@ export default function ApiMarketplace() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Session verification & load API catalog
+  // 1. Session verification & load APIs
   useEffect(() => {
     const id = localStorage.getItem('nyxa_user_id');
+    const uName = localStorage.getItem('nyxa_user_name');
     const rolesStr = localStorage.getItem('nyxa_user_roles');
     
     if (id) {
       setUserId(id);
+      setUserName(uName);
       if (rolesStr) setUserRoles(JSON.parse(rolesStr));
     }
     
     fetchApis();
   }, []);
+
+  // Filter logic
+  useEffect(() => {
+    let result = apis;
+
+    if (searchTerm.trim() !== '') {
+      const query = searchTerm.toLowerCase();
+      result = result.filter(
+        api =>
+          api.name.toLowerCase().includes(query) ||
+          api.endpoint_url.toLowerCase().includes(query) ||
+          (api.documentation && api.documentation.toLowerCase().includes(query))
+      );
+    }
+
+    if (selectedCategory !== 'all') {
+      result = result.filter(api =>
+        api.category.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+
+    setFilteredApis(result);
+  }, [searchTerm, selectedCategory, apis]);
 
   const fetchApis = async () => {
     try {
@@ -50,6 +84,11 @@ export default function ApiMarketplace() {
       console.error('Failed to load APIs:', err);
     }
   };
+
+  // Get unique categories for dynamic filtering
+  const allCategories = Array.from(
+    new Set(apis.map(api => api.category.toLowerCase()))
+  );
 
   // 2. Submit new API endpoint
   const handleRegisterApi = async (e: React.FormEvent) => {
@@ -160,130 +199,231 @@ export default function ApiMarketplace() {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '1rem' }}>
-      <h1>API Marketplace</h1>
-      <p>Discover programmatic APIs to power your agents, or list your own endpoints for developer licensing.</p>
+    <div className="nyxa-container">
+      <div className="border-b border-[var(--border)] pb-6 mb-8">
+        <h1>API MARKETPLACE</h1>
+        <p className="m-0 text-sm">
+          Frictionless license market for developer endpoints. Purchase and register credentials to route automation jobs.
+        </p>
+      </div>
 
-      {/* Permission alert for Developers */}
-      {userId && userRoles && !userRoles.is_developer && (
-        <div style={{ padding: '0.75rem', background: '#fff3e0', border: '1px solid #ffe0b2', color: '#e65100', borderRadius: '4px', marginBottom: '1.5rem' }}>
-          ⚠️ You are logged in, but your profile doesn't have the <strong>Developer</strong> role enabled. You cannot register new APIs.
+      {/* Guest Alert Banner */}
+      {!userId && (
+        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm uppercase tracking-wide flex justify-between items-center">
+          <span>⚠️ GUEST ACCESS STATE &bull; LOGIN REQUIRED TO PURCHASE API LICENSES</span>
+          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">LOGIN &rarr;</a>
         </div>
       )}
 
-      {/* Register API Form */}
-      <section style={{ marginTop: '2rem', border: '1px solid #ccc', borderRadius: '8px', padding: '1.5rem', background: '#fcfcfc' }}>
-        <h2>Register an API Endpoint</h2>
-        {error && (
-          <div style={{ padding: '0.75rem', background: '#ffebee', color: '#c62828', borderRadius: '4px', marginBottom: '1rem' }}>
-            {error}
-          </div>
-        )}
-        <form onSubmit={handleRegisterApi}>
-          <div>
-            <label>API Name:</label><br />
-            <input 
-              type="text" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Image Generation API"
-              required 
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Category:</label><br />
-            <input 
-              type="text" 
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. AI, Data, Utilities"
-              required 
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Endpoint URL:</label><br />
-            <input 
-              type="url" 
-              value={endpointUrl}
-              onChange={(e) => setEndpointUrl(e.target.value)}
-              placeholder="https://api.domain.com/v1/generate"
-              required 
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Price (USD per 1k requests):</label><br />
-            <input 
-              type="number" 
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="10"
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Documentation URL or markdown:</label><br />
-            <textarea 
-              value={documentation}
-              onChange={(e) => setDocumentation(e.target.value)}
-              placeholder="Add documentation or integration guidelines..."
-              rows={3} 
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            ></textarea>
-          </div>
-          <button 
-            type="submit" 
-            disabled={loading || !!(userRoles && !userRoles.is_developer)}
-            style={{ 
-              marginTop: '1.25rem', 
-              padding: '0.75rem 1.5rem', 
-              background: (loading || !!(userRoles && !userRoles.is_developer)) ? '#9e9e9e' : '#0070f3', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: (loading || !!(userRoles && !userRoles.is_developer)) ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Registering API...' : 'Register API'}
-          </button>
-        </form>
-      </section>
-
-      {/* Available APIs List */}
-      <section style={{ marginTop: '3rem' }}>
-        <h2>Available API Catalog</h2>
-        <div style={{ display: 'grid', gap: '1.5rem', marginTop: '1rem' }}>
-          {apis.length === 0 ? (
-            <p style={{ color: '#777' }}>No developer APIs registered yet.</p>
+      {/* Dashboard Sub-Info */}
+      {userId && (
+        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center">
+          <span>ACTIVE SESSION: {userName} ({userId.slice(0, 8)}...)</span>
+          {userRoles?.is_developer ? (
+            <span className="text-[var(--success)]">&bull; API ENDPOINT LISTINGS ENABLED</span>
           ) : (
-            apis.map(api => (
-              <div key={api.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '1rem', background: '#fff' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3>{api.name}</h3>
-                  <span style={{ background: '#e1f5fe', color: '#01579b', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                    {api.category.toUpperCase()}
-                  </span>
-                </div>
-                <p style={{ color: '#555', marginTop: '0.5rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>{api.endpoint_url}</p>
-                {api.documentation && <p style={{ color: '#666', fontSize: '0.9rem' }}>{api.documentation}</p>}
-                
-                <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong>Price: ${api.price}</strong>
-                  <button 
-                    onClick={() => handlePurchaseKey(api)}
-                    style={{ padding: '0.5rem 1rem', background: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    Purchase Licensing Key
-                  </button>
-                </div>
-              </div>
-            ))
+            <span className="text-[var(--muted)]">&bull; BROWSE ACCESS ONLY (DEVELOPER PROFILE REQUIRED TO LIST APIS)</span>
           )}
         </div>
-      </section>
+      )}
+
+      {/* Grid Layout */}
+      <div className="nyxa-grid-sidebar">
+        {/* Left Sidebar: Controls & Registration */}
+        <aside className="flex flex-col gap-6">
+          {/* Filters Card */}
+          <div className="nyxa-card">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4">API FILTERS</h3>
+            <div className="flex flex-col gap-4">
+              {/* Search */}
+              <div>
+                <label className="nyxa-label">Search API Catalog</label>
+                <div className="search-container">
+                  <span className="search-icon tech-mono text-xs">[FIND]</span>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search name, endpoint..."
+                    className="nyxa-input search-input text-sm tech-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Categories */}
+              <div>
+                <label className="nyxa-label">Category Group</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="nyxa-select text-sm"
+                >
+                  <option value="all">ALL CATEGORIES</option>
+                  {allCategories.map(cat => (
+                    <option key={cat} value={cat}>
+                      {cat.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Registration form */}
+          <div className="nyxa-card">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4">REGISTER AN API</h3>
+            
+            {error && (
+              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleRegisterApi} className="flex flex-col gap-4">
+              <div>
+                <label className="nyxa-label">API Descriptor Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Scraper Service"
+                  required
+                  className="nyxa-input text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="nyxa-label">Interface Category</label>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="e.g. Data, LLM, Image"
+                  required
+                  className="nyxa-input text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="nyxa-label">Root endpoint URL</label>
+                <input
+                  type="url"
+                  value={endpointUrl}
+                  onChange={(e) => setEndpointUrl(e.target.value)}
+                  placeholder="https://api.domain.com/v1"
+                  required
+                  className="nyxa-input text-sm tech-mono"
+                />
+              </div>
+
+              <div>
+                <label className="nyxa-label">Documentation URL (Optional)</label>
+                <input
+                  type="url"
+                  value={documentation}
+                  onChange={(e) => setDocumentation(e.target.value)}
+                  placeholder="https://docs.domain.com"
+                  className="nyxa-input text-sm tech-mono"
+                />
+              </div>
+
+              <div>
+                <label className="nyxa-label">License Price (USD / Flat Key)</label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="30"
+                  required
+                  className="nyxa-input text-sm tech-mono"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !!(userRoles && !userRoles.is_developer)}
+                className="nyxa-btn nyxa-btn-primary w-full text-xs"
+              >
+                {loading ? 'REGISTERING SYSTEM...' : 'PUBLISH API INTERFACE'}
+              </button>
+              
+              {userRoles && !userRoles.is_developer && (
+                <span className="text-[10px] text-red-500 uppercase text-center mt-1">
+                  Developer profile required to list APIs
+                </span>
+              )}
+            </form>
+          </div>
+        </aside>
+
+        {/* Right Main Panel: API Cards */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg tracking-wider mb-2 uppercase border-b border-[var(--border)] pb-2 flex justify-between items-center">
+            <span>ACTIVE LICENSES AVAILABLE</span>
+            <span className="tech-mono text-xs text-[var(--muted)]">INDEX COUNT: {filteredApis.length}</span>
+          </h2>
+
+          {filteredApis.length === 0 ? (
+            <div className="border border-[var(--border)] p-12 text-center text-sm uppercase tracking-wider text-[var(--muted)]">
+              No registered APIs match the current query categories.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {filteredApis.map(api => (
+                <div key={api.id} className="nyxa-card">
+                  {/* Title and Category */}
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
+                      <h3 className="mb-0.5">{api.name}</h3>
+                      <span className="tech-mono text-[10px] text-[var(--muted)] select-all">UUID: {api.id}</span>
+                    </div>
+                    <span className="nyxa-badge text-xs">{api.category}</span>
+                  </div>
+
+                  {/* Details */}
+                  <div className="my-4 flex flex-col gap-2">
+                    <div className="flex gap-2 items-center">
+                      <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider w-20">Endpoint:</span>
+                      <code className="tech-mono text-xs bg-[var(--secondary-bg)] px-2 py-0.5 border border-[var(--border)] truncate max-w-md select-all">
+                        {api.endpoint_url}
+                      </code>
+                    </div>
+
+                    {api.documentation && (
+                      <div className="flex gap-2 items-center">
+                        <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider w-20">Docs:</span>
+                        <a
+                          href={api.documentation}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="tech-mono text-xs text-[var(--foreground)] hover:underline"
+                        >
+                          {api.documentation}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer & Actions */}
+                  <div className="border-t border-[var(--border)] pt-4 flex justify-between items-center mt-auto">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">License Cost</span>
+                      <strong className="tech-mono text-base">${api.price.toFixed(2)}</strong>
+                    </div>
+
+                    <button
+                      onClick={() => handlePurchaseKey(api)}
+                      className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-4"
+                    >
+                      PURCHASE LICENSE
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

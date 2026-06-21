@@ -14,11 +14,19 @@ interface Agent {
 }
 
 export default function AgentMarketplace() {
-  // Client state
+  // Client session
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [userRoles, setUserRoles] = useState<{ is_developer: boolean } | null>(null);
   
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
+  
+  // Search & Filter
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCapability, setSelectedCapability] = useState('all');
+
+  // New agent form
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [capabilitiesInput, setCapabilitiesInput] = useState('');
@@ -27,18 +35,42 @@ export default function AgentMarketplace() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Session verification & loading agent catalog
+  // 1. Session verification & load agents
   useEffect(() => {
     const id = localStorage.getItem('nyxa_user_id');
+    const uName = localStorage.getItem('nyxa_user_name');
     const rolesStr = localStorage.getItem('nyxa_user_roles');
     
     if (id) {
       setUserId(id);
+      setUserName(uName);
       if (rolesStr) setUserRoles(JSON.parse(rolesStr));
     }
     
     fetchAgents();
   }, []);
+
+  // Filter logic
+  useEffect(() => {
+    let result = agents;
+
+    if (searchTerm.trim() !== '') {
+      const query = searchTerm.toLowerCase();
+      result = result.filter(
+        agent =>
+          agent.name.toLowerCase().includes(query) ||
+          agent.description.toLowerCase().includes(query)
+      );
+    }
+
+    if (selectedCapability !== 'all') {
+      result = result.filter(agent =>
+        agent.capabilities.some(cap => cap.toLowerCase() === selectedCapability.toLowerCase())
+      );
+    }
+
+    setFilteredAgents(result);
+  }, [searchTerm, selectedCapability, agents]);
 
   const fetchAgents = async () => {
     try {
@@ -51,6 +83,11 @@ export default function AgentMarketplace() {
       console.error('Failed to load agents:', err);
     }
   };
+
+  // Extract all unique capabilities from list of agents for dynamic filtering
+  const allCapabilities = Array.from(
+    new Set(agents.flatMap(agent => agent.capabilities.map(c => c.toLowerCase())))
+  );
 
   // 2. Submit new agent profile
   const handleRegisterAgent = async (e: React.FormEvent) => {
@@ -70,7 +107,6 @@ export default function AgentMarketplace() {
       return;
     }
 
-    // Split capabilities by comma and clean whitespace
     const capabilities = capabilitiesInput
       .split(',')
       .map(tag => tag.trim().toLowerCase())
@@ -109,123 +145,212 @@ export default function AgentMarketplace() {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '1rem' }}>
-      <h1>Agent Marketplace</h1>
-      <p>Discover and register AI agents. Fulfill complex workloads autonomously.</p>
+    <div className="nyxa-container">
+      <div className="border-b border-[var(--border)] pb-6 mb-8">
+        <h1>AGENT DIRECTORY</h1>
+        <p className="m-0 text-sm">
+          Browse functional AI agents cataloged in the system. Fulfill specialized workflows dynamically.
+        </p>
+      </div>
 
-      {/* Permission alert for Developers */}
-      {userId && userRoles && !userRoles.is_developer && (
-        <div style={{ padding: '0.75rem', background: '#fff3e0', border: '1px solid #ffe0b2', color: '#e65100', borderRadius: '4px', marginBottom: '1.5rem' }}>
-          ⚠️ You are logged in, but your profile doesn't have the <strong>Developer</strong> role enabled. You can browse, but cannot register new agents.
+      {/* Guest Alert Banner */}
+      {!userId && (
+        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm uppercase tracking-wide flex justify-between items-center">
+          <span>⚠️ GUEST ACCESS STATE &bull; LOGIN REQUIRED TO LAUNCH OR MANAGE AI INSTANCES</span>
+          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">LOGIN &rarr;</a>
         </div>
       )}
 
-      {/* Register Agent Form */}
-      <section style={{ marginTop: '2rem', border: '1px solid #ccc', borderRadius: '8px', padding: '1.5rem', background: '#fcfcfc' }}>
-        <h2>Register an Agent</h2>
-        {error && (
-          <div style={{ padding: '0.75rem', background: '#ffebee', color: '#c62828', borderRadius: '4px', marginBottom: '1rem' }}>
-            {error}
-          </div>
-        )}
-        <form onSubmit={handleRegisterAgent}>
-          <div>
-            <label>Agent Name:</label><br />
-            <input 
-              type="text" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Researcher Bot"
-              required 
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Description:</label><br />
-            <textarea 
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Explain what this agent does, what tools it supports, and its instructions..."
-              rows={3} 
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            ></textarea>
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Capabilities (comma separated tags):</label><br />
-            <input 
-              type="text" 
-              value={capabilitiesInput}
-              onChange={(e) => setCapabilitiesInput(e.target.value)}
-              placeholder="research, web_search, data_analysis"
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-            <small style={{ color: '#666' }}>Matching tags: research, programming, development, content_writing, copywriting, design, ui_ux, data_analysis, marketing, sales, workflow_automation</small>
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label>Price Demand (USD per execution):</label><br />
-            <input 
-              type="number" 
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="15"
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            />
-          </div>
-          <button 
-            type="submit" 
-            disabled={loading || !!(userRoles && !userRoles.is_developer)}
-            style={{ 
-              marginTop: '1.25rem', 
-              padding: '0.75rem 1.5rem', 
-              background: (loading || !!(userRoles && !userRoles.is_developer)) ? '#9e9e9e' : '#0070f3', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: (loading || !!(userRoles && !userRoles.is_developer)) ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Registering Agent...' : 'Register Agent'}
-          </button>
-        </form>
-      </section>
-
-      {/* Available Agents Catalog */}
-      <section style={{ marginTop: '3rem' }}>
-        <h2>Available Agents</h2>
-        <div style={{ display: 'grid', gap: '1.5rem', marginTop: '1rem' }}>
-          {agents.length === 0 ? (
-            <p style={{ color: '#777' }}>No agents registered in the marketplace yet.</p>
+      {/* Dashboard Sub-Info */}
+      {userId && (
+        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center">
+          <span>ACTIVE SESSION: {userName} ({userId.slice(0, 8)}...)</span>
+          {userRoles?.is_developer ? (
+            <span className="text-[var(--success)]">&bull; DEVELOPER REGISTRATION ENABLED</span>
           ) : (
-            agents.map(agent => (
-              <div key={agent.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '1rem', background: '#fff' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3>{agent.name}</h3>
-                  <span style={{ color: '#ff9800', fontWeight: 'bold' }}>
-                    ★ {agent.score.toFixed(1)} <small style={{ color: '#666', fontWeight: 'normal' }}>({agent.total_transactions} completed)</small>
-                  </span>
-                </div>
-                <p style={{ color: '#555', marginTop: '0.5rem' }}>{agent.description}</p>
-                
-                <div style={{ marginTop: '0.5rem' }}>
-                  {agent.capabilities.map(cap => (
-                    <span key={cap} style={{ marginRight: '0.5rem', background: '#e0f2f1', color: '#004d40', padding: '0.15rem 0.4rem', fontSize: '0.75rem', borderRadius: '3px' }}>
-                      {cap}
-                    </span>
-                  ))}
-                </div>
-
-                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong>Price: ${agent.price_demand}</strong>
-                  <span style={{ fontSize: '0.85rem', color: '#777' }}>Agent Status: {agent.status.toUpperCase()}</span>
-                </div>
-              </div>
-            ))
+            <span className="text-[var(--muted)]">&bull; BROWSE ACCESS ONLY (DEVELOPER PROFILE REQUIRED TO LIST AGENTS)</span>
           )}
         </div>
-      </section>
+      )}
+
+      {/* Grid Layout */}
+      <div className="nyxa-grid-sidebar">
+        {/* Left Sidebar: Controls & Registration */}
+        <aside className="flex flex-col gap-6">
+          {/* Filters Card */}
+          <div className="nyxa-card">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4">AGENT FILTERS</h3>
+            <div className="flex flex-col gap-4">
+              {/* Search */}
+              <div>
+                <label className="nyxa-label">Search Bot Catalog</label>
+                <div className="search-container">
+                  <span className="search-icon tech-mono text-xs">[FIND]</span>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search by name, description..."
+                    className="nyxa-input search-input text-sm tech-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Capabilities */}
+              <div>
+                <label className="nyxa-label">Capability Type</label>
+                <select
+                  value={selectedCapability}
+                  onChange={(e) => setSelectedCapability(e.target.value)}
+                  className="nyxa-select text-sm"
+                >
+                  <option value="all">ALL CAPABILITIES</option>
+                  {allCapabilities.map(cap => (
+                    <option key={cap} value={cap}>
+                      {cap.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Registration form */}
+          <div className="nyxa-card">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4">REGISTER AN AGENT</h3>
+            
+            {error && (
+              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleRegisterAgent} className="flex flex-col gap-4">
+              <div>
+                <label className="nyxa-label">Agent Identifier</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. CodeResolver"
+                  required
+                  className="nyxa-input text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="nyxa-label">System Capability Directives</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe task processing methods, API bindings, and expected inputs..."
+                  rows={3}
+                  required
+                  className="nyxa-textarea text-sm"
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="nyxa-label">Capabilities (comma separated)</label>
+                <input
+                  type="text"
+                  value={capabilitiesInput}
+                  onChange={(e) => setCapabilitiesInput(e.target.value)}
+                  placeholder="research, programming, design"
+                  required
+                  className="nyxa-input text-sm tech-mono"
+                />
+                <small className="text-[10px] text-[var(--muted)] leading-tight block mt-1 uppercase">
+                  Tags: research, programming, development, copywriting, design, ui_ux, data_analysis, marketing, sales, workflow_automation
+                </small>
+              </div>
+
+              <div>
+                <label className="nyxa-label">Price Demand per Execution (USD)</label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="10"
+                  required
+                  className="nyxa-input text-sm tech-mono"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !!(userRoles && !userRoles.is_developer)}
+                className="nyxa-btn nyxa-btn-primary w-full text-xs"
+              >
+                {loading ? 'REGISTERING INFRASTRUCTURE...' : 'REGISTER AGENT'}
+              </button>
+              
+              {userRoles && !userRoles.is_developer && (
+                <span className="text-[10px] text-red-500 uppercase text-center mt-1">
+                  Developer profile required to list agents
+                </span>
+              )}
+            </form>
+          </div>
+        </aside>
+
+        {/* Right Main Panel: Agent Cards */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg tracking-wider mb-2 uppercase border-b border-[var(--border)] pb-2 flex justify-between items-center">
+            <span>ACTIVE SOLVER INSTANCES</span>
+            <span className="tech-mono text-xs text-[var(--muted)]">INDEX COUNT: {filteredAgents.length}</span>
+          </h2>
+
+          {filteredAgents.length === 0 ? (
+            <div className="border border-[var(--border)] p-12 text-center text-sm uppercase tracking-wider text-[var(--muted)]">
+              No registered agents matches the selected capabilities.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredAgents.map(agent => (
+                <div key={agent.id} className="nyxa-card">
+                  {/* Title & Score */}
+                  <div className="flex justify-between items-start gap-4 mb-2">
+                    <div>
+                      <h3 className="mb-0.5">{agent.name}</h3>
+                      <span className="tech-mono text-[10px] text-[var(--muted)] select-all">UID: {agent.id}</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs font-bold text-[var(--foreground)] tech-mono">
+                        ★ {agent.score.toFixed(1)}
+                      </span>
+                      <span className="text-[9px] uppercase text-[var(--muted)] tracking-wider">
+                        {agent.total_transactions} JOBS
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs leading-relaxed mt-2 mb-4 flex-grow">{agent.description}</p>
+
+                  {/* Capabilities */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {agent.capabilities.map(cap => (
+                      <span
+                        key={cap}
+                        className="tech-mono text-[10px] bg-[var(--secondary-bg)] px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)]"
+                      >
+                        #{cap}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Pricing Footer */}
+                  <div className="border-t border-[var(--border)] pt-3 flex justify-between items-center mt-auto">
+                    <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Demanded Rate</span>
+                    <strong className="tech-mono text-sm">${agent.price_demand.toFixed(2)}/run</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

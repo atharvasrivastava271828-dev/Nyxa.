@@ -9,7 +9,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  // Role system: users can assume multiple roles simultaneously (e.g. Developer + Seller)
+  // Roles
   const [isBuyer, setIsBuyer] = useState(false);
   const [isSeller, setIsSeller] = useState(false);
   const [isDeveloper, setIsDeveloper] = useState(false);
@@ -22,7 +22,6 @@ export default function Register() {
     setLoading(true);
     setError(null);
 
-    // Validate that at least one role is selected
     if (!isBuyer && !isSeller && !isDeveloper) {
       setError('Please select at least one user role.');
       setLoading(false);
@@ -49,7 +48,6 @@ export default function Register() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // Success: Redirect user to the login screen
       router.push('/login');
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -59,110 +57,113 @@ export default function Register() {
   };
 
   return (
-    <div style={{ maxWidth: '450px', margin: '3rem auto', padding: '2rem', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h1>Register on NYXA</h1>
-      <p style={{ color: '#666' }}>The Exchange Layer for the AI Economy</p>
-      
-      {error && (
-        <div style={{ padding: '0.75rem', background: '#ffebee', color: '#c62828', borderRadius: '4px', marginBottom: '1rem' }}>
-          {error}
+    <div className="nyxa-container max-w-md py-12">
+      <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
+        <div className="text-center mb-6">
+          {/* Logo mark */}
+          <span className="tech-mono font-bold tracking-widest text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4">
+            NYXA.
+          </span>
+          <h1 className="text-xl tracking-wider uppercase m-0">REGISTER IDENTITY</h1>
+          <p className="text-xs text-[var(--muted)] uppercase tracking-widest mt-1">
+            Create exchange layer credentials
+          </p>
         </div>
-      )}
+        
+        {error && (
+          <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+            {error}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Full Name:</label><br />
-          <input 
-            type="text" 
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
-          />
-        </div>
-        <div style={{ marginTop: '1rem' }}>
-          <label>Email:</label><br />
-          <input 
-            type="email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
-          />
-        </div>
-        <div style={{ marginTop: '1rem' }}>
-          <label>Password:</label><br />
-          <input 
-            type="password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
-          />
-        </div>
-
-        {/* Roles system selection */}
-        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f9f9f9', borderRadius: '6px' }}>
-          <h3>Select User Roles (Select all that apply)</h3>
-          
-          <div style={{ marginTop: '0.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-              <input 
-                type="checkbox" 
-                checked={isBuyer} 
-                onChange={(e) => setIsBuyer(e.target.checked)} 
-                style={{ marginRight: '0.5rem' }}
-              />
-              <strong>Buyer</strong> (I want to post tasks and hire AI agents)
-            </label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="nyxa-label">Full Name</label>
+            <input 
+              type="text" 
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              placeholder="e.g. John Doe"
+              className="nyxa-input text-sm" 
+            />
+          </div>
+          <div>
+            <label className="nyxa-label">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="name@domain.com"
+              className="nyxa-input text-sm tech-mono" 
+            />
+          </div>
+          <div>
+            <label className="nyxa-label">Secure Access Key (Password)</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+              className="nyxa-input text-sm tech-mono" 
+            />
           </div>
 
-          <div style={{ marginTop: '0.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-              <input 
-                type="checkbox" 
-                checked={isSeller} 
-                onChange={(e) => setIsSeller(e.target.checked)} 
-                style={{ marginRight: '0.5rem' }}
-              />
-              <strong>Seller</strong> (I want to fulfill tasks or accept jobs)
-            </label>
+          {/* Roles selection */}
+          <div className="border border-[var(--border)] p-4 bg-[var(--secondary-bg)] mt-2">
+            <label className="nyxa-label mb-2">Select User Profiles</label>
+            
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 cursor-pointer text-xs tech-mono">
+                <input 
+                  type="checkbox" 
+                  checked={isBuyer} 
+                  onChange={(e) => setIsBuyer(e.target.checked)} 
+                  className="accent-black"
+                />
+                <span><strong>BUYER</strong> (POST TASKS / HIRE AGENTS)</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-xs tech-mono">
+                <input 
+                  type="checkbox" 
+                  checked={isSeller} 
+                  onChange={(e) => setIsSeller(e.target.checked)} 
+                  className="accent-black"
+                />
+                <span><strong>SELLER</strong> (FULFILL OPEN JOBS)</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-xs tech-mono">
+                <input 
+                  type="checkbox" 
+                  checked={isDeveloper} 
+                  onChange={(e) => setIsDeveloper(e.target.checked)} 
+                  className="accent-black"
+                />
+                <span><strong>DEVELOPER</strong> (LIST AGENTS / APIS)</span>
+              </label>
+            </div>
           </div>
 
-          <div style={{ marginTop: '0.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-              <input 
-                type="checkbox" 
-                checked={isDeveloper} 
-                onChange={(e) => setIsDeveloper(e.target.checked)} 
-                style={{ marginRight: '0.5rem' }}
-              />
-              <strong>Developer</strong> (I want to register agents & list APIs)
-            </label>
-          </div>
-        </div>
-
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{ 
-            marginTop: '1.5rem', 
-            width: '100%', 
-            padding: '0.75rem', 
-            background: loading ? '#9e9e9e' : '#0070f3', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Creating Account...' : 'Register'}
-        </button>
-      </form>
-      
-      <p style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-        Already have an account? <a href="/login" style={{ color: '#0070f3' }}>Login</a>
-      </p>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="nyxa-btn nyxa-btn-primary w-full text-xs py-2 mt-2"
+          >
+            {loading ? 'REGISTERING IDENTITY...' : 'GENERATE CREDENTIALS'}
+          </button>
+        </form>
+        
+        <p className="text-xs text-center uppercase tracking-wider text-[var(--muted)] mt-6 mb-0">
+          Already registered?{' '}
+          <a href="/login" className="text-[var(--foreground)] font-bold hover:underline">
+            Sign In &rarr;
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

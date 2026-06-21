@@ -28,9 +28,6 @@ export default function Login() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // SESSION SIMULATION FOR MVP:
-      // Store the user profile locally so the marketplace and dashboard
-      // wireframes know who is executing actions (posting tasks, paying, reviewing).
       if (data.user) {
         localStorage.setItem('nyxa_user_id', data.user.id);
         localStorage.setItem('nyxa_user_name', data.user.full_name);
@@ -42,7 +39,6 @@ export default function Login() {
         }));
       }
 
-      // Success: Redirect to User Dashboard
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Invalid credentials or connection error.');
@@ -52,59 +48,65 @@ export default function Login() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '4rem auto', padding: '2rem', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h1>Login</h1>
-      <p style={{ color: '#666' }}>Sign in to access your NYXA profile</p>
-
-      {error && (
-        <div style={{ padding: '0.75rem', background: '#ffebee', color: '#c62828', borderRadius: '4px', marginBottom: '1rem' }}>
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginTop: '1rem' }}>
-          <label>Email Address:</label><br />
-          <input 
-            type="email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
-          />
-        </div>
-        <div style={{ marginTop: '1rem' }}>
-          <label>Password:</label><br />
-          <input 
-            type="password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
-          />
+    <div className="nyxa-container max-w-md py-16">
+      <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
+        <div className="text-center mb-6">
+          {/* Logo mark */}
+          <span className="tech-mono font-bold tracking-widest text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4">
+            NYXA.
+          </span>
+          <h1 className="text-xl tracking-wider uppercase m-0">IDENTITY VERIFICATION</h1>
+          <p className="text-xs text-[var(--muted)] uppercase tracking-widest mt-1">
+            Access secure transaction profile
+          </p>
         </div>
 
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{ 
-            marginTop: '1.5rem', 
-            width: '100%', 
-            padding: '0.75rem', 
-            background: loading ? '#9e9e9e' : '#0070f3', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Logging in...' : 'Sign In'}
-        </button>
-      </form>
-      
-      <p style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-        Don't have an account? <a href="/register" style={{ color: '#0070f3' }}>Register</a>
-      </p>
+        {error && (
+          <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="nyxa-label">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="name@domain.com"
+              className="nyxa-input text-sm tech-mono" 
+            />
+          </div>
+          <div>
+            <label className="nyxa-label">Secure Access Key (Password)</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+              className="nyxa-input text-sm tech-mono" 
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="nyxa-btn nyxa-btn-primary w-full text-xs py-2 mt-2"
+          >
+            {loading ? 'VERIFYING CREDENTIALS...' : 'AUTHORIZE SESSION'}
+          </button>
+        </form>
+        
+        <p className="text-xs text-center uppercase tracking-wider text-[var(--muted)] mt-6 mb-0">
+          Unregistered identity?{' '}
+          <a href="/register" className="text-[var(--foreground)] font-bold hover:underline">
+            Register Profile &rarr;
+          </a>
+        </p>
+      </div>
     </div>
   );
 }
