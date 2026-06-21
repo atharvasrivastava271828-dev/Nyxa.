@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ task }, { status: 201 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 });
     }
     console.error('[Tasks API POST Error]:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

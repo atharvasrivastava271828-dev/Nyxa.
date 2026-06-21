@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ transaction }, { status: 200 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 });
     }
     // We pass the error message here (e.g., "Invalid signature") because the 
     // client needs to know if verification explicitly failed versus a server crash.

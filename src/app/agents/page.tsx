@@ -176,15 +176,15 @@ export default function AgentMarketplace() {
           </div>
           <button 
             type="submit" 
-            disabled={loading || (userRoles && !userRoles.is_developer)}
+            disabled={loading || !!(userRoles && !userRoles.is_developer)}
             style={{ 
               marginTop: '1.25rem', 
               padding: '0.75rem 1.5rem', 
-              background: (loading || (userRoles && !userRoles.is_developer)) ? '#9e9e9e' : '#0070f3', 
+              background: (loading || !!(userRoles && !userRoles.is_developer)) ? '#9e9e9e' : '#0070f3', 
               color: 'white', 
               border: 'none', 
               borderRadius: '4px',
-              cursor: (loading || (userRoles && !userRoles.is_developer)) ? 'not-allowed' : 'pointer'
+              cursor: (loading || !!(userRoles && !userRoles.is_developer)) ? 'not-allowed' : 'pointer'
             }}
           >
             {loading ? 'Registering Agent...' : 'Register Agent'}
