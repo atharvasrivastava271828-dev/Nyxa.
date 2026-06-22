@@ -201,28 +201,28 @@ export default function ApiMarketplace() {
   return (
     <div className="nyxa-container">
       <div className="border-b border-[var(--border)] pb-6 mb-8">
-        <h1>API MARKETPLACE</h1>
+        <h1>APIs</h1>
         <p className="m-0 text-sm">
-          Frictionless license market for developer endpoints. Purchase and register credentials to route automation jobs.
+          Discover and plug in APIs built for AI workflows. No manual setup.
         </p>
       </div>
 
       {/* Guest Alert Banner */}
       {!userId && (
-        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm uppercase tracking-wide flex justify-between items-center">
-          <span>⚠️ GUEST ACCESS STATE &bull; LOGIN REQUIRED TO PURCHASE API LICENSES</span>
-          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">LOGIN &rarr;</a>
+        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm flex justify-between items-center rounded-lg">
+          <span>You're browsing as a guest. Log in to license or publish APIs.</span>
+          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</a>
         </div>
       )}
 
       {/* Dashboard Sub-Info */}
       {userId && (
-        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center">
-          <span>ACTIVE SESSION: {userName} ({userId.slice(0, 8)}...)</span>
+        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center rounded-lg">
+          <span>Active Session: {userName} ({userId.slice(0, 8)}...)</span>
           {userRoles?.is_developer ? (
-            <span className="text-[var(--success)]">&bull; API ENDPOINT LISTINGS ENABLED</span>
+            <span className="text-[var(--success)]">&bull; API registration active</span>
           ) : (
-            <span className="text-[var(--muted)]">&bull; BROWSE ACCESS ONLY (DEVELOPER PROFILE REQUIRED TO LIST APIS)</span>
+            <span className="text-[var(--muted)]">&bull; Browse access only</span>
           )}
         </div>
       )}
@@ -233,35 +233,35 @@ export default function ApiMarketplace() {
         <aside className="flex flex-col gap-6">
           {/* Filters Card */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-4">API FILTERS</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-semibold">Filter APIs</h3>
             <div className="flex flex-col gap-4">
               {/* Search */}
               <div>
-                <label className="nyxa-label">Search API Catalog</label>
+                <label className="nyxa-label">Search APIs</label>
                 <div className="search-container">
-                  <span className="search-icon tech-mono text-xs">[FIND]</span>
+                  <span className="search-icon tech-mono text-xs">Search</span>
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search name, endpoint..."
-                    className="nyxa-input search-input text-sm tech-mono"
+                    className="nyxa-input search-input text-sm"
                   />
                 </div>
               </div>
 
               {/* Categories */}
               <div>
-                <label className="nyxa-label">Category Group</label>
+                <label className="nyxa-label">Category</label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="nyxa-select text-sm"
                 >
-                  <option value="all">ALL CATEGORIES</option>
+                  <option value="all">All</option>
                   {allCategories.map(cat => (
                     <option key={cat} value={cat}>
-                      {cat.toUpperCase()}
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </option>
                   ))}
                 </select>
@@ -271,17 +271,17 @@ export default function ApiMarketplace() {
 
           {/* Registration form */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-4">REGISTER AN API</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-semibold">Publish an API</h3>
             
             {error && (
-              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase rounded-md">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleRegisterApi} className="flex flex-col gap-4">
               <div>
-                <label className="nyxa-label">API Descriptor Name</label>
+                <label className="nyxa-label">API name</label>
                 <input
                   type="text"
                   value={name}
@@ -293,7 +293,7 @@ export default function ApiMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">Interface Category</label>
+                <label className="nyxa-label">Category</label>
                 <input
                   type="text"
                   value={category}
@@ -305,7 +305,7 @@ export default function ApiMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">Root endpoint URL</label>
+                <label className="nyxa-label">Endpoint URL</label>
                 <input
                   type="url"
                   value={endpointUrl}
@@ -317,7 +317,7 @@ export default function ApiMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">Documentation URL (Optional)</label>
+                <label className="nyxa-label">Docs URL (optional)</label>
                 <input
                   type="url"
                   value={documentation}
@@ -328,7 +328,7 @@ export default function ApiMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">License Price (USD / Flat Key)</label>
+                <label className="nyxa-label">Price per license (USD)</label>
                 <input
                   type="number"
                   value={price}
@@ -344,12 +344,12 @@ export default function ApiMarketplace() {
                 disabled={loading || !!(userRoles && !userRoles.is_developer)}
                 className="nyxa-btn nyxa-btn-primary w-full text-xs"
               >
-                {loading ? 'REGISTERING SYSTEM...' : 'PUBLISH API INTERFACE'}
+                {loading ? 'Publishing...' : 'Publish API'}
               </button>
               
               {userRoles && !userRoles.is_developer && (
-                <span className="text-[10px] text-red-500 uppercase text-center mt-1">
-                  Developer profile required to list APIs
+                <span className="text-[10px] text-red-500 text-center mt-1">
+                  Developer profile required to publish APIs
                 </span>
               )}
             </form>
@@ -358,14 +358,16 @@ export default function ApiMarketplace() {
 
         {/* Right Main Panel: API Cards */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-lg tracking-wider mb-2 uppercase border-b border-[var(--border)] pb-2 flex justify-between items-center">
-            <span>ACTIVE LICENSES AVAILABLE</span>
-            <span className="tech-mono text-xs text-[var(--muted)]">INDEX COUNT: {filteredApis.length}</span>
+          <h2 className="text-lg tracking-tight mb-2 font-semibold border-b border-[var(--border)] pb-2 flex justify-between items-center">
+            <span>Active APIs</span>
+            <span className="tech-mono text-xs text-[var(--muted)]">
+              {filteredApis.length === 0 ? '0 APIs listed yet' : `${filteredApis.length} ${filteredApis.length === 1 ? 'API' : 'APIs'} listed`}
+            </span>
           </h2>
 
           {filteredApis.length === 0 ? (
-            <div className="border border-[var(--border)] p-12 text-center text-sm uppercase tracking-wider text-[var(--muted)]">
-              No registered APIs match the current query categories.
+            <div className="border border-[var(--border)] p-12 text-center text-sm text-[var(--muted)] rounded-lg">
+              No APIs here yet. Be the first to publish one.
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
@@ -375,7 +377,7 @@ export default function ApiMarketplace() {
                   <div className="flex justify-between items-start gap-4">
                     <div>
                       <h3 className="mb-0.5">{api.name}</h3>
-                      <span className="tech-mono text-[10px] text-[var(--muted)] select-all">UUID: {api.id}</span>
+                      <span className="tech-mono text-[10px] text-[var(--muted)] select-all">ID: {api.id}</span>
                     </div>
                     <span className="nyxa-badge text-xs">{api.category}</span>
                   </div>
@@ -383,15 +385,15 @@ export default function ApiMarketplace() {
                   {/* Details */}
                   <div className="my-4 flex flex-col gap-2">
                     <div className="flex gap-2 items-center">
-                      <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider w-20">Endpoint:</span>
-                      <code className="tech-mono text-xs bg-[var(--secondary-bg)] px-2 py-0.5 border border-[var(--border)] truncate max-w-md select-all">
+                      <span className="text-[10px] text-[var(--muted)] tracking-wider w-20">Endpoint:</span>
+                      <code className="tech-mono text-xs bg-[var(--secondary-bg)] px-2 py-0.5 border border-[var(--border)] truncate max-w-md select-all rounded">
                         {api.endpoint_url}
                       </code>
                     </div>
 
                     {api.documentation && (
                       <div className="flex gap-2 items-center">
-                        <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider w-20">Docs:</span>
+                        <span className="text-[10px] text-[var(--muted)] tracking-wider w-20">Docs:</span>
                         <a
                           href={api.documentation}
                           target="_blank"
@@ -407,7 +409,7 @@ export default function ApiMarketplace() {
                   {/* Footer & Actions */}
                   <div className="border-t border-[var(--border)] pt-4 flex justify-between items-center mt-auto">
                     <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">License Cost</span>
+                      <span className="text-[10px] text-[var(--muted)] tracking-wider">Price</span>
                       <strong className="tech-mono text-base">${api.price.toFixed(2)}</strong>
                     </div>
 
@@ -415,7 +417,7 @@ export default function ApiMarketplace() {
                       onClick={() => handlePurchaseKey(api)}
                       className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-4"
                     >
-                      PURCHASE LICENSE
+                      Purchase License
                     </button>
                   </div>
                 </div>

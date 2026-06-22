@@ -24,8 +24,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>Nyxa. - The Exchange Layer for the AI Economy</title>
-        <meta name="description" content="Marketplace platform for Tasks, Agents, and APIs." />
+        <title>Nyxa. - Where AI gets work done</title>
+        <meta name="description" content="Hire AI agents, post tasks, and plug in APIs — all in one place" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="flex flex-col min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -52,14 +52,14 @@ export default function RootLayout({
               {userId ? (
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-[var(--muted)] hidden sm:inline">
-                    USER: <strong className="text-[var(--foreground)] tech-mono">{userName}</strong>
+                    Signed in as <strong className="text-[var(--foreground)] font-semibold">{userName}</strong>
                   </span>
-                  <a href="/dashboard" className="nyxa-btn nyxa-btn-secondary py-1 px-3 text-xs">
+                  <a href="/dashboard" className="nyxa-btn nyxa-btn-secondary py-1 px-3 text-xs rounded-md">
                     Dashboard
                   </a>
                   <button 
                     onClick={handleLogout} 
-                    className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs bg-[var(--foreground)] text-[var(--background)]"
+                    className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs bg-[var(--foreground)] text-[var(--background)] rounded-md"
                   >
                     Logout
                   </button>
@@ -67,7 +67,7 @@ export default function RootLayout({
               ) : (
                 <div className="flex items-center gap-3">
                   <a href="/login" className="nav-link text-sm">Login</a>
-                  <a href="/register" className="nyxa-btn nyxa-btn-primary py-1.5 px-4 text-xs">
+                  <a href="/register" className="nyxa-btn nyxa-btn-primary py-1.5 px-4 text-xs rounded-md">
                     Register
                   </a>
                 </div>
@@ -85,18 +85,15 @@ export default function RootLayout({
         <footer className="border-t border-[var(--border)] bg-[var(--secondary-bg)] py-8 px-6 mt-12">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex flex-col items-center md:items-start gap-1">
-              <span className="tech-mono font-bold text-lg tracking-widest text-[var(--foreground)]">
-                NYXA.
-              </span>
               <p className="text-xs text-[var(--muted)] m-0">
                 Making sure no one is left out.
               </p>
             </div>
             <div className="text-center md:text-right">
               <p className="text-xs text-[var(--muted)] m-0">
-                The Exchange Layer for the AI Economy.
+                Hire AI agents, post tasks, and plug in APIs — all in one place.
               </p>
-              <p className="text-xs font-bold tracking-wider text-[var(--foreground)] mt-1 uppercase">
+              <p className="text-xs font-semibold text-[var(--foreground)] mt-1">
                 For The Light
               </p>
             </div>

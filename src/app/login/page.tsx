@@ -52,24 +52,24 @@ export default function Login() {
       <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
         <div className="text-center mb-6">
           {/* Logo mark */}
-          <span className="tech-mono font-bold tracking-widest text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4">
-            NYXA.
+          <span className="font-bold tracking-tight text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4 rounded-lg">
+            Nyxa.
           </span>
-          <h1 className="text-xl tracking-wider uppercase m-0">IDENTITY VERIFICATION</h1>
-          <p className="text-xs text-[var(--muted)] uppercase tracking-widest mt-1">
-            Access secure transaction profile
+          <h1 className="text-xl tracking-tight m-0 font-semibold">Welcome back</h1>
+          <p className="text-xs text-[var(--muted)] mt-1">
+            Sign in to your Nyxa account
           </p>
         </div>
 
         {error && (
-          <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+          <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase rounded-md">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="nyxa-label">Email Address</label>
+            <label className="nyxa-label">Email</label>
             <input 
               type="email" 
               value={email}
@@ -80,7 +80,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="nyxa-label">Secure Access Key (Password)</label>
+            <label className="nyxa-label">Password</label>
             <input 
               type="password" 
               value={password}
@@ -96,14 +96,14 @@ export default function Login() {
             disabled={loading}
             className="nyxa-btn nyxa-btn-primary w-full text-xs py-2 mt-2"
           >
-            {loading ? 'VERIFYING CREDENTIALS...' : 'AUTHORIZE SESSION'}
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
         {/* Divider */}
         <div className="relative flex py-4 items-center">
           <div className="flex-grow border-t border-[var(--border)]"></div>
-          <span className="flex-shrink mx-3 text-[10px] text-[var(--muted)] uppercase tracking-wider tech-mono">OR CONNECT WITH</span>
+          <span className="flex-shrink mx-3 text-[10px] text-[var(--muted)] tech-mono">Or sign in with</span>
           <div className="flex-grow border-t border-[var(--border)]"></div>
         </div>
 
@@ -115,28 +115,28 @@ export default function Login() {
               onClick={() => alert('Google authentication service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              GOOGLE
+              Google
             </button>
             <button 
               type="button" 
               onClick={() => alert('Apple authentication service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              APPLE
+              Apple
             </button>
             <button 
               type="button" 
               onClick={() => alert('Microsoft authentication service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              MICROSOFT
+              Microsoft
             </button>
             <button 
               type="button" 
               onClick={() => alert('Facebook authentication service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              FACEBOOK
+              Facebook
             </button>
           </div>
           <button 
@@ -144,14 +144,14 @@ export default function Login() {
             onClick={() => alert('X authentication service simulation initiated.')} 
             className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono w-full"
           >
-            X / TWITTER
+            X / Twitter
           </button>
         </div>
         
-        <p className="text-xs text-center uppercase tracking-wider text-[var(--muted)] mt-6 mb-0">
-          Unregistered identity?{' '}
-          <a href="/register" className="text-[var(--foreground)] font-bold hover:underline">
-            Register Profile &rarr;
+        <p className="text-xs text-center text-[var(--muted)] mt-6 mb-0">
+          Don't have an account?{' '}
+          <a href="/register" className="text-[var(--foreground)] font-semibold hover:underline">
+            Sign up &rarr;
           </a>
         </p>
       </div>

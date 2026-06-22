@@ -147,28 +147,28 @@ export default function AgentMarketplace() {
   return (
     <div className="nyxa-container">
       <div className="border-b border-[var(--border)] pb-6 mb-8">
-        <h1>AGENT DIRECTORY</h1>
+        <h1>Agents</h1>
         <p className="m-0 text-sm">
-          Browse functional AI agents cataloged in the system. Fulfill specialized workflows dynamically.
+          Find AI agents built for specific jobs. Hire one in seconds.
         </p>
       </div>
 
       {/* Guest Alert Banner */}
       {!userId && (
-        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm uppercase tracking-wide flex justify-between items-center">
-          <span>⚠️ GUEST ACCESS STATE &bull; LOGIN REQUIRED TO LAUNCH OR MANAGE AI INSTANCES</span>
-          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">LOGIN &rarr;</a>
+        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm flex justify-between items-center rounded-lg">
+          <span>You're browsing as a guest. Log in to hire or register agents.</span>
+          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</a>
         </div>
       )}
 
       {/* Dashboard Sub-Info */}
       {userId && (
-        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center">
-          <span>ACTIVE SESSION: {userName} ({userId.slice(0, 8)}...)</span>
+        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center rounded-lg">
+          <span>Active Session: {userName} ({userId.slice(0, 8)}...)</span>
           {userRoles?.is_developer ? (
-            <span className="text-[var(--success)]">&bull; DEVELOPER REGISTRATION ENABLED</span>
+            <span className="text-[var(--success)]">&bull; Developer registration active</span>
           ) : (
-            <span className="text-[var(--muted)]">&bull; BROWSE ACCESS ONLY (DEVELOPER PROFILE REQUIRED TO LIST AGENTS)</span>
+            <span className="text-[var(--muted)]">&bull; Browse access only</span>
           )}
         </div>
       )}
@@ -179,35 +179,35 @@ export default function AgentMarketplace() {
         <aside className="flex flex-col gap-6">
           {/* Filters Card */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-4">AGENT FILTERS</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-semibold">Filter Agents</h3>
             <div className="flex flex-col gap-4">
               {/* Search */}
               <div>
-                <label className="nyxa-label">Search Bot Catalog</label>
+                <label className="nyxa-label">Search agents</label>
                 <div className="search-container">
-                  <span className="search-icon tech-mono text-xs">[FIND]</span>
+                  <span className="search-icon tech-mono text-xs">Search</span>
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search by name, description..."
-                    className="nyxa-input search-input text-sm tech-mono"
+                    className="nyxa-input search-input text-sm"
                   />
                 </div>
               </div>
 
               {/* Capabilities */}
               <div>
-                <label className="nyxa-label">Capability Type</label>
+                <label className="nyxa-label">Capability</label>
                 <select
                   value={selectedCapability}
                   onChange={(e) => setSelectedCapability(e.target.value)}
                   className="nyxa-select text-sm"
                 >
-                  <option value="all">ALL CAPABILITIES</option>
+                  <option value="all">All</option>
                   {allCapabilities.map(cap => (
                     <option key={cap} value={cap}>
-                      {cap.toUpperCase()}
+                      {cap.charAt(0).toUpperCase() + cap.slice(1)}
                     </option>
                   ))}
                 </select>
@@ -217,17 +217,17 @@ export default function AgentMarketplace() {
 
           {/* Registration form */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-4">REGISTER AN AGENT</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-semibold">List Your Agent</h3>
             
             {error && (
-              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase rounded-md">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleRegisterAgent} className="flex flex-col gap-4">
               <div>
-                <label className="nyxa-label">Agent Identifier</label>
+                <label className="nyxa-label">Agent name</label>
                 <input
                   type="text"
                   value={name}
@@ -239,7 +239,7 @@ export default function AgentMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">System Capability Directives</label>
+                <label className="nyxa-label">What does this agent do?</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -251,7 +251,7 @@ export default function AgentMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">Capabilities (comma separated)</label>
+                <label className="nyxa-label">Capabilities (e.g. research, coding, writing)</label>
                 <input
                   type="text"
                   value={capabilitiesInput}
@@ -266,7 +266,7 @@ export default function AgentMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">Price Demand per Execution (USD)</label>
+                <label className="nyxa-label">Price per task (USD)</label>
                 <input
                   type="number"
                   value={price}
@@ -282,11 +282,11 @@ export default function AgentMarketplace() {
                 disabled={loading || !!(userRoles && !userRoles.is_developer)}
                 className="nyxa-btn nyxa-btn-primary w-full text-xs"
               >
-                {loading ? 'REGISTERING INFRASTRUCTURE...' : 'REGISTER AGENT'}
+                {loading ? 'Listing...' : 'List Agent'}
               </button>
               
               {userRoles && !userRoles.is_developer && (
-                <span className="text-[10px] text-red-500 uppercase text-center mt-1">
+                <span className="text-[10px] text-red-500 text-center mt-1">
                   Developer profile required to list agents
                 </span>
               )}
@@ -296,14 +296,16 @@ export default function AgentMarketplace() {
 
         {/* Right Main Panel: Agent Cards */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-lg tracking-wider mb-2 uppercase border-b border-[var(--border)] pb-2 flex justify-between items-center">
-            <span>ACTIVE SOLVER INSTANCES</span>
-            <span className="tech-mono text-xs text-[var(--muted)]">INDEX COUNT: {filteredAgents.length}</span>
+          <h2 className="text-lg tracking-tight mb-2 font-semibold border-b border-[var(--border)] pb-2 flex justify-between items-center">
+            <span>Agents</span>
+            <span className="tech-mono text-xs text-[var(--muted)]">
+              {filteredAgents.length === 0 ? '0 agents listed yet' : `${filteredAgents.length} ${filteredAgents.length === 1 ? 'agent' : 'agents'} listed`}
+            </span>
           </h2>
 
           {filteredAgents.length === 0 ? (
-            <div className="border border-[var(--border)] p-12 text-center text-sm uppercase tracking-wider text-[var(--muted)]">
-              No registered agents matches the selected capabilities.
+            <div className="border border-[var(--border)] p-12 text-center text-sm text-[var(--muted)] rounded-lg">
+              No agents here yet. Be the first to list one.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,14 +315,14 @@ export default function AgentMarketplace() {
                   <div className="flex justify-between items-start gap-4 mb-2">
                     <div>
                       <h3 className="mb-0.5">{agent.name}</h3>
-                      <span className="tech-mono text-[10px] text-[var(--muted)] select-all">UID: {agent.id}</span>
+                      <span className="tech-mono text-[10px] text-[var(--muted)] select-all">ID: {agent.id}</span>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="text-xs font-bold text-[var(--foreground)] tech-mono">
                         ★ {agent.score.toFixed(1)}
                       </span>
-                      <span className="text-[9px] uppercase text-[var(--muted)] tracking-wider">
-                        {agent.total_transactions} JOBS
+                      <span className="text-[9px] text-[var(--muted)] tracking-wider">
+                        {agent.total_transactions} {agent.total_transactions === 1 ? 'job' : 'jobs'}
                       </span>
                     </div>
                   </div>
@@ -342,7 +344,7 @@ export default function AgentMarketplace() {
 
                   {/* Pricing Footer */}
                   <div className="border-t border-[var(--border)] pt-3 flex justify-between items-center mt-auto">
-                    <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Demanded Rate</span>
+                    <span className="text-[10px] text-[var(--muted)] tracking-wider">Price</span>
                     <strong className="tech-mono text-sm">${agent.price_demand.toFixed(2)}/run</strong>
                   </div>
                 </div>

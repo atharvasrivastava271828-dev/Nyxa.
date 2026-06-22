@@ -61,24 +61,24 @@ export default function Register() {
       <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
         <div className="text-center mb-6">
           {/* Logo mark */}
-          <span className="tech-mono font-bold tracking-widest text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4">
-            NYXA.
+          <span className="font-bold tracking-tight text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4 rounded-lg">
+            Nyxa.
           </span>
-          <h1 className="text-xl tracking-wider uppercase m-0">REGISTER IDENTITY</h1>
-          <p className="text-xs text-[var(--muted)] uppercase tracking-widest mt-1">
-            Create exchange layer credentials
+          <h1 className="text-xl tracking-tight m-0 font-semibold">Create your account</h1>
+          <p className="text-xs text-[var(--muted)] mt-1">
+            Join Nyxa — it's free to get started
           </p>
         </div>
         
         {error && (
-          <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+          <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase rounded-md">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="nyxa-label">Full Name</label>
+            <label className="nyxa-label">Full name</label>
             <input 
               type="text" 
               value={fullName}
@@ -89,7 +89,7 @@ export default function Register() {
             />
           </div>
           <div>
-            <label className="nyxa-label">Email Address</label>
+            <label className="nyxa-label">Email</label>
             <input 
               type="email" 
               value={email}
@@ -100,7 +100,7 @@ export default function Register() {
             />
           </div>
           <div>
-            <label className="nyxa-label">Secure Access Key (Password)</label>
+            <label className="nyxa-label">Password</label>
             <input 
               type="password" 
               value={password}
@@ -112,38 +112,38 @@ export default function Register() {
           </div>
 
           {/* Roles selection */}
-          <div className="border border-[var(--border)] p-4 bg-[var(--secondary-bg)] mt-2">
-            <label className="nyxa-label mb-2">Select User Profiles</label>
+          <div className="border border-[var(--border)] p-4 bg-[var(--secondary-bg)] mt-2 rounded-lg">
+            <label className="nyxa-label mb-2 font-semibold">I want to...</label>
             
             <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs tech-mono">
+              <label className="flex items-center gap-2 cursor-pointer text-xs">
                 <input 
                   type="checkbox" 
                   checked={isBuyer} 
                   onChange={(e) => setIsBuyer(e.target.checked)} 
                   className="accent-black"
                 />
-                <span><strong>BUYER</strong> (POST TASKS / HIRE AGENTS)</span>
+                <span>Post tasks and hire agents</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer text-xs tech-mono">
+              <label className="flex items-center gap-2 cursor-pointer text-xs">
                 <input 
                   type="checkbox" 
                   checked={isSeller} 
                   onChange={(e) => setIsSeller(e.target.checked)} 
                   className="accent-black"
                 />
-                <span><strong>SELLER</strong> (FULFILL OPEN JOBS)</span>
+                <span>Complete tasks and earn</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer text-xs tech-mono">
+              <label className="flex items-center gap-2 cursor-pointer text-xs">
                 <input 
                   type="checkbox" 
                   checked={isDeveloper} 
                   onChange={(e) => setIsDeveloper(e.target.checked)} 
                   className="accent-black"
                 />
-                <span><strong>DEVELOPER</strong> (LIST AGENTS / APIS)</span>
+                <span>List my agents or APIs</span>
               </label>
             </div>
           </div>
@@ -153,14 +153,14 @@ export default function Register() {
             disabled={loading}
             className="nyxa-btn nyxa-btn-primary w-full text-xs py-2 mt-2"
           >
-            {loading ? 'REGISTERING IDENTITY...' : 'GENERATE CREDENTIALS'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
         {/* Divider */}
         <div className="relative flex py-4 items-center">
           <div className="flex-grow border-t border-[var(--border)]"></div>
-          <span className="flex-shrink mx-3 text-[10px] text-[var(--muted)] uppercase tracking-wider tech-mono">OR CONNECT WITH</span>
+          <span className="flex-shrink mx-3 text-[10px] text-[var(--muted)] tech-mono">Or sign up with</span>
           <div className="flex-grow border-t border-[var(--border)]"></div>
         </div>
 
@@ -172,28 +172,28 @@ export default function Register() {
               onClick={() => alert('Google registration service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              GOOGLE
+              Google
             </button>
             <button 
               type="button" 
               onClick={() => alert('Apple registration service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              APPLE
+              Apple
             </button>
             <button 
               type="button" 
               onClick={() => alert('Microsoft registration service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              MICROSOFT
+              Microsoft
             </button>
             <button 
               type="button" 
               onClick={() => alert('Facebook registration service simulation initiated.')} 
               className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
             >
-              FACEBOOK
+              Facebook
             </button>
           </div>
           <button 
@@ -201,14 +201,14 @@ export default function Register() {
             onClick={() => alert('X registration service simulation initiated.')} 
             className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono w-full"
           >
-            X / TWITTER
+            X
           </button>
         </div>
         
-        <p className="text-xs text-center uppercase tracking-wider text-[var(--muted)] mt-6 mb-0">
-          Already registered?{' '}
-          <a href="/login" className="text-[var(--foreground)] font-bold hover:underline">
-            Sign In &rarr;
+        <p className="text-xs text-center text-[var(--muted)] mt-6 mb-0">
+          Already have an account?{' '}
+          <a href="/login" className="text-[var(--foreground)] font-semibold hover:underline">
+            Sign in &rarr;
           </a>
         </p>
       </div>

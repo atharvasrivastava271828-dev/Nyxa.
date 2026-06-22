@@ -238,7 +238,7 @@ export default function TasksMarketplace() {
       }
 
       // Assign the task status
-      alert('Payment locked in escrow successfully! Agent has been assigned to work.');
+      alert('Agent hired successfully! Payment is held in escrow.');
       fetchTasks();
       setSelectedTaskId(null);
     } catch (err: any) {
@@ -249,25 +249,25 @@ export default function TasksMarketplace() {
   return (
     <div className="nyxa-container">
       <div className="border-b border-[var(--border)] pb-6 mb-8">
-        <h1>TASK MARKETPLACE</h1>
+        <h1>Tasks</h1>
         <p className="m-0 text-sm">
-          Browse active jobs or list a new computational request. The Nyxa. AI router will extract capability markers and index optimal solvers.
+          Post a task in plain English. Nyxa matches it to the right agent automatically.
         </p>
       </div>
 
       {/* Guest Alert Banner */}
       {!userId && (
-        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm uppercase tracking-wide flex justify-between items-center">
-          <span>⚠️ GUEST ACCESS STATE &bull; LOGIN REQUIRED FOR TRANSACTION AND SUBMISSION CONTROL</span>
-          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">LOGIN &rarr;</a>
+        <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm flex justify-between items-center rounded-lg">
+          <span>You're browsing as a guest. Log in to post tasks or hire agents.</span>
+          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</a>
         </div>
       )}
 
       {/* Dashboard Sub-Info */}
       {userId && (
-        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center">
-          <span>ACTIVE SESSION: {userName} ({userId.slice(0, 8)}...)</span>
-          <span className="text-[var(--success)]">&bull; SECURED ESCROW HANDLERS ENABLED</span>
+        <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center rounded-lg">
+          <span>Active Session: {userName} ({userId.slice(0, 8)}...)</span>
+          <span className="text-[var(--success)]">&bull; Escrow protection active</span>
         </div>
       )}
 
@@ -277,38 +277,38 @@ export default function TasksMarketplace() {
         <aside className="flex flex-col gap-6">
           {/* Marketplace Search & Filter Panel */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-4">CATALOG FILTER</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-semibold">Filter Tasks</h3>
             
             <div className="flex flex-col gap-4">
               {/* Search */}
               <div>
-                <label className="nyxa-label">Keyword Query</label>
+                <label className="nyxa-label">Search Tasks</label>
                 <div className="search-container">
-                  <span className="search-icon tech-mono text-xs">[FIND]</span>
+                  <span className="search-icon tech-mono text-xs">Search</span>
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search title, tags..."
-                    className="nyxa-input search-input text-sm tech-mono"
+                    className="nyxa-input search-input text-sm"
                   />
                 </div>
               </div>
 
               {/* Status */}
               <div>
-                <label className="nyxa-label">Status Filter</label>
+                <label className="nyxa-label">Status</label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="nyxa-select text-sm"
                 >
-                  <option value="all">ALL STATES</option>
-                  <option value="open">OPEN (UNASSIGNED)</option>
-                  <option value="matched">MATCHED</option>
-                  <option value="in_progress">IN PROGRESS</option>
-                  <option value="submitted">SUBMITTED (IN REVIEW)</option>
-                  <option value="completed">COMPLETED</option>
+                  <option value="all">All</option>
+                  <option value="open">Open</option>
+                  <option value="matched">Matched</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="submitted">In Review</option>
+                  <option value="completed">Completed</option>
                 </select>
               </div>
             </div>
@@ -316,16 +316,16 @@ export default function TasksMarketplace() {
 
           {/* Post New Task Form */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-4">POST A NEW TASK</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-semibold">Post a Task</h3>
             {error && (
-              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase">
+              <div className="border border-red-800 p-3 bg-red-950/20 text-red-400 text-xs mb-4 uppercase rounded-md">
                 {error}
               </div>
             )}
             
             <form onSubmit={handlePostTask} className="flex flex-col gap-4">
               <div>
-                <label className="nyxa-label">Task Title</label>
+                <label className="nyxa-label">What do you need done?</label>
                 <input
                   type="text"
                   value={title}
@@ -337,7 +337,7 @@ export default function TasksMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">Goal Specifications (AI extraction targets)</label>
+                <label className="nyxa-label">Describe the task in plain English</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -349,7 +349,7 @@ export default function TasksMarketplace() {
               </div>
 
               <div>
-                <label className="nyxa-label">Locked Escrow Budget (USD)</label>
+                <label className="nyxa-label">Your budget (USD)</label>
                 <input
                   type="number"
                   value={budget}
@@ -365,12 +365,12 @@ export default function TasksMarketplace() {
                 disabled={loading || (!!userRoles && !userRoles.is_buyer)}
                 className="nyxa-btn nyxa-btn-primary w-full text-xs"
               >
-                {loading ? 'ANALYZING SPECS...' : 'PUBLISH & ESCROW FUND'}
+                {loading ? 'Posting...' : 'Post Task'}
               </button>
               
               {userRoles && !userRoles.is_buyer && (
-                <span className="text-[10px] text-red-500 uppercase text-center mt-1">
-                  Buyer role required to publish tasks
+                <span className="text-[10px] text-red-500 text-center mt-1">
+                  Buyer profile required to post tasks
                 </span>
               )}
             </form>
@@ -379,14 +379,16 @@ export default function TasksMarketplace() {
 
         {/* Right Main Panel: Task Cards list */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-lg tracking-wider mb-2 uppercase border-b border-[var(--border)] pb-2 flex justify-between items-center">
-            <span>ACTIVE ESCROW FILES</span>
-            <span className="tech-mono text-xs text-[var(--muted)]">INDEX COUNT: {filteredTasks.length}</span>
+          <h2 className="text-lg tracking-tight mb-2 font-semibold border-b border-[var(--border)] pb-2 flex justify-between items-center">
+            <span>Tasks</span>
+            <span className="tech-mono text-xs text-[var(--muted)]">
+              {filteredTasks.length === 0 ? '0 tasks posted yet' : `${filteredTasks.length} ${filteredTasks.length === 1 ? 'task' : 'tasks'} posted`}
+            </span>
           </h2>
 
           {filteredTasks.length === 0 ? (
-            <div className="border border-[var(--border)] p-12 text-center text-sm uppercase tracking-wider text-[var(--muted)]">
-              No active tasks matches the current filter settings.
+            <div className="border border-[var(--border)] p-12 text-center text-sm text-[var(--muted)] rounded-lg">
+              No tasks here yet. Be the first to post one.
             </div>
           ) : (
             filteredTasks.map(task => (
@@ -395,7 +397,7 @@ export default function TasksMarketplace() {
                 <div className="flex justify-between items-start gap-4">
                   <div>
                     <h3 className="mb-1">{task.title}</h3>
-                    <span className="tech-mono text-xs text-[var(--muted)] select-all">UUID: {task.id}</span>
+                    <span className="tech-mono text-xs text-[var(--muted)] select-all">ID: {task.id}</span>
                   </div>
                   <span className={`nyxa-badge ${task.status === 'open' ? 'nyxa-badge-success' : 'nyxa-badge-active'}`}>
                     {task.status}
@@ -419,7 +421,7 @@ export default function TasksMarketplace() {
                 {/* Bottom line: budget and actions */}
                 <div className="flex justify-between items-center border-t border-[var(--border)] pt-4 mt-auto">
                   <div className="flex flex-col">
-                    <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Escrow Value</span>
+                    <span className="text-[10px] text-[var(--muted)] tracking-wider">Budget</span>
                     <strong className="tech-mono text-lg">${task.budget.toFixed(2)}</strong>
                   </div>
 
@@ -428,7 +430,7 @@ export default function TasksMarketplace() {
                       onClick={() => handleViewMatches(task.id)}
                       className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4"
                     >
-                      {selectedTaskId === task.id ? 'CLOSE RESOLUTIONS' : 'RESOLVE SOLVERS'}
+                      {selectedTaskId === task.id ? 'Close' : 'Find Matches'}
                     </button>
                   )}
                 </div>
@@ -437,34 +439,34 @@ export default function TasksMarketplace() {
                 {selectedTaskId === task.id && (
                   <div className="mt-6 border-t border-2 border-[var(--foreground)] pt-4">
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="m-0 text-sm tracking-wider">INDEXED SOLVERS</h4>
-                      <span className="tech-mono text-xs text-[var(--muted)]">[ RANKED BY RATING & PRICE ]</span>
+                      <h4 className="m-0 text-sm font-semibold">Indexed Matches</h4>
+                      <span className="tech-mono text-xs text-[var(--muted)]">[ Ranked by rating & price ]</span>
                     </div>
 
                     {matchingLoading ? (
-                      <div className="py-6 text-center text-xs uppercase tracking-wider tech-mono text-[var(--muted)]">
-                        Calculating scores using algorithm: 50 + (Rating × 10) + (Jobs × 0.2) - (Price × 0.1)...
+                      <div className="py-6 text-center text-xs tech-mono text-[var(--muted)]">
+                        Finding matches...
                       </div>
                     ) : matches.length === 0 ? (
-                      <div className="py-6 border border-dashed border-[var(--border)] text-center text-xs uppercase tracking-wider text-[var(--muted)]">
-                        No active agents match the extracted capability profiles.
+                      <div className="py-6 border border-dashed border-[var(--border)] text-center text-xs text-[var(--muted)] rounded-lg">
+                        No matching agents found.
                       </div>
                     ) : (
                       <div className="flex flex-col gap-3">
                         {matches.map(match => (
                           <div
                             key={match.id}
-                            className="border border-[var(--border)] p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-[var(--secondary-bg)]"
+                            className="border border-[var(--border)] p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-[var(--secondary-bg)] rounded-lg"
                           >
                             <div className="flex flex-col gap-1">
                               <div className="flex items-center gap-2">
                                 <strong className="text-sm">{match.agents.name}</strong>
-                                <span className="tech-mono text-xs bg-[var(--foreground)] text-[var(--background)] px-1.5 py-0.5">
-                                  {match.match_score.toFixed(0)}% MATCH
+                                <span className="tech-mono text-xs bg-[var(--foreground)] text-[var(--background)] px-1.5 py-0.5 rounded">
+                                  {match.match_score.toFixed(0)}% Match
                                 </span>
                               </div>
                               <span className="text-xs text-[var(--muted)]">
-                                RATING: ★ {match.agents.score.toFixed(1)} &bull; {match.agents.total_transactions} JOBS &bull; DEMAND: ${match.agents.price_demand}/run
+                                Rating: ★ {match.agents.score.toFixed(1)} &bull; {match.agents.total_transactions} jobs &bull; Price: ${match.agents.price_demand}/run
                               </span>
                             </div>
                             
@@ -472,7 +474,7 @@ export default function TasksMarketplace() {
                               onClick={() => handleHireAgent(task, match)}
                               className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-3 whitespace-nowrap self-start sm:self-center"
                             >
-                              LOCK ESCROW & HIRE
+                              Hire
                             </button>
                           </div>
                         ))}

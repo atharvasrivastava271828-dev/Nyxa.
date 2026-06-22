@@ -192,42 +192,42 @@ export default function Dashboard() {
       {/* Header */}
       <div className="border-b border-[var(--border)] pb-6 mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1>DEVELOPER CONTROL DASHBOARD</h1>
-          <p className="m-0 text-sm">
-            Monitor infrastructure status, publish capability definitions, and manage escrow transactions.
+          <h1 className="text-2xl font-bold tracking-tight">Developer Dashboard</h1>
+          <p className="m-0 text-sm text-[var(--muted)]">
+            Manage your agents, tasks, and API integrations in one place.
           </p>
         </div>
         <button 
           onClick={handleLogout} 
-          className="nyxa-btn nyxa-btn-secondary text-xs self-start sm:self-center bg-red-950/15 border-red-800 text-red-500 hover:bg-red-950/20"
+          className="nyxa-btn nyxa-btn-secondary text-xs self-start sm:self-center bg-red-950/15 border-red-800 text-red-500 hover:bg-red-950/20 rounded-md"
         >
-          DISCONNECT SESSION
+          Sign out
         </button>
       </div>
 
       {/* Profile summary block */}
-      <div className="border border-[var(--border)] p-6 bg-[var(--secondary-bg)] mb-8 flex flex-col md:flex-row justify-between gap-6">
+      <div className="border border-[var(--border)] p-6 bg-[var(--secondary-bg)] mb-8 flex flex-col md:flex-row justify-between gap-6 rounded-lg">
         <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Authenticated Identity</span>
-          <h2 className="text-xl m-0 border-b-0 pb-0">{userName}</h2>
+          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Account Identity</span>
+          <h2 className="text-xl m-0 border-b-0 pb-0 font-semibold">{userName}</h2>
           <span className="tech-mono text-xs text-[var(--muted)] select-all">{userEmail} &bull; ID: {userId}</span>
         </div>
         <div className="flex flex-col gap-1.5 md:items-end">
-          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Assumed Profiles</span>
+          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Roles</span>
           <div className="flex flex-wrap gap-2 mt-1">
             {userRoles?.is_buyer && (
-              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]">
-                BUYER
+              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] rounded">
+                Buyer
               </span>
             )}
             {userRoles?.is_seller && (
-              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)]">
-                SELLER
+              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)] rounded">
+                Seller
               </span>
             )}
             {userRoles?.is_developer && (
-              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)]">
-                DEVELOPER
+              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)] rounded">
+                Developer
               </span>
             )}
           </div>
@@ -238,40 +238,40 @@ export default function Dashboard() {
       <div className="flex flex-wrap gap-2 border-b border-[var(--border)] pb-3 mb-6">
         <button
           onClick={() => setActiveTab('tasks')}
-          className={`nyxa-btn text-xs py-1.5 px-4 ${activeTab === 'tasks' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
+          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'tasks' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
         >
-          [ MY TASKS ]
+          My Tasks
         </button>
         <button
           onClick={() => setActiveTab('agents')}
-          className={`nyxa-btn text-xs py-1.5 px-4 ${activeTab === 'agents' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
+          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'agents' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
         >
-          [ MY AGENTS ]
+          My Agents
         </button>
         <button
           onClick={() => setActiveTab('apis')}
-          className={`nyxa-btn text-xs py-1.5 px-4 ${activeTab === 'apis' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
+          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'apis' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
         >
-          [ MY APIS ]
+          My APIs
         </button>
         <button
           onClick={() => setActiveTab('transactions')}
-          className={`nyxa-btn text-xs py-1.5 px-4 ${activeTab === 'transactions' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
+          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'transactions' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
         >
-          [ TRANSACTIONS ]
+          Transactions
         </button>
         <button
           onClick={() => setActiveTab('reviews')}
-          className={`nyxa-btn text-xs py-1.5 px-4 ${activeTab === 'reviews' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
+          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'reviews' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
         >
-          [ REVIEWS ]
+          Reviews
         </button>
       </div>
 
       {/* Loading state indicator */}
       {dataLoading ? (
-        <div className="py-12 border border-[var(--border)] text-center text-xs uppercase tracking-wider tech-mono text-[var(--muted)]">
-          Reading database catalogs...
+        <div className="py-12 border border-[var(--border)] text-center text-xs tech-mono text-[var(--muted)]">
+          Loading dashboard data...
         </div>
       ) : (
         <div>
@@ -280,22 +280,22 @@ export default function Dashboard() {
             <div className="flex flex-col gap-6">
               {/* Reviews/Escrow Release block */}
               <div>
-                <h2 className="text-base tracking-wider uppercase border-b border-[var(--border)] pb-2 mb-4">
-                  Awaiting Review & Escrow Release
+                <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
+                  Awaiting review & release
                 </h2>
                 
                 {myTasks.filter(t => t.status === 'submitted' || t.status === 'matched' || t.status === 'in_progress').length === 0 ? (
-                  <p className="text-xs text-[var(--muted)] uppercase tech-mono">
-                    No active escrow files currently locked in execution phase.
+                  <p className="text-xs text-[var(--muted)]">
+                    No active tasks currently require review.
                   </p>
                 ) : (
                   <div className="flex flex-col gap-4">
                     {myTasks.filter(t => t.status === 'submitted' || t.status === 'matched' || t.status === 'in_progress').map(task => (
-                      <div key={task.id} className="nyxa-card border-2 border-[var(--foreground)]">
+                      <div key={task.id} className="nyxa-card border-2 border-[var(--foreground)] rounded-lg">
                         <div className="flex justify-between items-start gap-4">
                           <div>
-                            <h3 className="mb-0.5 text-sm">{task.title}</h3>
-                            <span className="tech-mono text-[10px] text-[var(--muted)]">FILE: {task.id}</span>
+                            <h3 className="mb-0.5 text-sm font-semibold">{task.title}</h3>
+                            <span className="tech-mono text-[10px] text-[var(--muted)]">Task ID: {task.id}</span>
                           </div>
                           <span className="nyxa-badge nyxa-badge-active text-xs">
                             {task.status}
@@ -304,38 +304,38 @@ export default function Dashboard() {
                         
                         <p className="text-xs mt-2 mb-4">{task.description}</p>
                         
-                        <div className="text-xs tech-mono text-[var(--muted)] mb-4">
-                          Budget Locked: ${task.budget.toFixed(2)} &bull; Escrow Held: ${(task.budget * 1.1).toFixed(2)} (incl. 10% fee)
+                        <div className="text-xs text-[var(--muted)] mb-4">
+                          Budget: ${task.budget.toFixed(2)} &bull; Total Escrow: ${(task.budget * 1.1).toFixed(2)} (includes 10% fee)
                         </div>
 
                         {selectedTaskForReview?.id === task.id ? (
                           <form onSubmit={handleSubmitReview} className="border-t border-[var(--border)] pt-4 mt-2">
                             {reviewError && (
-                              <div className="border border-red-800 p-2 bg-red-950/20 text-red-400 text-xs mb-3 uppercase">
+                              <div className="border border-red-800 p-2 bg-red-950/20 text-red-400 text-xs mb-3 rounded-md">
                                 {reviewError}
                               </div>
                             )}
                             <div className="flex flex-col sm:flex-row gap-4 mb-3">
                               <div className="sm:w-1/3">
-                                <label className="nyxa-label">Rating Indicator</label>
+                                <label className="nyxa-label">Rating</label>
                                 <select 
                                   value={rating} 
                                   onChange={(e) => setRating(e.target.value)} 
                                   className="nyxa-select text-xs"
                                 >
-                                  <option value="5">★ 5 - VERIFIED RESOLVED</option>
-                                  <option value="4">★ 4 - VALID RESOLUTION</option>
-                                  <option value="3">★ 3 - MODERATE</option>
-                                  <option value="2">★ 2 - DEFICIENT</option>
-                                  <option value="1">★ 1 - FAIL / ZERO RELEASE</option>
+                                  <option value="5">★ 5 - Exceptional</option>
+                                  <option value="4">★ 4 - Good</option>
+                                  <option value="3">★ 3 - Satisfactory</option>
+                                  <option value="2">★ 2 - Needs improvement</option>
+                                  <option value="1">★ 1 - Fail / No release</option>
                                 </select>
                               </div>
                               <div className="sm:w-2/3">
-                                <label className="nyxa-label">Audit Log Comment</label>
+                                <label className="nyxa-label">Review / Feedback</label>
                                 <textarea 
                                   value={comment}
                                   onChange={(e) => setComment(e.target.value)}
-                                  placeholder="Document execution verification and parameters..."
+                                  placeholder="Provide feedback on the task completion..."
                                   rows={2}
                                   required
                                   className="nyxa-textarea text-xs"
@@ -346,25 +346,25 @@ export default function Dashboard() {
                               <button 
                                 type="submit" 
                                 disabled={loading} 
-                                className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-3"
+                                className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-3 rounded-md"
                               >
-                                {loading ? 'RELEASING SECURE VAULT...' : 'APPROVE & RELEASE ESCROW'}
+                                {loading ? 'Releasing escrow...' : 'Approve & Release Escrow'}
                               </button>
                               <button 
                                 type="button" 
                                 onClick={() => setSelectedTaskForReview(null)} 
-                                className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-3"
+                                className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-3 rounded-md"
                               >
-                                CANCEL
+                                Cancel
                               </button>
                             </div>
                           </form>
                         ) : (
                           <button 
                             onClick={() => setSelectedTaskForReview(task)}
-                            className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-4 self-start"
+                            className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-4 self-start rounded-md"
                           >
-                            AUDIT WORK & RELEASE ESCROW
+                            Review work & release escrow
                           </button>
                         )}
                       </div>
@@ -375,22 +375,22 @@ export default function Dashboard() {
 
               {/* Tasks History */}
               <div className="mt-4">
-                <h2 className="text-base tracking-wider uppercase border-b border-[var(--border)] pb-2 mb-4">
-                  My Posted Tasks History
+                <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
+                  Task history
                 </h2>
                 
                 {myTasks.length === 0 ? (
-                  <p className="text-xs text-[var(--muted)] uppercase tech-mono">
-                    No tasks posted under this profile.
+                  <p className="text-xs text-[var(--muted)]">
+                    You haven't posted any tasks yet.
                   </p>
                 ) : (
-                  <div className="nyxa-table-wrapper">
+                  <div className="nyxa-table-wrapper rounded-lg">
                     <table className="nyxa-table">
                       <thead>
                         <tr>
-                          <th>Task Reference</th>
-                          <th>Locked Value</th>
-                          <th>Status File</th>
+                          <th>Task</th>
+                          <th>Budget</th>
+                          <th>Status</th>
                           <th>Date</th>
                         </tr>
                       </thead>
@@ -406,7 +406,7 @@ export default function Dashboard() {
                               <span className="nyxa-badge text-[10px]">{task.status}</span>
                             </td>
                             <td className="tech-mono text-xs">
-                              {task.created_at ? new Date(task.created_at).toLocaleDateString() : 'RECENT'}
+                              {task.created_at ? new Date(task.created_at).toLocaleDateString() : 'Recent'}
                             </td>
                           </tr>
                         ))}
@@ -421,27 +421,27 @@ export default function Dashboard() {
           {/* TAB: AGENTS */}
           {activeTab === 'agents' && (
             <div>
-              <h2 className="text-base tracking-wider uppercase border-b border-[var(--border)] pb-2 mb-4">
-                MY REGISTERED SOLVER DEFINITIONS
+              <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
+                My registered agents
               </h2>
               {myAgents.length === 0 ? (
-                <p className="text-xs text-[var(--muted)] uppercase tech-mono">
-                  No active agent definitions listed under this profile.
+                <p className="text-xs text-[var(--muted)]">
+                  You haven't registered any agents yet.
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {myAgents.map(agent => (
-                    <div key={agent.id} className="nyxa-card">
+                    <div key={agent.id} className="nyxa-card rounded-lg">
                       <div className="flex justify-between items-start gap-4 mb-2">
                         <div>
-                          <h3 className="mb-0.5 text-sm">{agent.name}</h3>
-                          <span className="tech-mono text-[9px] text-[var(--muted)] select-all">{agent.id}</span>
+                          <h3 className="mb-0.5 text-sm font-semibold">{agent.name}</h3>
+                          <span className="tech-mono text-[9px] text-[var(--muted)] select-all">Agent ID: {agent.id}</span>
                         </div>
                         <div className="text-right">
                           <span className="text-xs font-bold text-[var(--foreground)] tech-mono">
                             ★ {agent.score.toFixed(1)}
                           </span>
-                          <div className="text-[8px] text-[var(--muted)] tracking-wider">{agent.total_transactions} COMPLETED</div>
+                          <div className="text-[8px] text-[var(--muted)] tracking-wider">{agent.total_transactions} completed</div>
                         </div>
                       </div>
                       
@@ -449,15 +449,15 @@ export default function Dashboard() {
                       
                       <div className="flex flex-wrap gap-1 mb-4">
                         {agent.capabilities.map(cap => (
-                          <span key={cap} className="tech-mono text-[9px] bg-[var(--secondary-bg)] px-1.5 py-0.5 border border-[var(--border)]">
+                          <span key={cap} className="tech-mono text-[9px] bg-[var(--secondary-bg)] px-1.5 py-0.5 border border-[var(--border)] rounded">
                             #{cap}
                           </span>
                         ))}
                       </div>
                       
                       <div className="border-t border-[var(--border)] pt-3 flex justify-between items-center mt-auto">
-                        <span className="text-[9px] uppercase text-[var(--muted)] tracking-wider">License Rate</span>
-                        <strong className="tech-mono text-xs">${agent.price_demand.toFixed(2)}/run</strong>
+                        <span className="text-[9px] uppercase text-[var(--muted)] tracking-wider">Usage rate</span>
+                        <strong className="tech-mono text-xs">${agent.price_demand.toFixed(2)} / run</strong>
                       </div>
                     </div>
                   ))}
@@ -469,22 +469,22 @@ export default function Dashboard() {
           {/* TAB: APIS */}
           {activeTab === 'apis' && (
             <div>
-              <h2 className="text-base tracking-wider uppercase border-b border-[var(--border)] pb-2 mb-4">
-                MY REGISTERED API INTERFACES
+              <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
+                My registered APIs
               </h2>
               {myApis.length === 0 ? (
-                <p className="text-xs text-[var(--muted)] uppercase tech-mono">
-                  No api endpoints registered under this profile.
+                <p className="text-xs text-[var(--muted)]">
+                  You haven't registered any APIs yet.
                 </p>
               ) : (
-                <div className="nyxa-table-wrapper">
+                <div className="nyxa-table-wrapper rounded-lg">
                   <table className="nyxa-table">
                     <thead>
                       <tr>
-                        <th>API Name</th>
+                        <th>API</th>
                         <th>Category</th>
-                        <th>Target Endpoint</th>
-                        <th>License Price</th>
+                        <th>Endpoint</th>
+                        <th>Price</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -513,26 +513,26 @@ export default function Dashboard() {
           {/* TAB: TRANSACTIONS */}
           {activeTab === 'transactions' && (
             <div>
-              <h2 className="text-base tracking-wider uppercase border-b border-[var(--border)] pb-2 mb-4">
-                SECURED TRANSACTION LEDGER
+              <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
+                Transactions
               </h2>
               
               {getEscrowTransactions().length === 0 ? (
-                <p className="text-xs text-[var(--muted)] uppercase tech-mono">
-                  No escrow log files recorded.
+                <p className="text-xs text-[var(--muted)]">
+                  No transactions found.
                 </p>
               ) : (
-                <div className="nyxa-table-wrapper">
+                <div className="nyxa-table-wrapper rounded-lg">
                   <table className="nyxa-table">
                     <thead>
                       <tr>
-                        <th>Transaction ID</th>
+                        <th>ID</th>
                         <th>Type</th>
-                        <th>Reference file</th>
-                        <th>Principal</th>
-                        <th>Escrow Fee</th>
-                        <th>Ledger Total</th>
-                        <th>State</th>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Fee</th>
+                        <th>Total</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -546,7 +546,7 @@ export default function Dashboard() {
                           <td className="tech-mono text-xs font-bold">${tx.total.toFixed(2)}</td>
                           <td>
                             <span className={`nyxa-badge text-[9px] ${tx.status === 'RELEASED' ? 'nyxa-badge-success' : 'nyxa-badge-active'}`}>
-                              {tx.status}
+                              {tx.status === 'RELEASED' ? 'Released' : tx.status === 'REFUNDED' ? 'Refunded' : 'Held'}
                             </span>
                           </td>
                         </tr>
@@ -561,30 +561,30 @@ export default function Dashboard() {
           {/* TAB: REVIEWS */}
           {activeTab === 'reviews' && (
             <div>
-              <h2 className="text-base tracking-wider uppercase border-b border-[var(--border)] pb-2 mb-4">
-                SUBMITTED AUDIT REVIEWS LOG
+              <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
+                Submitted reviews
               </h2>
-              <p className="text-xs text-[var(--muted)] uppercase tech-mono mb-4">
-                Historical record of agent execution reviews and rolling index feedbacks.
+              <p className="text-xs text-[var(--muted)] mb-4">
+                A historical record of your reviews and agent performance feedback.
               </p>
               
               {myTasks.filter(t => t.status === 'completed').length === 0 ? (
-                <p className="text-xs text-[var(--muted)] uppercase tech-mono">
-                  No completed task audit records found.
+                <p className="text-xs text-[var(--muted)]">
+                  No reviews found.
                 </p>
               ) : (
                 <div className="flex flex-col gap-4">
                   {myTasks.filter(t => t.status === 'completed').map(task => (
-                    <div key={task.id} className="nyxa-card">
+                    <div key={task.id} className="nyxa-card rounded-lg">
                       <div className="flex justify-between items-center mb-2">
-                        <strong className="text-sm">{task.title}</strong>
-                        <span className="text-xs text-[var(--success)] font-bold tech-mono">
-                          STATUS: COMPLETED &bull; FUNDS RELEASED
+                        <strong className="text-sm font-semibold">{task.title}</strong>
+                        <span className="text-xs text-[var(--success)] font-bold">
+                          Completed &bull; Released
                         </span>
                       </div>
                       <p className="text-xs m-0">{task.description}</p>
                       <div className="text-[10px] tech-mono text-[var(--muted)] mt-2">
-                        Escrow Amount released: ${task.budget.toFixed(2)} &bull; Reference UUID: {task.id}
+                        Released: ${task.budget.toFixed(2)} &bull; Task ID: {task.id}
                       </div>
                     </div>
                   ))}
