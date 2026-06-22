@@ -15,8 +15,32 @@
   --font-mono: 'Share Tech Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+/* Force light mode variables */
+html[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #000000;
+  --border: #e4e4e7;
+  --secondary-bg: #fafafa;
+  --card-bg: #ffffff;
+  --muted: #52525b;
+  --accent: #000000;
+}
+
+/* Force dark mode variables */
+html[data-theme="dark"] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --border: #18181b;
+  --secondary-bg: #09090b;
+  --card-bg: #000000;
+  --muted: #a1a1aa;
+  --accent: #ffffff;
+  --success: #10b981;
+}
+
+/* System preference defaults if override not explicitly set */
 @media (prefers-color-scheme: dark) {
-  :root {
+  html:not([data-theme="light"]) {
     --background: #000000;
     --foreground: #ffffff;
     --border: #18181b;
@@ -25,6 +49,21 @@
     --muted: #a1a1aa;
     --accent: #ffffff;
     --success: #10b981;
+  }
+}
+
+/* Invert logo in dark mode */
+.theme-logo {
+  transition: filter 0.3s ease;
+}
+
+html[data-theme="dark"] .theme-logo {
+  filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .theme-logo {
+    filter: invert(1);
   }
 }
 

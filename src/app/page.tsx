@@ -68,7 +68,7 @@ export default function Home() {
           <img 
             src="/logo.png" 
             alt="Nyxa Logo" 
-            className="h-64 w-auto object-contain"
+            className="h-64 w-auto object-contain theme-logo"
           />
         </div>
 
