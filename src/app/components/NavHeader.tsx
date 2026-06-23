@@ -2,34 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/app/hooks/useAuth';
 
 export default function NavHeader() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
+  const { userId, userName, logout } = useAuth();
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const name = localStorage.getItem('nyxa_user_name');
     const savedTheme = localStorage.getItem('nyxa_theme') as 'light' | 'dark' | null;
 
-    setTimeout(() => {
-      setUserId(id);
-      setUserName(name);
-      if (savedTheme) {
-        setTheme(savedTheme);
-      } else {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(prefersDark ? 'dark' : 'light');
-      }
-    }, 0);
-
     if (savedTheme) {
+      setTheme(savedTheme);
       document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      const initialTheme = prefersDark ? 'dark' : 'light';
+      setTheme(initialTheme);
+      document.documentElement.setAttribute('data-theme', initialTheme);
     }
   }, []);
 
@@ -41,15 +31,7 @@ export default function NavHeader() {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('nyxa_user_id');
-    localStorage.removeItem('nyxa_user_name');
-    localStorage.removeItem('nyxa_user_email');
-    localStorage.removeItem('nyxa_user_roles');
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (e) {
-      console.error(e);
-    }
+    await logout();
     window.location.href = '/login';
   };
 

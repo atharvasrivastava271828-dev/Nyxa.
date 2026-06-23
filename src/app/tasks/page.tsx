@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/app/hooks/useAuth';
 
 interface Task {
   id: string;
@@ -16,10 +17,7 @@ interface Task {
 export default function TasksMarketplace() {
   const router = useRouter();
   
-  // Client session
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userRoles, setUserRoles] = useState<string[]>([]);
+  const { userId, userName, userRoles, loading: authLoading } = useAuth();
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,50 +44,7 @@ export default function TasksMarketplace() {
 
   // 1. Session verification & load tasks
   useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const uName = localStorage.getItem('nyxa_user_name');
-    const rolesStr = localStorage.getItem('nyxa_user_roles');
-    
-    if (id) {
-      setTimeout(() => {
-        setUserId(id);
-        setUserName(uName);
-        if (rolesStr) {
-          try {
-            const parsed = JSON.parse(rolesStr);
-            setUserRoles(Array.isArray(parsed) ? parsed : []);
-          } catch (e) {
-            setUserRoles([]);
-          }
-        }
-      }, 0);
-    } else {
-      async function checkSession() {
-        try {
-          const res = await fetch('/api/auth/me');
-          if (res.ok) {
-            const data = await res.json();
-            if (data.user) {
-              setTimeout(() => {
-                setUserId(data.user.id);
-                setUserName(data.user.name);
-                setUserRoles(data.user.roles || []);
-              }, 0);
-              
-              localStorage.setItem('nyxa_user_id', data.user.id);
-              localStorage.setItem('nyxa_user_name', data.user.name);
-              localStorage.setItem('nyxa_user_roles', JSON.stringify(data.user.roles || []));
-            }
-          }
-        } catch (err) {
-          console.error('Session fetch failed', err);
-        }
-      }
-      checkSession();
-    }
-    setTimeout(() => {
-      fetchTasks();
-    }, 0);
+    fetchTasks();
   }, []);
 
   // Handle query parameter search
@@ -123,7 +78,7 @@ export default function TasksMarketplace() {
       return;
     }
 
-    if (!userRoles.includes('provider')) {
+    if (!userRoles.is_provider) {
       setError('Permission Denied: Your profile does not have the "Provider" role.');
       setLoading(false);
       return;
@@ -314,13 +269,13 @@ export default function TasksMarketplace() {
 
               <button
                 type="submit"
-                disabled={loading || (!userRoles.includes('provider'))}
+                disabled={loading || (!userRoles?.is_provider)}
                 className="nyxa-btn nyxa-btn-primary w-full text-xs"
               >
                 {loading ? 'Publishing...' : 'Publish Offering'}
               </button>
               
-              {userRoles.length > 0 && !userRoles.includes('provider') && (
+              {userRoles && !userRoles.is_provider && (
                 <span className="text-[10px] text-red-500 text-center mt-1">
                   Provider role required to publish tasks
                 </span>

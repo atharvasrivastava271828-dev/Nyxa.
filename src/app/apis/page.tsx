@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/app/hooks/useAuth';
 
 interface DeveloperApi {
   id: string;
@@ -14,11 +15,8 @@ interface DeveloperApi {
 }
 
 export default function ApiMarketplace() {
-  // Client session
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userRoles, setUserRoles] = useState<{ is_provider: boolean } | null>(null);
-
+  const { userId, userName, userRoles, loading: authLoading } = useAuth();
+  
   const [apis, setApis] = useState<DeveloperApi[]>([]);
   
   // Search & Filter
@@ -47,38 +45,9 @@ export default function ApiMarketplace() {
     }
   }
 
-  // 1. Session verification & load APIs
+  // 1. Load APIs
   useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const uName = localStorage.getItem('nyxa_user_name');
-    const rolesStr = localStorage.getItem('nyxa_user_roles');
-    
-    if (id) {
-      setTimeout(() => {
-        setUserId(id);
-        setUserName(uName);
-        if (rolesStr) {
-          try {
-            const rolesArr = JSON.parse(rolesStr);
-            if (Array.isArray(rolesArr)) {
-              setUserRoles({
-                is_provider: rolesArr.includes('provider')
-              });
-            } else {
-              setUserRoles({
-                is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
-              });
-            }
-          } catch (e) {
-            setUserRoles(null);
-          }
-        }
-      }, 0);
-    }
-    
-    setTimeout(() => {
-      fetchApis();
-    }, 0);
+    fetchApis();
   }, []);
 
   // Compute filtered APIs dynamically during render

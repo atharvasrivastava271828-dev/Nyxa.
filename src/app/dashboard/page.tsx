@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/hooks/useAuth';
 
 interface Task {
   id: string;
@@ -39,10 +40,7 @@ export default function Dashboard() {
   const router = useRouter();
 
   // Client Session state
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userRoles, setUserRoles] = useState<{ is_buyer: boolean; is_provider: boolean } | null>(null);
+  const { userId, userName, userEmail, userRoles, logout } = useAuth();
 
   // Data lists
   const [myTasks, setMyTasks] = useState<Task[]>([]);
@@ -109,55 +107,22 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const name = localStorage.getItem('nyxa_user_name');
-    const email = localStorage.getItem('nyxa_user_email');
-    const rolesStr = localStorage.getItem('nyxa_user_roles');
-
-    if (!id) {
-      router.push('/login');
-      return;
-    }
-
-    setTimeout(() => {
-      setUserId(id);
-      setUserName(name);
-      setUserEmail(email);
-      if (rolesStr) {
-        try {
-          const rolesArr = JSON.parse(rolesStr);
-          if (Array.isArray(rolesArr)) {
-            setUserRoles({
-              is_buyer: rolesArr.includes('buyer'),
-              is_provider: rolesArr.includes('provider')
-            });
-          } else {
-            setUserRoles({
-              is_buyer: !!rolesArr.is_buyer,
-              is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
-            });
-          }
-        } catch (e) {
-          setUserRoles(null);
-        }
+    if (!userId) {
+      // It's possible the auth check is still loading, but for a protected route, 
+      // we usually let useAuth handle it or wait for loading to finish.
+      // But dashboard has check via router.push if not logged in.
+      const id = localStorage.getItem('nyxa_user_id');
+      if (!id) {
+        router.push('/login');
+        return;
       }
-    }, 0);
-
-    setTimeout(() => {
-      fetchDashboardData(id);
-    }, 0);
-  }, [router]);
+    } else {
+      fetchDashboardData(userId);
+    }
+  }, [userId, router]);
 
   const handleLogout = async () => {
-    localStorage.removeItem('nyxa_user_id');
-    localStorage.removeItem('nyxa_user_name');
-    localStorage.removeItem('nyxa_user_email');
-    localStorage.removeItem('nyxa_user_roles');
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (e) {
-      console.error(e);
-    }
+    await logout();
     router.push('/login');
   };
 
