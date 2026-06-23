@@ -77,8 +77,9 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo */}
             <a href="/" className="flex items-center text-decoration-none group">
-              <img src="/logo.png" alt="Nyxa Logo" className="h-6 w-auto object-contain logo-light" />
-              <img src="/logo-dark.png" alt="Nyxa Logo" className="h-6 w-auto object-contain logo-dark" />
+              <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
+                Nyxa.
+              </span>
             </a>
 
             {/* Navigation links */}

@@ -52,27 +52,18 @@ html[data-theme="dark"] {
   }
 }
 
-/* Logo switching based on theme */
-.logo-dark {
-  display: none;
-}
-.logo-light {
-  display: block;
+/* Invert logo in dark mode */
+.theme-logo {
+  transition: filter 0.3s ease;
 }
 
-html[data-theme="dark"] .logo-light {
-  display: none;
-}
-html[data-theme="dark"] .logo-dark {
-  display: block;
+html[data-theme="dark"] .theme-logo {
+  filter: invert(1);
 }
 
 @media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) .logo-light {
-    display: none;
-  }
-  html:not([data-theme="light"]) .logo-dark {
-    display: block;
+  html:not([data-theme="light"]) .theme-logo {
+    filter: invert(1);
   }
 }
 
