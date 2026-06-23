@@ -9,7 +9,7 @@ interface DeveloperApi {
   endpoint_url: string;
   price: number;
   documentation?: string;
-  developer_id: string;
+  provider_id: string;
 }
 
 export default function ApiMarketplace() {
@@ -44,7 +44,22 @@ export default function ApiMarketplace() {
     if (id) {
       setUserId(id);
       setUserName(uName);
-      if (rolesStr) setUserRoles(JSON.parse(rolesStr));
+      if (rolesStr) {
+        try {
+          const rolesArr = JSON.parse(rolesStr);
+          if (Array.isArray(rolesArr)) {
+            setUserRoles({
+              is_provider: rolesArr.includes('provider')
+            });
+          } else {
+            setUserRoles({
+              is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
+            });
+          }
+        } catch (e) {
+          setUserRoles(null);
+        }
+      }
     }
     
     fetchApis();
@@ -103,7 +118,7 @@ export default function ApiMarketplace() {
     }
 
     if (userRoles && !userRoles.is_provider) {
-      setError('Permission Denied: Only developers can register new APIs.');
+      setError('Permission Denied: Only providers can register new APIs.');
       setLoading(false);
       return;
     }
@@ -113,7 +128,7 @@ export default function ApiMarketplace() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          developer_id: userId,
+          provider_id: userId,
           name,
           category,
           endpoint_url: endpointUrl,
@@ -167,7 +182,7 @@ export default function ApiMarketplace() {
         body: JSON.stringify({
           apiId: api.id,
           buyerUserId: userId,
-          sellerUserId: api.developer_id,
+          sellerUserId: api.provider_id,
           amount: api.price
         })
       });

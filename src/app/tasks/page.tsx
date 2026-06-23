@@ -34,20 +34,43 @@ export default function TasksMarketplace() {
 
   // 1. Session verification & load tasks
   useEffect(() => {
-    async function checkSession() {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setUserId(data.id);
-          setUserName(data.name);
-          setUserRoles(data.roles || []);
+    const id = localStorage.getItem('nyxa_user_id');
+    const uName = localStorage.getItem('nyxa_user_name');
+    const rolesStr = localStorage.getItem('nyxa_user_roles');
+    
+    if (id) {
+      setUserId(id);
+      setUserName(uName);
+      if (rolesStr) {
+        try {
+          const parsed = JSON.parse(rolesStr);
+          setUserRoles(Array.isArray(parsed) ? parsed : []);
+        } catch (e) {
+          setUserRoles([]);
         }
-      } catch (err) {
-        console.error('Session fetch failed', err);
       }
+    } else {
+      async function checkSession() {
+        try {
+          const res = await fetch('/api/auth/me');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) {
+              setUserId(data.user.id);
+              setUserName(data.user.name);
+              setUserRoles(data.user.roles || []);
+              
+              localStorage.setItem('nyxa_user_id', data.user.id);
+              localStorage.setItem('nyxa_user_name', data.user.name);
+              localStorage.setItem('nyxa_user_roles', JSON.stringify(data.user.roles || []));
+            }
+          }
+        } catch (err) {
+          console.error('Session fetch failed', err);
+        }
+      }
+      checkSession();
     }
-    checkSession();
     fetchTasks();
   }, []);
 

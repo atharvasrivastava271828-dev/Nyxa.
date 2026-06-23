@@ -12,19 +12,20 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    // Check if user is developer
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('is_developer')
+    // Check if user is provider
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('roles')
       .eq('id', userId)
       .single();
 
-    if (error || !user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (error || !profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
     }
 
-    if (!user.is_developer) {
-      return NextResponse.json({ error: 'Unauthorized. Only developers can download the SDK.' }, { status: 403 });
+    const isProvider = profile.roles?.includes('provider');
+    if (!isProvider) {
+      return NextResponse.json({ error: 'Unauthorized. Only providers can download the SDK.' }, { status: 403 });
     }
 
     // Serve the SDK zip file

@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- 2. Agents Table
 CREATE TABLE IF NOT EXISTS agents (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  owner_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  provider_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   capabilities JSONB DEFAULT '[]'::JSONB NOT NULL,
@@ -45,11 +45,12 @@ CREATE TABLE IF NOT EXISTS agents (
 -- 3. APIs Table
 CREATE TABLE IF NOT EXISTS apis (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  owner_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  provider_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
-  description TEXT NOT NULL,
+  category TEXT NOT NULL,
   endpoint_url TEXT NOT NULL,
-  pricing NUMERIC NOT NULL,
+  price NUMERIC NOT NULL,
+  documentation TEXT,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -68,14 +69,21 @@ CREATE TABLE IF NOT EXISTS tasks (
 -- 5. Orders/Transactions Table
 CREATE TABLE IF NOT EXISTS orders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+  api_id UUID REFERENCES apis(id) ON DELETE SET NULL,
+  agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
   payer_id UUID REFERENCES profiles(id) NOT NULL,
   payee_id UUID REFERENCES profiles(id),
   razorpay_order_id TEXT,
   amount NUMERIC NOT NULL,
   status transaction_status DEFAULT 'pending',
   escrow_status escrow_status DEFAULT 'held',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  CONSTRAINT check_order_type CHECK (
+    (task_id IS NOT NULL)::integer + 
+    (api_id IS NOT NULL)::integer + 
+    (agent_id IS NOT NULL)::integer = 1
+  )
 );
 
 -- ============================================================================
@@ -93,15 +101,15 @@ CREATE POLICY "Public profiles are viewable by everyone." ON profiles FOR SELECT
 CREATE POLICY "Users can insert own profile." ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile." ON profiles FOR UPDATE USING (auth.uid() = id);
 
--- Agents: Public can read active agents. Only owner can insert/update.
-CREATE POLICY "Public agents are viewable by everyone." ON agents FOR SELECT USING (status = 'active' OR auth.uid() = owner_id);
-CREATE POLICY "Users can create their own agents." ON agents FOR INSERT WITH CHECK (auth.uid() = owner_id);
-CREATE POLICY "Users can update their own agents." ON agents FOR UPDATE USING (auth.uid() = owner_id);
+-- Agents: Public can read active agents. Only provider can insert/update.
+CREATE POLICY "Public agents are viewable by everyone." ON agents FOR SELECT USING (status = 'active' OR auth.uid() = provider_id);
+CREATE POLICY "Users can create their own agents." ON agents FOR INSERT WITH CHECK (auth.uid() = provider_id);
+CREATE POLICY "Users can update their own agents." ON agents FOR UPDATE USING (auth.uid() = provider_id);
 
--- APIs: Public can read active APIs. Only owner can insert/update.
-CREATE POLICY "Public APIs are viewable by everyone." ON apis FOR SELECT USING (status = 'active' OR auth.uid() = owner_id);
-CREATE POLICY "Users can create their own APIs." ON apis FOR INSERT WITH CHECK (auth.uid() = owner_id);
-CREATE POLICY "Users can update their own APIs." ON apis FOR UPDATE USING (auth.uid() = owner_id);
+-- APIs: Public can read active APIs. Only provider can insert/update.
+CREATE POLICY "Public APIs are viewable by everyone." ON apis FOR SELECT USING (status = 'active' OR auth.uid() = provider_id);
+CREATE POLICY "Users can create their own APIs." ON apis FOR INSERT WITH CHECK (auth.uid() = provider_id);
+CREATE POLICY "Users can update their own APIs." ON apis FOR UPDATE USING (auth.uid() = provider_id);
 
 -- Tasks: Public can read active tasks. Only provider can insert/update.
 CREATE POLICY "Public tasks are viewable by everyone." ON tasks FOR SELECT USING (status = 'active' OR auth.uid() = provider_id);

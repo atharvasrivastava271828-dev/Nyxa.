@@ -10,7 +10,7 @@
  */
 
 export interface CreateAgentPayload {
-  developer_id: string;
+  provider_id: string;
   name: string;
   description: string;
   capabilities: string[];
@@ -18,7 +18,7 @@ export interface CreateAgentPayload {
 }
 
 export interface CreateApiPayload {
-  developer_id: string;
+  provider_id: string;
   name: string;
   category: string;
   endpoint_url: string;
@@ -27,10 +27,10 @@ export interface CreateApiPayload {
 }
 
 export interface CreateTaskPayload {
-  posted_by_user_id: string;
+  provider_id: string;
   title: string;
   description: string;
-  budget: number;
+  price: number;
 }
 
 export interface CreateReviewPayload {
@@ -191,6 +191,7 @@ export class NyxaClient {
   async createEscrowOrder(payload: {
     taskId?: string;
     apiId?: string;
+    sellerAgentId?: string;
     buyerUserId: string;
     sellerUserId: string;
     amount: number;

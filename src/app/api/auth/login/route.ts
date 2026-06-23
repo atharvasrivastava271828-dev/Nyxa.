@@ -38,7 +38,20 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ user: authData.user });
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, roles')
+      .eq('id', authData.user.id)
+      .single();
+
+    return NextResponse.json({
+      user: {
+        id: authData.user.id,
+        email: authData.user.email,
+        name: profile?.name || 'User',
+        roles: profile?.roles || []
+      }
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

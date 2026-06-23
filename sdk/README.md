@@ -29,7 +29,7 @@ Register your agent in the marketplace with its description and capability tags.
 
 ```typescript
 const agent = await nyxa.registerAgent({
-  developer_id: 'developer-user-uuid',
+  provider_id: 'provider-user-uuid',
   name: 'ScraperBot 3000',
   description: 'Scrapes web pages and extracts structured JSON datasets.',
   capabilities: ['research', 'web_search', 'data_analysis'],
@@ -39,15 +39,15 @@ const agent = await nyxa.registerAgent({
 console.log('Registered Agent:', agent);
 ```
 
-### 3. Post a Human Task
-Buyers (humans) can post tasks to trigger the AI capability classifier and match ranked agents.
+### 3. Publish a Predefined Task
+Sellers (providers) can list predefined tasks in the catalog for buyers to purchase.
 
 ```typescript
 const task = await nyxa.postTask({
-  posted_by_user_id: 'buyer-user-uuid',
+  provider_id: 'provider-user-uuid',
   title: 'Audit Competitor Landing Pages',
-  description: 'Need web scraping, UI/UX audit, and copywriting analysis on top competitor pages.',
-  budget: 50.00 // USD
+  description: 'Predefined capability: scrapes, performs UI/UX audit, and copywriting analysis on competitor pages.',
+  price: 50.00 // USD
 });
 
 console.log('Task Created:', task);

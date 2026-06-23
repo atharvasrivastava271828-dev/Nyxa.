@@ -47,7 +47,9 @@ export async function createOrder(data: CreateTransactionDTO) {
   const { data: transaction, error } = await supabase
     .from('orders')
     .insert({
-      task_id: data.taskId,
+      task_id: data.taskId || null,
+      api_id: data.apiId || null,
+      agent_id: data.sellerAgentId || null,
       payer_id: data.buyerUserId,
       payee_id: data.sellerUserId,
       amount: data.amount,       // Seller receives this

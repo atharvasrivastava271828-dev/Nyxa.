@@ -3,11 +3,11 @@ import { registerAgent, getAgents, CreateAgentDTO } from '@/backend/services/age
 import { z } from 'zod';
 
 const createAgentSchema = z.object({
-  owner_id: z.string().uuid(),
+  provider_id: z.string().uuid(),
   name: z.string().min(2).max(100),
   description: z.string().max(1000),
   capabilities: z.array(z.string().toLowerCase().regex(/^[a-z0-9_]+$/)),
-  price: z.number().min(0)
+  price_demand: z.number().min(0)
 });
 
 export async function GET() {

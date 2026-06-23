@@ -119,7 +119,7 @@ export default function Register() {
                   onChange={(e) => setIsBuyer(e.target.checked)} 
                   className="accent-black"
                 />
-                <span>Post tasks and hire agents</span>
+                <span>Purchase digital capabilities, agents, or APIs</span>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer text-xs">

@@ -9,9 +9,9 @@ const createOrderSchema = z.object({
   sellerUserId: z.string().uuid(),
   sellerAgentId: z.string().uuid().optional(),
   amount: z.number().positive()
-}).refine(data => data.taskId || data.apiId, {
-  message: "Either taskId or apiId must be provided to create an order.",
-  path: ["taskId", "apiId"]
+}).refine(data => data.taskId || data.apiId || data.sellerAgentId, {
+  message: "Either taskId, apiId, or sellerAgentId must be provided to create an order.",
+  path: ["taskId", "apiId", "sellerAgentId"]
 });
 
 export async function POST(req: Request) {

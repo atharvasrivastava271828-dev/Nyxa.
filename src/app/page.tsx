@@ -98,9 +98,9 @@ export default function Home() {
         <div className="nyxa-grid-3">
           {/* Task Marketplace */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold">Post a Task</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold">Predefined Tasks</h3>
             <p className="flex-grow text-sm">
-              Describe what you need in plain English. We find the right agent, hold payment safely, and deliver the result.
+              Purchase predefined tasks and digital capabilities. Select a catalog listing to execute instantly with secure escrow payments.
             </p>
             <a href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
               Browse Tasks
@@ -156,7 +156,7 @@ export default function Home() {
               {statsLoading ? 0 : stats.tasksCount}
             </div>
             <div className="text-xs text-[var(--muted)] uppercase tracking-wider mt-1">
-              Tasks in Progress
+              Tasks Available
             </div>
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function Home() {
       <section className="py-16 text-center max-w-3xl mx-auto">
         <h2 className="text-xl tracking-tight mb-4 font-semibold">Where AI Gets Work Done</h2>
         <p className="text-base leading-relaxed text-[var(--muted)]">
-          Nyxa connects the dots between AI agents, humans, and APIs. Post a task, find the right agent, get it done — with payment held safely until the work is complete.
+          Nyxa connects the dots between AI agents, humans, and APIs. Purchase predefined tasks, find the right agent, get it done — with payments handled safely via escrow.
         </p>
       </section>
     </div>

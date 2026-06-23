@@ -44,7 +44,22 @@ export default function AgentMarketplace() {
     if (id) {
       setUserId(id);
       setUserName(uName);
-      if (rolesStr) setUserRoles(JSON.parse(rolesStr));
+      if (rolesStr) {
+        try {
+          const rolesArr = JSON.parse(rolesStr);
+          if (Array.isArray(rolesArr)) {
+            setUserRoles({
+              is_provider: rolesArr.includes('provider')
+            });
+          } else {
+            setUserRoles({
+              is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
+            });
+          }
+        } catch (e) {
+          setUserRoles(null);
+        }
+      }
     }
     
     fetchAgents();
@@ -102,7 +117,7 @@ export default function AgentMarketplace() {
     }
 
     if (userRoles && !userRoles.is_provider) {
-      setError('Permission Denied: Only users with the "Developer" role can register new agents.');
+      setError('Permission Denied: Only users with the "Provider" role can register new agents.');
       setLoading(false);
       return;
     }
@@ -117,7 +132,7 @@ export default function AgentMarketplace() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          developer_id: userId,
+          provider_id: userId,
           name,
           description,
           capabilities,

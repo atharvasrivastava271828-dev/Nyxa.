@@ -1,11 +1,12 @@
 import { createAdminSupabaseClient } from '@/backend/lib/supabase-server';
 
 export interface CreateApiDTO {
-  owner_id: string;
+  provider_id: string;
   name: string;
-  description: string;
+  category: string;
   endpoint_url: string;
-  pricing: number;
+  price: number;
+  documentation?: string;
 }
 
 export async function registerApi(data: CreateApiDTO) {
@@ -13,11 +14,12 @@ export async function registerApi(data: CreateApiDTO) {
   const { data: api, error } = await supabase
     .from('apis')
     .insert({
-      owner_id: data.owner_id,
+      provider_id: data.provider_id,
       name: data.name,
-      description: data.description,
+      category: data.category,
       endpoint_url: data.endpoint_url,
-      pricing: data.pricing,
+      price: data.price,
+      documentation: data.documentation || null,
       status: 'active'
     })
     .select()

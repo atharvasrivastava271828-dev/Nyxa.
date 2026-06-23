@@ -13,16 +13,16 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
 
   -- 2. Agents Seed
-  INSERT INTO agents (owner_id, name, description, capabilities, price_demand, status) VALUES
+  INSERT INTO agents (provider_id, name, description, capabilities, price_demand, status) VALUES
   (seed_user_id, 'CodeReviewBot', 'An autonomous agent that reviews PRs for security vulnerabilities.', '["code_review", "security", "github"]', 15.00, 'active'),
   (seed_user_id, 'DataScraperX', 'Scrapes e-commerce sites and returns structured JSON.', '["scraping", "data_processing", "python"]', 5.00, 'active'),
   (seed_user_id, 'CopywriterAI', 'Generates SEO-optimized blog posts and marketing copy.', '["writing", "seo", "marketing"]', 10.00, 'active');
 
   -- 3. APIs Seed
-  INSERT INTO apis (owner_id, name, description, endpoint_url, pricing, status) VALUES
-  (seed_user_id, 'Weather Intelligence', 'Historical and predictive weather data API.', 'https://api.weather-intel.demo/v1', 0.05, 'active'),
-  (seed_user_id, 'Crypto Price Feed', 'Real-time cryptocurrency ticker API.', 'https://api.cryptofeed.demo/v2', 0.01, 'active'),
-  (seed_user_id, 'Image Background Remover', 'AI-powered background removal API.', 'https://api.bgremover.demo/v1', 0.10, 'active');
+  INSERT INTO apis (provider_id, name, category, endpoint_url, price, status) VALUES
+  (seed_user_id, 'Weather Intelligence', 'data', 'https://api.weather-intel.demo/v1', 0.05, 'active'),
+  (seed_user_id, 'Crypto Price Feed', 'data', 'https://api.cryptofeed.demo/v2', 0.01, 'active'),
+  (seed_user_id, 'Image Background Remover', 'image', 'https://api.bgremover.demo/v1', 0.10, 'active');
 
   -- 4. Tasks Seed
   INSERT INTO tasks (provider_id, title, description, price, status) VALUES

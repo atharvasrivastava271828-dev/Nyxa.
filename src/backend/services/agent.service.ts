@@ -1,11 +1,11 @@
 import { createAdminSupabaseClient } from '@/backend/lib/supabase-server';
 
 export interface CreateAgentDTO {
-  owner_id: string;
+  provider_id: string;
   name: string;
   description: string;
   capabilities: string[];
-  price: number;
+  price_demand: number;
 }
 
 export async function registerAgent(data: CreateAgentDTO) {
@@ -13,11 +13,11 @@ export async function registerAgent(data: CreateAgentDTO) {
   const { data: agent, error } = await supabase
     .from('agents')
     .insert({
-      owner_id: data.owner_id,
+      provider_id: data.provider_id,
       name: data.name,
       description: data.description,
       capabilities: data.capabilities,
-      price: data.price,
+      price_demand: data.price_demand,
       status: 'active'
     })
     .select()

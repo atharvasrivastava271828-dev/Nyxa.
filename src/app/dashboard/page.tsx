@@ -7,9 +7,9 @@ interface Task {
   id: string;
   title: string;
   description: string;
-  budget: number;
+  price: number;
   status: string;
-  posted_by_user_id: string;
+  provider_id: string;
   assigned_to_agent_id?: string;
   created_at?: string;
 }
@@ -22,7 +22,7 @@ interface Agent {
   price_demand: number;
   score: number;
   total_transactions: number;
-  developer_id: string;
+  provider_id: string;
 }
 
 interface DeveloperApi {
@@ -32,7 +32,7 @@ interface DeveloperApi {
   endpoint_url: string;
   price: number;
   documentation?: string;
-  developer_id: string;
+  provider_id: string;
 }
 
 export default function Dashboard() {
@@ -42,7 +42,7 @@ export default function Dashboard() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userRoles, setUserRoles] = useState<Record<string, boolean> | null>(null);
+  const [userRoles, setUserRoles] = useState<{ is_buyer: boolean; is_provider: boolean } | null>(null);
 
   // Data lists
   const [myTasks, setMyTasks] = useState<Task[]>([]);
@@ -75,7 +75,24 @@ export default function Dashboard() {
     setUserId(id);
     setUserName(name);
     setUserEmail(email);
-    if (rolesStr) setUserRoles(JSON.parse(rolesStr));
+    if (rolesStr) {
+      try {
+        const rolesArr = JSON.parse(rolesStr);
+        if (Array.isArray(rolesArr)) {
+          setUserRoles({
+            is_buyer: rolesArr.includes('buyer'),
+            is_provider: rolesArr.includes('provider')
+          });
+        } else {
+          setUserRoles({
+            is_buyer: !!rolesArr.is_buyer,
+            is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
+          });
+        }
+      } catch (e) {
+        setUserRoles(null);
+      }
+    }
 
     fetchDashboardData(id);
   }, []);
@@ -98,19 +115,19 @@ export default function Dashboard() {
 
       if (resTasks.ok) {
         const allTasks: Task[] = tasksData.tasks || [];
-        const userTasks = allTasks.filter(t => t.posted_by_user_id === currentUserId);
+        const userTasks = allTasks.filter(t => t.provider_id === currentUserId);
         setMyTasks(userTasks);
       }
 
       if (resAgents.ok) {
         const allAgents: Agent[] = agentsData.agents || [];
-        const userAgents = allAgents.filter(a => a.developer_id === currentUserId);
+        const userAgents = allAgents.filter(a => a.provider_id === currentUserId);
         setMyAgents(userAgents);
       }
 
       if (resApis.ok) {
         const allApis: DeveloperApi[] = apisData.apis || [];
-        const userApis = allApis.filter(a => a.developer_id === currentUserId);
+        const userApis = allApis.filter(a => a.provider_id === currentUserId);
         setMyApis(userApis);
       }
     } catch (err) {
@@ -209,9 +226,9 @@ export default function Dashboard() {
         id: `tx_${task.id.slice(0, 8)}`,
         type: 'ESCROW_LOCK',
         ref: task.title,
-        amount: task.budget,
-        fee: task.budget * 0.10,
-        total: task.budget * 1.10,
+        amount: task.price,
+        fee: task.price * 0.10,
+        total: task.price * 1.10,
         status: statusLabel,
         date: task.created_at || new Date().toISOString()
       };
@@ -229,7 +246,7 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {userRoles?.is_developer && (
+          {userRoles?.is_provider && (
             <button 
               onClick={handleDownloadSDK}
               className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-3 rounded-md border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] hover:opacity-90"
@@ -261,14 +278,9 @@ export default function Dashboard() {
                 Buyer
               </span>
             )}
-            {userRoles?.is_seller && (
+            {userRoles?.is_provider && (
               <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)] rounded">
-                Seller
-              </span>
-            )}
-            {userRoles?.is_developer && (
-              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)] rounded">
-                Developer
+                Provider
               </span>
             )}
           </div>
@@ -346,7 +358,7 @@ export default function Dashboard() {
                         <p className="text-xs mt-2 mb-4">{task.description}</p>
                         
                         <div className="text-xs text-[var(--muted)] mb-4">
-                          Budget: ${task.budget.toFixed(2)} &bull; Total Escrow: ${(task.budget * 1.1).toFixed(2)} (includes 10% fee)
+                          Price: ${task.price.toFixed(2)} &bull; Total Escrow: ${(task.price * 1.1).toFixed(2)} (includes 10% fee)
                         </div>
 
                         {selectedTaskForReview?.id === task.id ? (
@@ -430,7 +442,7 @@ export default function Dashboard() {
                       <thead>
                         <tr>
                           <th>Task</th>
-                          <th>Budget</th>
+                          <th>Price</th>
                           <th>Status</th>
                           <th>Date</th>
                         </tr>
@@ -442,7 +454,7 @@ export default function Dashboard() {
                               <div className="font-semibold">{task.title}</div>
                               <span className="tech-mono text-[10px] text-[var(--muted)] select-all">{task.id}</span>
                             </td>
-                            <td className="tech-mono font-semibold">${task.budget.toFixed(2)}</td>
+                            <td className="tech-mono font-semibold">${task.price.toFixed(2)}</td>
                             <td>
                               <span className="nyxa-badge text-[10px]">{task.status}</span>
                             </td>
@@ -625,7 +637,7 @@ export default function Dashboard() {
                       </div>
                       <p className="text-xs m-0">{task.description}</p>
                       <div className="text-[10px] tech-mono text-[var(--muted)] mt-2">
-                        Released: ${task.budget.toFixed(2)} &bull; Task ID: {task.id}
+                        Released: ${task.price.toFixed(2)} &bull; Task ID: {task.id}
                       </div>
                     </div>
                   ))}

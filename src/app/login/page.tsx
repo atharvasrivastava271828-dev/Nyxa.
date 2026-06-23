@@ -28,8 +28,12 @@ export default function Login() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // TODO: Transition fully off localStorage. The session is now securely stored in HTTP-only cookies.
-      // if (data.user) { ... }
+      if (data.user) {
+        localStorage.setItem('nyxa_user_id', data.user.id);
+        localStorage.setItem('nyxa_user_name', data.user.name || 'User');
+        localStorage.setItem('nyxa_user_email', data.user.email || '');
+        localStorage.setItem('nyxa_user_roles', JSON.stringify(data.user.roles || []));
+      }
 
       router.push('/dashboard');
     } catch (err: any) {
