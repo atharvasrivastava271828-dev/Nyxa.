@@ -76,7 +76,22 @@ export default function RootLayout({
           {/* Legal Bar */}
           <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-[10px] text-[var(--muted)] m-0">© 2026 Nyxa.</p>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2">
+              <Link href="/cookies" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
+                Cookie Policy
+              </Link>
+              <Link href="/acceptable-use" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
+                Acceptable Use
+              </Link>
+              <Link href="/api-publisher-terms" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
+                API Terms
+              </Link>
+              <Link href="/agent-listing-agreement" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
+                Agent Agreement
+              </Link>
+              <Link href="/refund-escrow-policy" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
+                Refunds & Escrow
+              </Link>
               <Link href="/privacy" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
                 Privacy
               </Link>
