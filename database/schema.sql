@@ -1,136 +1,113 @@
--- NYXA Database Schema
--- Target: PostgreSQL / Supabase
--- Last Updated: Phase 4 (Logic Hardening)
+-- Nyxa Supabase Schema Definition
+-- Last Updated: Architecture Audit Migration
 
 -- Enums
--- Task State Machine: strict ordered states. Only valid transitions are allowed.
--- Flow: OPEN → MATCHED → IN_PROGRESS → SUBMITTED → COMPLETED
--- Exit states: CANCELLED (buyer cancels), FAILED (agent fails to deliver)
-CREATE TYPE task_status AS ENUM ('open', 'matched', 'in_progress', 'submitted', 'completed', 'cancelled', 'failed');
-CREATE TYPE transaction_status AS ENUM ('pending', 'completed', 'failed', 'refunded');
-CREATE TYPE escrow_status AS ENUM ('held', 'released', 'refunded');
-CREATE TYPE agent_status AS ENUM ('active', 'inactive', 'banned');
+DO $$ BEGIN
+    CREATE TYPE task_status AS ENUM ('open', 'matched', 'in_progress', 'submitted', 'completed', 'cancelled', 'failed');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- USERS TABLE
--- Role flags allow multiple roles per user (e.g., a developer can also be a buyer).
--- Permissions enforced at the API layer:
---   is_buyer    → can post tasks
---   is_seller   → can complete tasks
---   is_developer → can register agents and APIs
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    full_name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    razorpay_customer_id TEXT,
-    -- Role flags: a user can hold multiple roles simultaneously
-    is_buyer      BOOLEAN DEFAULT false,
-    is_seller     BOOLEAN DEFAULT false,
-    is_developer  BOOLEAN DEFAULT false,
-    score NUMERIC DEFAULT 0.00,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+DO $$ BEGIN
+    CREATE TYPE transaction_status AS ENUM ('pending', 'completed', 'failed', 'refunded');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE escrow_status AS ENUM ('held', 'released', 'refunded');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE agent_status AS ENUM ('active', 'inactive', 'banned');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- 1. Profiles Table (extends auth.users)
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  name TEXT NOT NULL,
+  roles TEXT[] DEFAULT '{buyer}'::TEXT[],
+  score NUMERIC DEFAULT 0.00,
+  razorpay_customer_id TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- AGENTS TABLE
-CREATE TABLE agents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    developer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    description TEXT,
-    capabilities JSONB,
-    instructions_permissions JSONB,
-    execution_permissions JSONB,
-    budget_controls JSONB,
-    price_demand NUMERIC,
-    wallet_balance NUMERIC DEFAULT 0.00,
-    score NUMERIC DEFAULT 0.00,
-    total_transactions INT DEFAULT 0,
-    status agent_status DEFAULT 'active',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- 2. Agents Table
+CREATE TABLE IF NOT EXISTS agents (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  owner_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  capabilities JSONB DEFAULT '[]'::JSONB NOT NULL,
+  price_demand NUMERIC NOT NULL,
+  status agent_status DEFAULT 'active',
+  score NUMERIC DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- APIS TABLE
-CREATE TABLE apis (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    developer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    category TEXT,
-    endpoint_url TEXT NOT NULL,
-    price NUMERIC DEFAULT 0.00,
-    documentation TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- 3. APIs Table
+CREATE TABLE IF NOT EXISTS apis (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  owner_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  endpoint_url TEXT NOT NULL,
+  pricing NUMERIC NOT NULL,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TASKS TABLE
--- Tasks are posted by humans and assigned to agents
-CREATE TABLE tasks (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    posted_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    description TEXT,
-    requirements JSONB,
-    budget NUMERIC NOT NULL,
-    -- Default state is 'open'. Transitions must follow the state machine defined above.
-    status task_status DEFAULT 'open',
-    assigned_to_agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- 4. Tasks Table (Predefined Services Catalog)
+CREATE TABLE IF NOT EXISTS tasks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  provider_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  price NUMERIC NOT NULL,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'paused')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TRANSACTIONS TABLE
-CREATE TABLE transactions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
-    api_id UUID REFERENCES apis(id) ON DELETE SET NULL,
-    buyer_user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    seller_user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    seller_agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
-    amount NUMERIC NOT NULL,
-    commission NUMERIC DEFAULT 0.00,
-    escrow_status escrow_status DEFAULT 'held',
-    status transaction_status DEFAULT 'pending',
-    razorpay_order_id TEXT,
-    razorpay_payment_id TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- 5. Orders/Transactions Table
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+  payer_id UUID REFERENCES profiles(id) NOT NULL,
+  payee_id UUID REFERENCES profiles(id),
+  razorpay_order_id TEXT,
+  amount NUMERIC NOT NULL,
+  status transaction_status DEFAULT 'pending',
+  escrow_status escrow_status DEFAULT 'held',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- REVIEWS TABLE
-CREATE TABLE reviews (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
-    reviewer_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    reviewee_agent_id UUID NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
-    rating INT CHECK (rating >= 1 AND rating <= 5),
-    comment TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+-- ============================================================================
+-- Row Level Security (RLS) Policies
+-- ============================================================================
 
--- RLS (Row Level Security) Placeholders
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE apis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
--- TASK MATCHES TABLE
-CREATE TABLE task_matches (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-    agent_id UUID NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
-    match_score NUMERIC NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+-- Profiles: Public can read all profiles. Only the user can update their own.
+CREATE POLICY "Public profiles are viewable by everyone." ON profiles FOR SELECT USING (true);
+CREATE POLICY "Users can insert own profile." ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can update own profile." ON profiles FOR UPDATE USING (auth.uid() = id);
 
-ALTER TABLE task_matches ENABLE ROW LEVEL SECURITY;
+-- Agents: Public can read active agents. Only owner can insert/update.
+CREATE POLICY "Public agents are viewable by everyone." ON agents FOR SELECT USING (status = 'active' OR auth.uid() = owner_id);
+CREATE POLICY "Users can create their own agents." ON agents FOR INSERT WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY "Users can update their own agents." ON agents FOR UPDATE USING (auth.uid() = owner_id);
 
--- PERFORMANCE INDEXES
--- GIN index on agent capabilities for fast JSONB @> containment queries in the matching engine
-CREATE INDEX idx_agents_capabilities ON agents USING GIN (capabilities);
--- Index on task status for fast filtering of open/active tasks
-CREATE INDEX idx_tasks_status ON tasks (status);
+-- APIs: Public can read active APIs. Only owner can insert/update.
+CREATE POLICY "Public APIs are viewable by everyone." ON apis FOR SELECT USING (status = 'active' OR auth.uid() = owner_id);
+CREATE POLICY "Users can create their own APIs." ON apis FOR INSERT WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY "Users can update their own APIs." ON apis FOR UPDATE USING (auth.uid() = owner_id);
 
--- Note: RLS policies to be defined when auth middleware is implemented.
+-- Tasks: Public can read active tasks. Only provider can insert/update.
+CREATE POLICY "Public tasks are viewable by everyone." ON tasks FOR SELECT USING (status = 'active' OR auth.uid() = provider_id);
+CREATE POLICY "Users can create their own tasks." ON tasks FOR INSERT WITH CHECK (auth.uid() = provider_id);
+CREATE POLICY "Users can update their own tasks." ON tasks FOR UPDATE USING (auth.uid() = provider_id);
+
+-- Orders: Only payer and payee can view their orders.
+CREATE POLICY "Users can view own orders." ON orders FOR SELECT USING (auth.uid() = payer_id OR auth.uid() = payee_id);
+CREATE POLICY "Users can create orders as payer." ON orders FOR INSERT WITH CHECK (auth.uid() = payer_id);

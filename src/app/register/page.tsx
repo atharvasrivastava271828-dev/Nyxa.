@@ -11,8 +11,7 @@ export default function Register() {
   
   // Roles
   const [isBuyer, setIsBuyer] = useState(false);
-  const [isSeller, setIsSeller] = useState(false);
-  const [isDeveloper, setIsDeveloper] = useState(false);
+  const [isProvider, setIsProvider] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +21,7 @@ export default function Register() {
     setLoading(true);
     setError(null);
 
-    if (!isBuyer && !isSeller && !isDeveloper) {
+    if (!isBuyer && !isProvider) {
       setError('Please select at least one user role.');
       setLoading(false);
       return;
@@ -37,8 +36,7 @@ export default function Register() {
           email,
           password,
           is_buyer: isBuyer,
-          is_seller: isSeller,
-          is_developer: isDeveloper
+          is_provider: isProvider
         })
       });
 
@@ -59,11 +57,10 @@ export default function Register() {
   return (
     <div className="nyxa-container max-w-md py-12">
       <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 flex flex-col items-center">
           {/* Logo mark */}
-          <span className="font-bold tracking-tight text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4 rounded-lg">
-            Nyxa.
-          </span>
+          <img src="/logo.png" alt="Nyxa Logo" className="h-16 w-auto object-contain logo-light mb-4" />
+          <img src="/logo-dark.png" alt="Nyxa Logo" className="h-16 w-auto object-contain logo-dark mb-4" />
           <h1 className="text-xl tracking-tight m-0 font-semibold">Create your account</h1>
           <p className="text-xs text-[var(--muted)] mt-1">
             Join Nyxa — it's free to get started
@@ -129,21 +126,11 @@ export default function Register() {
               <label className="flex items-center gap-2 cursor-pointer text-xs">
                 <input 
                   type="checkbox" 
-                  checked={isSeller} 
-                  onChange={(e) => setIsSeller(e.target.checked)} 
+                  checked={isProvider} 
+                  onChange={(e) => setIsProvider(e.target.checked)} 
                   className="accent-black"
                 />
-                <span>Complete tasks and earn</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer text-xs">
-                <input 
-                  type="checkbox" 
-                  checked={isDeveloper} 
-                  onChange={(e) => setIsDeveloper(e.target.checked)} 
-                  className="accent-black"
-                />
-                <span>List my agents or APIs</span>
+                <span>List my agents, APIs, or task capabilities</span>
               </label>
             </div>
           </div>
@@ -169,39 +156,39 @@ export default function Register() {
           <div className="grid grid-cols-2 gap-2">
             <button 
               type="button" 
-              onClick={() => alert('Google registration service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Google
+              Google (Upcoming)
             </button>
             <button 
               type="button" 
-              onClick={() => alert('Apple registration service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Apple
+              Apple (Upcoming)
             </button>
             <button 
               type="button" 
-              onClick={() => alert('Microsoft registration service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Microsoft
+              Microsoft (Upcoming)
             </button>
             <button 
               type="button" 
-              onClick={() => alert('Facebook registration service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Facebook
+              Facebook (Upcoming)
             </button>
           </div>
           <button 
             type="button" 
-            onClick={() => alert('X registration service simulation initiated.')} 
-            className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono w-full"
+            disabled 
+            className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono w-full opacity-50 cursor-not-allowed"
           >
-            X
+            X (Upcoming)
           </button>
         </div>
         

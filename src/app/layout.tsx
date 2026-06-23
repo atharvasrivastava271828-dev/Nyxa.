@@ -13,8 +13,16 @@ export default function RootLayout({
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
 
   useEffect(() => {
-    setUserId(localStorage.getItem('nyxa_user_id'));
-    setUserName(localStorage.getItem('nyxa_user_name'));
+    // TODO: Move this layout to a Server Component eventually
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setUserId(data.user.id);
+          setUserName(data.user.name);
+        }
+      })
+      .catch(console.error);
 
     const savedTheme = localStorage.getItem('nyxa_theme') as 'light' | 'dark' | null;
     if (savedTheme) {
@@ -35,8 +43,14 @@ export default function RootLayout({
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
+  const handleLogout = async () => {
+    localStorage.removeItem('nyxa_user_id'); // Fallback cleanup
+    localStorage.removeItem('nyxa_user_name');
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error(e);
+    }
     window.location.href = '/login';
   };
 
@@ -63,9 +77,8 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo */}
             <a href="/" className="flex items-center text-decoration-none group">
-              <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
-                Nyxa.
-              </span>
+              <img src="/logo.png" alt="Nyxa Logo" className="h-6 w-auto object-contain logo-light" />
+              <img src="/logo-dark.png" alt="Nyxa Logo" className="h-6 w-auto object-contain logo-dark" />
             </a>
 
             {/* Navigation links */}
@@ -142,6 +155,19 @@ export default function RootLayout({
               <p className="text-xs font-semibold text-[var(--foreground)] mt-1">
                 For The Light
               </p>
+            </div>
+          </div>
+          
+          {/* Legal Bar */}
+          <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-[10px] text-[var(--muted)] m-0">© 2026 Nyxa.</p>
+            <div className="flex items-center gap-6">
+              <a href="/privacy" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
+                Privacy
+              </a>
+              <a href="/terms" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
+                Terms
+              </a>
             </div>
           </div>
         </footer>

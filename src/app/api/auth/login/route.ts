@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/backend/lib/supabase';
 import { z } from 'zod';
+import { cookies } from 'next/headers';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -19,7 +20,25 @@ export async function POST(req: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json({ session: authData.session, user: authData.user });
+    // Set Auth Cookies
+    const session = authData.session;
+    if (session) {
+      const cookieStore = await cookies();
+      cookieStore.set('sb-access-token', session.access_token, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: session.expires_in,
+      });
+      cookieStore.set('sb-refresh-token', session.refresh_token, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+    }
+
+    return NextResponse.json({ user: authData.user });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

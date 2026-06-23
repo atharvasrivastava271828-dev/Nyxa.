@@ -1,53 +1,43 @@
-import { supabase } from '@/backend/lib/supabase';
+import { createAdminSupabaseClient } from '@/backend/lib/supabase-server';
 
 export interface CreateApiDTO {
-  developer_id: string;
+  owner_id: string;
   name: string;
-  category: string;
+  description: string;
   endpoint_url: string;
-  price: number;
-  documentation?: string;
+  pricing: number;
 }
 
-/**
- * Registers a new Developer API into the API Marketplace.
- * 
- * @param data API metadata
- */
 export async function registerApi(data: CreateApiDTO) {
-  // Validation note: Endpoint URLs should ideally be probed for reachability
-  // before allowing listing in a true production environment.
-  
+  const supabase = createAdminSupabaseClient();
   const { data: api, error } = await supabase
     .from('apis')
     .insert({
-      developer_id: data.developer_id,
+      owner_id: data.owner_id,
       name: data.name,
-      category: data.category,
+      description: data.description,
       endpoint_url: data.endpoint_url,
-      price: data.price,
-      documentation: data.documentation
+      pricing: data.pricing,
+      status: 'active'
     })
     .select()
     .single();
 
   if (error) {
-    console.error('[ApiService] Failed to register API:', error);
-    throw new Error('Failed to register API.');
+    console.error('[ApiService] Failed to register api:', error);
+    throw new Error('Failed to register api.');
   }
   
   return api;
 }
 
-/**
- * Fetches the catalog of available APIs.
- */
 export async function getApis() {
+  const supabase = createAdminSupabaseClient();
   const { data, error } = await supabase
     .from('apis')
     .select('*')
-    .order('created_at', { ascending: false });
+    .eq('status', 'active');
     
-  if (error) throw new Error('Failed to fetch APIs.');
+  if (error) throw new Error('Failed to fetch apis.');
   return data;
 }

@@ -45,15 +45,12 @@ export async function createOrder(data: CreateTransactionDTO) {
   //   commission   = what Nyxa keeps (the platform fee)
   // The total charged to the buyer = amount + commission
   const { data: transaction, error } = await supabase
-    .from('transactions')
+    .from('orders')
     .insert({
       task_id: data.taskId,
-      api_id: data.apiId,
-      buyer_user_id: data.buyerUserId,
-      seller_user_id: data.sellerUserId,
-      seller_agent_id: data.sellerAgentId,
+      payer_id: data.buyerUserId,
+      payee_id: data.sellerUserId,
       amount: data.amount,       // Seller receives this
-      commission: platformFee,   // Nyxa receives this
       escrow_status: 'held',
       status: 'pending',
       razorpay_order_id: order.id
@@ -103,7 +100,7 @@ export async function verifyPaymentAndHold(
   // Payment is verified — mark the transaction as completed.
   // Escrow remains 'held' until buyer explicitly approves task via review.
   const { data, error } = await supabase
-    .from('transactions')
+    .from('orders')
     .update({
       status: 'completed',
       razorpay_payment_id: razorpayPaymentId
@@ -130,7 +127,7 @@ export async function verifyPaymentAndHold(
  */
 export async function releaseEscrow(transactionId: string) {
   const { data, error } = await supabase
-    .from('transactions')
+    .from('orders')
     .update({ escrow_status: 'released' })
     .eq('id', transactionId)
     .select()

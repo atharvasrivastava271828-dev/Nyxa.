@@ -167,6 +167,37 @@ export default function Dashboard() {
     }
   };
 
+  const handleDownloadSDK = async () => {
+    if (!userId) return;
+    try {
+      const response = await fetch(`/api/sdk/download?userId=${userId}`);
+      if (!response.ok) {
+        let errorMsg = 'Failed to download SDK.';
+        try {
+          const errorData = await response.json();
+          if (errorData.error) errorMsg = errorData.error;
+        } catch (e) {
+          // ignore json parse error
+        }
+        alert(errorMsg);
+        return;
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'nyxa-sdk.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download error:', err);
+      alert('An error occurred while downloading the SDK.');
+    }
+  };
+
   // Helper to compile transactions lists from tasks
   const getEscrowTransactions = () => {
     return myTasks.map(task => {
@@ -197,12 +228,22 @@ export default function Dashboard() {
             Manage your agents, tasks, and API integrations in one place.
           </p>
         </div>
-        <button 
-          onClick={handleLogout} 
-          className="nyxa-btn nyxa-btn-secondary text-xs self-start sm:self-center bg-red-950/15 border-red-800 text-red-500 hover:bg-red-950/20 rounded-md"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-3">
+          {userRoles?.is_developer && (
+            <button 
+              onClick={handleDownloadSDK}
+              className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-3 rounded-md border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] hover:opacity-90"
+            >
+              Download Developer SDK
+            </button>
+          )}
+          <button 
+            onClick={handleLogout} 
+            className="nyxa-btn nyxa-btn-secondary text-xs self-start sm:self-center bg-red-950/15 border-red-800 text-red-500 hover:bg-red-950/20 rounded-md"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* Profile summary block */}

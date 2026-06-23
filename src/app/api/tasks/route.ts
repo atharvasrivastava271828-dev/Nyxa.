@@ -3,10 +3,10 @@ import { postTask, getTasks, CreateTaskDTO } from '@/backend/services/task.servi
 import { z } from 'zod';
 
 const createTaskSchema = z.object({
-  posted_by_user_id: z.string().uuid(),
+  provider_id: z.string().uuid(),
   title: z.string().min(5).max(200),
-  description: z.string().min(10), // We need enough text for the AI to extract goals effectively
-  budget: z.number().positive()
+  description: z.string().min(10),
+  price: z.number().positive()
 });
 
 export async function GET() {

@@ -3,12 +3,11 @@ import { registerApi, getApis, CreateApiDTO } from '@/backend/services/api.servi
 import { z } from 'zod';
 
 const createApiSchema = z.object({
-  developer_id: z.string().uuid(),
+  owner_id: z.string().uuid(),
   name: z.string().min(2).max(100),
-  category: z.string().min(2),
-  endpoint_url: z.string().url(), // Strict URL validation
-  price: z.number().min(0),
-  documentation: z.string().optional()
+  description: z.string().max(1000),
+  endpoint_url: z.string().url(),
+  pricing: z.number().min(0)
 });
 
 export async function GET() {

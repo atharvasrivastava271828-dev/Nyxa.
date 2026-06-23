@@ -1,6 +1,5 @@
 import { supabase } from '@/backend/lib/supabase';
 import { releaseEscrow } from './payment.service';
-import { transitionTask } from './task.service';
 
 export interface CreateReviewDTO {
   taskId: string;
@@ -87,14 +86,7 @@ export async function submitReview(data: CreateReviewDTO) {
     }
   }
 
-  // 3. Transition task to COMPLETED via the state machine
-  // This prevents the task from being acted upon again after a review is submitted.
-  try {
-    await transitionTask(data.taskId, 'completed');
-  } catch (stateError) {
-    // If the transition fails (e.g., task is already completed), log but don't block escrow release
-    console.error(`[ReviewService] Failed to mark task ${data.taskId} as completed:`, stateError);
-  }
+  // 3. (Removed task state machine transition since tasks are catalog items now)
 
   // 4. Release escrow to the seller
   // Only triggered if the buyer explicitly passed a transactionId during review,

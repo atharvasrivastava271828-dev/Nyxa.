@@ -16,7 +16,7 @@ export default function ApiMarketplace() {
   // Client session
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
-  const [userRoles, setUserRoles] = useState<{ is_developer: boolean } | null>(null);
+  const [userRoles, setUserRoles] = useState<{ is_provider: boolean } | null>(null);
 
   const [apis, setApis] = useState<DeveloperApi[]>([]);
   const [filteredApis, setFilteredApis] = useState<DeveloperApi[]>([]);
@@ -102,7 +102,7 @@ export default function ApiMarketplace() {
       return;
     }
 
-    if (userRoles && !userRoles.is_developer) {
+    if (userRoles && !userRoles.is_provider) {
       setError('Permission Denied: Only developers can register new APIs.');
       setLoading(false);
       return;
@@ -219,7 +219,7 @@ export default function ApiMarketplace() {
       {userId && (
         <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center rounded-lg">
           <span>Active Session: {userName} ({userId.slice(0, 8)}...)</span>
-          {userRoles?.is_developer ? (
+          {userRoles?.is_provider ? (
             <span className="text-[var(--success)]">&bull; API registration active</span>
           ) : (
             <span className="text-[var(--muted)]">&bull; Browse access only</span>
@@ -341,13 +341,13 @@ export default function ApiMarketplace() {
 
               <button
                 type="submit"
-                disabled={loading || !!(userRoles && !userRoles.is_developer)}
+                disabled={loading || !!(userRoles && !userRoles.is_provider)}
                 className="nyxa-btn nyxa-btn-primary w-full text-xs"
               >
                 {loading ? 'Publishing...' : 'Publish API'}
               </button>
               
-              {userRoles && !userRoles.is_developer && (
+              {userRoles && !userRoles.is_provider && (
                 <span className="text-[10px] text-red-500 text-center mt-1">
                   Developer profile required to publish APIs
                 </span>

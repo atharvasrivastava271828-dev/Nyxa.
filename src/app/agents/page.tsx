@@ -17,7 +17,7 @@ export default function AgentMarketplace() {
   // Client session
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
-  const [userRoles, setUserRoles] = useState<{ is_developer: boolean } | null>(null);
+  const [userRoles, setUserRoles] = useState<{ is_provider: boolean } | null>(null);
   
   const [agents, setAgents] = useState<Agent[]>([]);
   const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
@@ -101,7 +101,7 @@ export default function AgentMarketplace() {
       return;
     }
 
-    if (userRoles && !userRoles.is_developer) {
+    if (userRoles && !userRoles.is_provider) {
       setError('Permission Denied: Only users with the "Developer" role can register new agents.');
       setLoading(false);
       return;
@@ -165,7 +165,7 @@ export default function AgentMarketplace() {
       {userId && (
         <div className="border border-[var(--border)] px-4 py-3 mb-8 bg-[var(--secondary-bg)] text-xs tech-mono flex justify-between items-center rounded-lg">
           <span>Active Session: {userName} ({userId.slice(0, 8)}...)</span>
-          {userRoles?.is_developer ? (
+          {userRoles?.is_provider ? (
             <span className="text-[var(--success)]">&bull; Developer registration active</span>
           ) : (
             <span className="text-[var(--muted)]">&bull; Browse access only</span>
@@ -279,13 +279,13 @@ export default function AgentMarketplace() {
 
               <button
                 type="submit"
-                disabled={loading || !!(userRoles && !userRoles.is_developer)}
+                disabled={loading || !!(userRoles && !userRoles.is_provider)}
                 className="nyxa-btn nyxa-btn-primary w-full text-xs"
               >
                 {loading ? 'Listing...' : 'List Agent'}
               </button>
               
-              {userRoles && !userRoles.is_developer && (
+              {userRoles && !userRoles.is_provider && (
                 <span className="text-[10px] text-red-500 text-center mt-1">
                   Developer profile required to list agents
                 </span>
@@ -304,8 +304,37 @@ export default function AgentMarketplace() {
           </h2>
 
           {filteredAgents.length === 0 ? (
-            <div className="border border-[var(--border)] p-12 text-center text-sm text-[var(--muted)] rounded-lg">
-              No agents here yet. Be the first to list one.
+            <div className="border border-[var(--border)] p-12 text-center text-sm text-[var(--muted)] flex flex-col items-center gap-4 rounded-lg">
+              <div>No agents here yet. Be the first to list one.</div>
+              {userId && (
+                <button 
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      const res = await fetch('/api/agents/seed', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                      });
+                      if (res.ok) {
+                         alert('Demo agents loaded successfully!');
+                         fetchAgents();
+                      } else {
+                         const data = await res.json();
+                         alert('Failed to load agents: ' + (data.error || 'Unknown error'));
+                      }
+                    } catch (err) {
+                      alert('Failed to load agents.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                  className="nyxa-btn nyxa-btn-secondary py-1.5 px-4 text-xs"
+                >
+                  {loading ? 'Loading...' : 'Load Demo Agents'}
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

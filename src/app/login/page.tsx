@@ -28,16 +28,8 @@ export default function Login() {
         throw new Error(data.error || 'Login failed');
       }
 
-      if (data.user) {
-        localStorage.setItem('nyxa_user_id', data.user.id);
-        localStorage.setItem('nyxa_user_name', data.user.full_name);
-        localStorage.setItem('nyxa_user_email', data.user.email);
-        localStorage.setItem('nyxa_user_roles', JSON.stringify({
-          is_buyer: data.user.is_buyer,
-          is_seller: data.user.is_seller,
-          is_developer: data.user.is_developer
-        }));
-      }
+      // TODO: Transition fully off localStorage. The session is now securely stored in HTTP-only cookies.
+      // if (data.user) { ... }
 
       router.push('/dashboard');
     } catch (err: any) {
@@ -50,11 +42,10 @@ export default function Login() {
   return (
     <div className="nyxa-container max-w-md py-16">
       <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 flex flex-col items-center">
           {/* Logo mark */}
-          <span className="font-bold tracking-tight text-3xl text-[var(--foreground)] border-2 border-[var(--foreground)] px-4 py-1 inline-block mb-4 rounded-lg">
-            Nyxa.
-          </span>
+          <img src="/logo.png" alt="Nyxa Logo" className="h-16 w-auto object-contain logo-light mb-4" />
+          <img src="/logo-dark.png" alt="Nyxa Logo" className="h-16 w-auto object-contain logo-dark mb-4" />
           <h1 className="text-xl tracking-tight m-0 font-semibold">Welcome back</h1>
           <p className="text-xs text-[var(--muted)] mt-1">
             Sign in to your Nyxa account
@@ -112,39 +103,39 @@ export default function Login() {
           <div className="grid grid-cols-2 gap-2">
             <button 
               type="button" 
-              onClick={() => alert('Google authentication service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Google
+              Google (Upcoming)
             </button>
             <button 
               type="button" 
-              onClick={() => alert('Apple authentication service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Apple
+              Apple (Upcoming)
             </button>
             <button 
               type="button" 
-              onClick={() => alert('Microsoft authentication service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Microsoft
+              Microsoft (Upcoming)
             </button>
             <button 
               type="button" 
-              onClick={() => alert('Facebook authentication service simulation initiated.')} 
-              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono"
+              disabled 
+              className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono opacity-50 cursor-not-allowed"
             >
-              Facebook
+              Facebook (Upcoming)
             </button>
           </div>
           <button 
             type="button" 
-            onClick={() => alert('X authentication service simulation initiated.')} 
-            className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono w-full"
+            disabled 
+            className="nyxa-btn nyxa-btn-secondary text-[10px] py-1.5 px-2 tech-mono w-full opacity-50 cursor-not-allowed"
           >
-            X / Twitter
+            X / Twitter (Upcoming)
           </button>
         </div>
         

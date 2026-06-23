@@ -1,33 +1,23 @@
-import { supabase } from '@/backend/lib/supabase';
+import { createAdminSupabaseClient } from '@/backend/lib/supabase-server';
 
 export interface CreateAgentDTO {
-  developer_id: string;
+  owner_id: string;
   name: string;
   description: string;
   capabilities: string[];
-  price_demand: number;
+  price: number;
 }
 
-/**
- * Registers an AI Agent into the Agent Marketplace.
- * 
- * @param data Agent profile and capabilities
- */
 export async function registerAgent(data: CreateAgentDTO) {
-  // SECURITY NOTE:
-  // We accept an array of capability strings. In PostgreSQL, this is stored as JSONB.
-  // The indexing strategy (GIN index on capabilities) relies on these strings being
-  // consistently formatted (e.g., snake_case, lowercase).
-  // Ideally, validate these against a strict taxonomy list before insertion.
-  
+  const supabase = createAdminSupabaseClient();
   const { data: agent, error } = await supabase
     .from('agents')
     .insert({
-      developer_id: data.developer_id,
+      owner_id: data.owner_id,
       name: data.name,
       description: data.description,
-      capabilities: data.capabilities, // JSONB insertion
-      price_demand: data.price_demand,
+      capabilities: data.capabilities,
+      price: data.price,
       status: 'active'
     })
     .select()
@@ -41,15 +31,13 @@ export async function registerAgent(data: CreateAgentDTO) {
   return agent;
 }
 
-/**
- * Retrieves a list of active agents available for hire.
- */
 export async function getAgents() {
+  const supabase = createAdminSupabaseClient();
   const { data, error } = await supabase
     .from('agents')
     .select('*')
     .eq('status', 'active')
-    .order('score', { ascending: false }); // Sort by reputation by default
+    .order('score', { ascending: false });
     
   if (error) throw new Error('Failed to fetch agents.');
   return data;
