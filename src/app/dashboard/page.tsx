@@ -496,6 +496,7 @@ export default function Dashboard() {
                           <th>Payment</th>
                           <th>Escrow</th>
                           <th>Date</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -522,6 +523,30 @@ export default function Dashboard() {
                             </td>
                             <td className="tech-mono text-xs">
                               {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Recent'}
+                            </td>
+                            <td>
+                              {order.escrow_status !== 'released' && order.status === 'completed' && (
+                                <button
+                                  onClick={async () => {
+                                    if (confirm('Release funds to the seller? This cannot be undone.')) {
+                                      try {
+                                        const res = await fetch('/api/payments/release', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ orderId: order.id })
+                                        });
+                                        if (!res.ok) throw new Error('Failed to release escrow');
+                                        fetchDashboardData(userId as string);
+                                      } catch (err) {
+                                        alert('Error releasing escrow.');
+                                      }
+                                    }
+                                  }}
+                                  className="nyxa-btn nyxa-btn-primary text-[10px] py-1 px-2"
+                                >
+                                  Release Escrow
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))}

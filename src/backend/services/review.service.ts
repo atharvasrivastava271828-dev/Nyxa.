@@ -105,15 +105,8 @@ export async function submitReview(data: CreateReviewDTO) {
   // 3. (Removed task state machine transition since tasks are catalog items now)
 
   // 4. Release escrow to the seller
-  // Lookup the actual transaction for this task and buyer
-  const { data: orderData } = await supabase
-    .from('orders')
-    .select('id')
-    .eq('task_id', data.taskId)
-    .eq('payer_id', data.reviewerUserId)
-    .single();
-
-  const transactionId = data.transactionId || orderData?.id;
+  // The transactionId is passed directly from the client which found it in their purchases.
+  const transactionId = data.transactionId;
 
   if (transactionId) {
     try {

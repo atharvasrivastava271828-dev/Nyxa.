@@ -38,7 +38,12 @@ export async function createOrder(data: CreateTransactionDTO) {
     receipt: `rcpt_${Date.now()}_${data.buyerUserId.slice(0, 8)}`
   };
 
-  const order = await razorpay.orders.create(options);
+  let orderId = `mock_order_${Date.now()}`;
+  
+  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_ID !== 'rzp_test_placeholder') {
+    const order = await razorpay.orders.create(options);
+    orderId = order.id;
+  }
 
   // Store the transaction with explicit separation of:
   //   amount       = what the seller will receive
@@ -55,7 +60,7 @@ export async function createOrder(data: CreateTransactionDTO) {
       amount: data.amount,       // Seller receives this
       escrow_status: 'held',
       status: 'pending',
-      razorpay_order_id: order.id
+      razorpay_order_id: orderId
     })
     .select()
     .single();
@@ -65,7 +70,7 @@ export async function createOrder(data: CreateTransactionDTO) {
     throw new Error('Failed to create transaction record.');
   }
 
-  return { transaction, order };
+  return { transaction, order: { id: orderId } };
 }
 
 /**
