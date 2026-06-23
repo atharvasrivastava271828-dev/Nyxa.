@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Agent {
   id: string;
@@ -20,7 +21,6 @@ export default function AgentMarketplace() {
   const [userRoles, setUserRoles] = useState<{ is_provider: boolean } | null>(null);
   
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [filteredAgents, setFilteredAgents] = useState<Agent[]>([]);
   
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,59 +35,7 @@ export default function AgentMarketplace() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Session verification & load agents
-  useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const uName = localStorage.getItem('nyxa_user_name');
-    const rolesStr = localStorage.getItem('nyxa_user_roles');
-    
-    if (id) {
-      setUserId(id);
-      setUserName(uName);
-      if (rolesStr) {
-        try {
-          const rolesArr = JSON.parse(rolesStr);
-          if (Array.isArray(rolesArr)) {
-            setUserRoles({
-              is_provider: rolesArr.includes('provider')
-            });
-          } else {
-            setUserRoles({
-              is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
-            });
-          }
-        } catch (e) {
-          setUserRoles(null);
-        }
-      }
-    }
-    
-    fetchAgents();
-  }, []);
-
-  // Filter logic
-  useEffect(() => {
-    let result = agents;
-
-    if (searchTerm.trim() !== '') {
-      const query = searchTerm.toLowerCase();
-      result = result.filter(
-        agent =>
-          agent.name.toLowerCase().includes(query) ||
-          agent.description.toLowerCase().includes(query)
-      );
-    }
-
-    if (selectedCapability !== 'all') {
-      result = result.filter(agent =>
-        agent.capabilities.some(cap => cap.toLowerCase() === selectedCapability.toLowerCase())
-      );
-    }
-
-    setFilteredAgents(result);
-  }, [searchTerm, selectedCapability, agents]);
-
-  const fetchAgents = async () => {
+  async function fetchAgents() {
     try {
       const res = await fetch('/api/agents');
       const data = await res.json();
@@ -97,7 +45,52 @@ export default function AgentMarketplace() {
     } catch (err) {
       console.error('Failed to load agents:', err);
     }
-  };
+  }
+
+  // 1. Session verification & load agents
+  useEffect(() => {
+    const id = localStorage.getItem('nyxa_user_id');
+    const uName = localStorage.getItem('nyxa_user_name');
+    const rolesStr = localStorage.getItem('nyxa_user_roles');
+    
+    if (id) {
+      setTimeout(() => {
+        setUserId(id);
+        setUserName(uName);
+        if (rolesStr) {
+          try {
+            const rolesArr = JSON.parse(rolesStr);
+            if (Array.isArray(rolesArr)) {
+              setUserRoles({
+                is_provider: rolesArr.includes('provider')
+              });
+            } else {
+              setUserRoles({
+                is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
+              });
+            }
+          } catch (e) {
+            setUserRoles(null);
+          }
+        }
+      }, 0);
+    }
+    
+    fetchAgents();
+  }, []);
+
+  // Compute filtered agents dynamically during render
+  const filteredAgents = agents.filter(agent => {
+    const query = searchTerm.toLowerCase();
+    const matchesSearch = searchTerm.trim() === '' ||
+      agent.name.toLowerCase().includes(query) ||
+      agent.description.toLowerCase().includes(query);
+
+    const matchesCapability = selectedCapability === 'all' ||
+      agent.capabilities.some(cap => cap.toLowerCase() === selectedCapability.toLowerCase());
+
+    return matchesSearch && matchesCapability;
+  });
 
   // Extract all unique capabilities from list of agents for dynamic filtering
   const allCapabilities = Array.from(
@@ -171,8 +164,8 @@ export default function AgentMarketplace() {
       {/* Guest Alert Banner */}
       {!userId && (
         <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm flex justify-between items-center rounded-lg">
-          <span>You're browsing as a guest. Log in to hire or register agents.</span>
-          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</a>
+          <span>You&apos;re browsing as a guest. Log in to hire or register agents.</span>
+          <Link href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</Link>
         </div>
       )}
 

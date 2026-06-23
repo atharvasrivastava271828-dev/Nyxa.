@@ -88,7 +88,7 @@ export default function ApiMarketplace() {
     setFilteredApis(result);
   }, [searchTerm, selectedCategory, apis]);
 
-  const fetchApis = async () => {
+  async function fetchApis() {
     try {
       const res = await fetch('/api/apis');
       const data = await res.json();
@@ -98,7 +98,7 @@ export default function ApiMarketplace() {
     } catch (err) {
       console.error('Failed to load APIs:', err);
     }
-  };
+  }
 
   // Get unique categories for dynamic filtering
   const allCategories = Array.from(
@@ -157,25 +157,30 @@ export default function ApiMarketplace() {
     }
   };
 
-  // 3. Purchase API Key escrow simulation
+  // 3. Purchase API Key — create escrow order
   const handlePurchaseKey = async (api: DeveloperApi) => {
     if (!userId) {
       alert('Please log in to purchase an API key.');
       return;
     }
 
+    if (userId === api.provider_id) {
+      alert('You cannot purchase your own API.');
+      return;
+    }
+
     const confirmPurchase = confirm(
       `Purchase API Key for "${api.name}"?\n` +
-      `Base Price: $${api.price.toFixed(2)}\n` +
-      `Platform Fee (10%): $${(api.price * 0.10).toFixed(2)}\n` +
-      `Total Charged: $${(api.price * 1.10).toFixed(2)}\n\n` +
-      `Proceed to Razorpay Checkout?`
+      `Base Price: ₹${api.price.toFixed(2)}\n` +
+      `Platform Fee (10%): ₹${(api.price * 0.10).toFixed(2)}\n` +
+      `Total Charged: ₹${(api.price * 1.10).toFixed(2)}\n\n` +
+      `Funds will be held in Escrow until access is confirmed.`
     );
 
     if (!confirmPurchase) return;
 
     try {
-      // Create Order
+      // Create the order record in DB
       const res = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -192,22 +197,14 @@ export default function ApiMarketplace() {
         throw new Error(data.error || 'Checkout initialization failed.');
       }
 
-      // Verify payment (Simulated validation check)
-      const verifyRes = await fetch('/api/payments/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          razorpayOrderId: data.order.id,
-          razorpayPaymentId: `pay_mock_${Math.random().toString(36).substring(7)}`,
-          razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
-        })
-      });
-
-      if (!verifyRes.ok) {
-        throw new Error('Secured payment verification failed.');
-      }
-
-      alert('API Key purchased successfully! You can view access keys in your dashboard.');
+      // NOTE: Real Razorpay Checkout JS will be loaded here once
+      // RAZORPAY_KEY_ID is configured in .env.local.
+      alert(
+        `API Key order placed! 🎉\n\n` +
+        `Your order for "${api.name}" has been recorded.\n` +
+        `Order ID: ${data.order.id}\n\n` +
+        `Payment will be processed via Razorpay. View access keys in your Dashboard.`
+      );
     } catch (err: any) {
       alert(err.message || 'Checkout failed.');
     }

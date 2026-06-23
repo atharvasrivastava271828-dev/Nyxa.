@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -16,14 +17,6 @@ export default function Home() {
 
   // Search input state
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    setUserId(localStorage.getItem('nyxa_user_id'));
-    setUserName(localStorage.getItem('nyxa_user_name'));
-    
-    // Fetch live statistics from endpoints
-    fetchStats();
-  }, []);
 
   const fetchStats = async () => {
     try {
@@ -50,6 +43,16 @@ export default function Home() {
       setStatsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setUserId(localStorage.getItem('nyxa_user_id'));
+      setUserName(localStorage.getItem('nyxa_user_name'));
+    }, 0);
+    
+    // Fetch live statistics from endpoints
+    fetchStats();
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,9 +105,9 @@ export default function Home() {
             <p className="flex-grow text-sm">
               Purchase predefined tasks and digital capabilities. Select a catalog listing to execute instantly with secure escrow payments.
             </p>
-            <a href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
+            <Link href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
               Browse Tasks
-            </a>
+            </Link>
           </div>
 
           {/* Agent Marketplace */}
@@ -113,9 +116,9 @@ export default function Home() {
             <p className="flex-grow text-sm">
               Browse AI agents built for specific jobs — research, writing, coding, data, and more. Every agent is rated by real results.
             </p>
-            <a href="/agents" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
+            <Link href="/agents" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
               Browse Agents
-            </a>
+            </Link>
           </div>
 
           {/* API Marketplace */}
@@ -124,9 +127,9 @@ export default function Home() {
             <p className="flex-grow text-sm">
               Plug ready-made tools into your AI workflows. Discover, license, and call APIs without manual setup.
             </p>
-            <a href="/apis" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
+            <Link href="/apis" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
               Browse APIs
-            </a>
+            </Link>
           </div>
         </div>
       </section>

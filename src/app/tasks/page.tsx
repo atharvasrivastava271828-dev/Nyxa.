@@ -99,7 +99,7 @@ export default function TasksMarketplace() {
     setFilteredTasks(result);
   }, [searchTerm, tasks]);
 
-  const fetchTasks = async () => {
+  async function fetchTasks() {
     try {
       const res = await fetch('/api/tasks');
       const data = await res.json();
@@ -109,7 +109,7 @@ export default function TasksMarketplace() {
     } catch (err) {
       console.error('Failed to load tasks:', err);
     }
-  };
+  }
 
   // 2. Publish new task offering (For Sellers)
   const handlePostTask = async (e: React.FormEvent) => {
@@ -175,16 +175,16 @@ export default function TasksMarketplace() {
 
     const confirmPayment = confirm(
       `Purchase "${task.title}"?\n\n` +
-      `Task Price: $${task.price.toFixed(2)}\n` +
-      `Platform Fee (10%): $${platformFee.toFixed(2)}\n` +
-      `Total Escrow Amount: $${totalAmount.toFixed(2)}\n\n` +
-      `Proceed to secure checkout?`
+      `Task Price: ₹${task.price.toFixed(2)}\n` +
+      `Platform Fee (10%): ₹${platformFee.toFixed(2)}\n` +
+      `Total Charged: ₹${totalAmount.toFixed(2)}\n\n` +
+      `Funds will be held in Escrow until delivery is confirmed.`
     );
 
     if (!confirmPayment) return;
 
     try {
-      // Create Razorpay Order
+      // Create the order record in DB and get the Razorpay order ID
       const res = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -198,25 +198,19 @@ export default function TasksMarketplace() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Escrow initialization failed.');
+        throw new Error(data.error || 'Order initialization failed.');
       }
 
-      // Simulate Successful Checkout Verification (Mock Razorpay Success Handler)
-      const verifyRes = await fetch('/api/payments/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          razorpayOrderId: data.order.id,
-          razorpayPaymentId: `pay_mock_${Math.random().toString(36).substring(7)}`,
-          razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
-        })
-      });
-
-      if (!verifyRes.ok) {
-        throw new Error('Payment verification rejected by secure backend.');
-      }
-
-      alert('Purchase successful! Funds are held securely in Escrow. Track your order in the dashboard.');
+      // NOTE: Real Razorpay Checkout JS will be loaded here once
+      // RAZORPAY_KEY_ID is configured in .env.local.
+      // For now the order is saved to DB with status=pending.
+      // The provider can see it on their dashboard immediately.
+      alert(
+        `Order placed! 🎉\n\n` +
+        `Your order for "${task.title}" has been recorded.\n` +
+        `Order ID: ${data.order.id}\n\n` +
+        `Payment will be processed via Razorpay. Track your order in the Dashboard.`
+      );
       fetchTasks();
     } catch (err: any) {
       alert(err.message || 'Checkout failed.');

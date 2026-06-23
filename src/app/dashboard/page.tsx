@@ -97,7 +97,7 @@ export default function Dashboard() {
     fetchDashboardData(id);
   }, []);
 
-  const fetchDashboardData = async (currentUserId: string) => {
+  async function fetchDashboardData(currentUserId: string) {
     setDataLoading(true);
     try {
       // Fetch tasks, agents, and APIs in parallel
@@ -135,7 +135,7 @@ export default function Dashboard() {
     } finally {
       setDataLoading(false);
     }
-  };
+  }
 
   const handleLogout = () => {
     localStorage.clear();

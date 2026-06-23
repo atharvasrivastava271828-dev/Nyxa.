@@ -1,5 +1,5 @@
 -- Nyxa Supabase Schema Definition
--- Last Updated: Architecture Audit Migration
+-- Last Updated: Phase 1 — Missing tables and columns added
 
 -- Enums
 DO $$ BEGIN
@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS agents (
   price_demand NUMERIC NOT NULL,
   status agent_status DEFAULT 'active',
   score NUMERIC DEFAULT 0,
+  total_transactions INTEGER DEFAULT 0 NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -75,6 +76,7 @@ CREATE TABLE IF NOT EXISTS orders (
   payer_id UUID REFERENCES profiles(id) NOT NULL,
   payee_id UUID REFERENCES profiles(id),
   razorpay_order_id TEXT,
+  razorpay_payment_id TEXT,
   amount NUMERIC NOT NULL,
   status transaction_status DEFAULT 'pending',
   escrow_status escrow_status DEFAULT 'held',
@@ -119,3 +121,86 @@ CREATE POLICY "Users can update their own tasks." ON tasks FOR UPDATE USING (aut
 -- Orders: Only payer and payee can view their orders.
 CREATE POLICY "Users can view own orders." ON orders FOR SELECT USING (auth.uid() = payer_id OR auth.uid() = payee_id);
 CREATE POLICY "Users can create orders as payer." ON orders FOR INSERT WITH CHECK (auth.uid() = payer_id);
+
+-- 6. Reviews Table
+CREATE TABLE IF NOT EXISTS reviews (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+  reviewer_user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  reviewee_agent_id UUID REFERENCES agents(id) ON DELETE CASCADE NOT NULL,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
+  comment TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 7. Task Matches Table
+CREATE TABLE IF NOT EXISTS task_matches (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE NOT NULL,
+  match_score NUMERIC NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- RLS for Reviews and Task Matches
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE task_matches ENABLE ROW LEVEL SECURITY;
+
+-- Reviews policies
+CREATE POLICY "Public reviews are viewable by everyone." ON reviews FOR SELECT USING (true);
+CREATE POLICY "Users can insert own reviews." ON reviews FOR INSERT WITH CHECK (auth.uid() = reviewer_user_id);
+
+-- Task Matches policies
+CREATE POLICY "Public matches are viewable by everyone." ON task_matches FOR SELECT USING (true);
+
+-- ============================================================================
+-- 6. Reviews Table
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS reviews (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+  reviewer_user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  reviewee_agent_id UUID REFERENCES agents(id) ON DELETE CASCADE NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+-- Reviews are public for trust transparency; only reviewer can insert
+CREATE POLICY "Reviews are viewable by everyone." ON reviews FOR SELECT USING (true);
+CREATE POLICY "Users can submit their own reviews." ON reviews FOR INSERT WITH CHECK (auth.uid() = reviewer_user_id);
+
+-- ============================================================================
+-- 7. Task Matches Table (populated by matching engine)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS task_matches (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE NOT NULL,
+  match_score NUMERIC NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE (task_id, agent_id)
+);
+
+ALTER TABLE task_matches ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Task matches viewable by anyone." ON task_matches FOR SELECT USING (true);
+CREATE POLICY "Backend can insert task matches." ON task_matches FOR INSERT WITH CHECK (true);
+
+-- ============================================================================
+-- Performance Indexes
+-- ============================================================================
+
+-- GIN index on agents.capabilities for fast JSONB @> matching
+CREATE INDEX IF NOT EXISTS idx_agents_capabilities ON agents USING GIN (capabilities);
+
+-- Index to quickly find all tasks/agents/apis by a given provider
+CREATE INDEX IF NOT EXISTS idx_agents_provider_id ON agents (provider_id);
+CREATE INDEX IF NOT EXISTS idx_apis_provider_id ON apis (provider_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_provider_id ON tasks (provider_id);
+
+-- Index to quickly find orders by payer or payee
+CREATE INDEX IF NOT EXISTS idx_orders_payer_id ON orders (payer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_payee_id ON orders (payee_id);

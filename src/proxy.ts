@@ -1,18 +1,29 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
+/**
+ * Next.js Edge Middleware for route protection.
+ *
+ * PROTECTED ROUTES:  /dashboard/**  → requires active session cookie
+ * AUTH REDIRECTS:    /login, /register → redirects logged-in users away
+ *
+ * Auth is based on the `sb-access-token` HttpOnly cookie set on login.
+ */
+export function proxy(request: NextRequest) {
   const token = request.cookies.get('sb-access-token')?.value;
+  const { pathname } = request.nextUrl;
 
-  // Protect the dashboard route
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+  // Protect the dashboard — redirect unauthenticated users to login
+  if (pathname.startsWith('/dashboard')) {
     if (!token) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Redirect logged-in users away from auth pages
-  if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')) {
+  // Redirect already-authenticated users away from auth pages
+  if (pathname === '/login' || pathname === '/register') {
     if (token) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
