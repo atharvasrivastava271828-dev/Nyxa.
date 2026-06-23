@@ -59,4 +59,8 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
             price: task.price,
             provider_id: task.provider_id
           }} />
-      
+        </div>
+      </div>
+    </div>
+  );
+}
