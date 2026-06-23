@@ -28,10 +28,24 @@ export async function GET(req: Request) {
   }
 }
 
+import { getAuthenticatedUser } from '@/backend/lib/supabase-server';
+
 export async function POST(req: Request) {
   try {
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const parsedData = createReviewSchema.parse(body);
+
+    if (user.id !== parsedData.reviewerUserId) {
+      return NextResponse.json(
+        { error: 'Forbidden. reviewerUserId must match your authenticated user ID.' },
+        { status: 403 }
+      );
+    }
 
     const review = await submitReview(parsedData as CreateReviewDTO);
     return NextResponse.json({ review }, { status: 201 });

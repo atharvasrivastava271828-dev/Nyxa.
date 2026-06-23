@@ -23,24 +23,36 @@ const DEMO_AGENTS = [
   }
 ];
 
+import { getAuthenticatedUser } from '@/backend/lib/supabase-server';
+
 export async function POST(req: Request) {
   try {
-    const { userId } = await req.json();
+    const authenticatedUser = await getAuthenticatedUser();
+    if (!authenticatedUser) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { userId } = body;
     
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required to assign agents.' }, { status: 400 });
     }
 
+    if (authenticatedUser.id !== userId) {
+      return NextResponse.json({ error: 'Forbidden. Cannot seed agents for another user.' }, { status: 403 });
+    }
+
     // Ensure the user is a provider so the agent creation won't fail logically in the app
-    const { data: user, error: userError } = await supabase
+    const { data: userProfile, error: userError } = await supabase
       .from('profiles')
       .select('roles')
       .eq('id', userId)
       .single();
 
-    if (userError || !user?.roles?.includes('provider')) {
+    if (userError || !userProfile?.roles?.includes('provider')) {
       // Auto-upgrade the user to provider for the demo purposes
-      const updatedRoles = [...(user?.roles || []), 'provider'];
+      const updatedRoles = [...(userProfile?.roles || []), 'provider'];
       await supabase.from('profiles').update({ roles: updatedRoles }).eq('id', userId);
     }
 

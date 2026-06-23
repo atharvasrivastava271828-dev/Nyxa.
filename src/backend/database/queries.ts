@@ -1,7 +1,7 @@
 import { supabase } from '@/backend/lib/supabase';
 
 export async function getUserById(id: string) {
-  const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
   if (error) throw error;
   return data;
 }

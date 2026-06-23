@@ -12,6 +12,7 @@ interface Agent {
   score: number;
   total_transactions: number;
   status: string;
+  provider_id: string;
 }
 
 export default function AgentMarketplace() {
@@ -76,7 +77,9 @@ export default function AgentMarketplace() {
       }, 0);
     }
     
-    fetchAgents();
+    setTimeout(() => {
+      fetchAgents();
+    }, 0);
   }, []);
 
   // Compute filtered agents dynamically during render
@@ -147,6 +150,61 @@ export default function AgentMarketplace() {
       fetchAgents();
     } catch (err: any) {
       setError(err.message || 'Error occurred during agent registration.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleHireAgent = async (agent: Agent) => {
+    if (!userId) {
+      alert('Please log in to hire this agent.');
+      return;
+    }
+
+    if (userId === agent.provider_id) {
+      alert('You cannot hire your own agent.');
+      return;
+    }
+
+    const platformFee = agent.price_demand * 0.10;
+    const totalAmount = agent.price_demand + platformFee;
+
+    const confirmPayment = confirm(
+      `Hire "${agent.name}"?\n\n` +
+      `Agent Price: $${agent.price_demand.toFixed(2)}\n` +
+      `Platform Fee (10%): $${platformFee.toFixed(2)}\n` +
+      `Total Charged: $${totalAmount.toFixed(2)}\n\n` +
+      `Funds will be held in Escrow until delivery is confirmed.`
+    );
+
+    if (!confirmPayment) return;
+
+    try {
+      setLoading(true);
+      const res = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sellerAgentId: agent.id,
+          buyerUserId: userId,
+          sellerUserId: agent.provider_id,
+          amount: agent.price_demand
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Order initialization failed.');
+      }
+
+      alert(
+        `Order placed! 🎉\n\n` +
+        `Your hire request for "${agent.name}" has been recorded.\n` +
+        `Order ID: ${data.order.id}\n\n` +
+        `Payment will be processed. Track your order in the Dashboard.`
+      );
+    } catch (err: any) {
+      alert(err.message || 'Checkout failed.');
     } finally {
       setLoading(false);
     }
@@ -381,8 +439,17 @@ export default function AgentMarketplace() {
 
                   {/* Pricing Footer */}
                   <div className="border-t border-[var(--border)] pt-3 flex justify-between items-center mt-auto">
-                    <span className="text-[10px] text-[var(--muted)] tracking-wider">Price</span>
-                    <strong className="tech-mono text-sm">${agent.price_demand.toFixed(2)}/run</strong>
+                    <div>
+                      <span className="text-[10px] text-[var(--muted)] tracking-wider">Price</span>
+                      <strong className="tech-mono text-sm block">${agent.price_demand.toFixed(2)}/run</strong>
+                    </div>
+                    <button
+                      onClick={() => handleHireAgent(agent)}
+                      disabled={loading}
+                      className="nyxa-btn nyxa-btn-primary text-xs py-1.5 px-4"
+                    >
+                      {loading ? 'Processing...' : 'Hire Agent'}
+                    </button>
                   </div>
                 </div>
               ))}

@@ -1,0 +1,11 @@
+{
+  "name": "@nyxa/sdk",
+  "version": "1.0.0-beta",
+  "description": "Official Nyxa Developer SDK",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": ["nyxa", "ai", "marketplace", "agents", "sdk"],
+  "license": "MIT"
+}

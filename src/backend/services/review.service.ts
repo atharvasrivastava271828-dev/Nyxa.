@@ -61,7 +61,7 @@ export async function submitReview(data: CreateReviewDTO) {
   
   const { data: agent, error: fetchError } = await supabase
     .from('agents')
-    .select('score, total_transactions')
+    .select('score, total_transactions, provider_id')
     .eq('id', data.revieweeAgentId)
     .single();
 
@@ -69,8 +69,10 @@ export async function submitReview(data: CreateReviewDTO) {
     console.error(`[ReviewService] Could not fetch agent ${data.revieweeAgentId} for score update.`);
     // Non-fatal: review was saved, scoring update missed. Log and continue.
   } else {
-    const newTotal = agent.total_transactions + 1;
-    const newScore = ((agent.score * agent.total_transactions) + data.rating) / newTotal;
+    const totalTransactions = agent.total_transactions || 0;
+    const currentScore = agent.score || 0;
+    const newTotal = totalTransactions + 1;
+    const newScore = ((currentScore * totalTransactions) + data.rating) / newTotal;
 
     const { error: updateError } = await supabase
       .from('agents')
@@ -83,19 +85,41 @@ export async function submitReview(data: CreateReviewDTO) {
 
     if (updateError) {
       console.error(`[ReviewService] Failed to update score for agent ${data.revieweeAgentId}:`, updateError);
+    } else {
+      // BUG-013: Update the provider profile score
+      const { data: allAgents } = await supabase
+        .from('agents')
+        .select('score')
+        .eq('provider_id', agent.provider_id);
+      
+      if (allAgents && allAgents.length > 0) {
+        const avgScore = allAgents.reduce((acc, curr) => acc + (curr.score || 0), 0) / allAgents.length;
+        await supabase
+          .from('profiles')
+          .update({ score: avgScore })
+          .eq('id', agent.provider_id);
+      }
     }
   }
 
   // 3. (Removed task state machine transition since tasks are catalog items now)
 
   // 4. Release escrow to the seller
-  // Only triggered if the buyer explicitly passed a transactionId during review,
-  // which confirms intent to approve and release payment.
-  if (data.transactionId) {
+  // Lookup the actual transaction for this task and buyer
+  const { data: orderData } = await supabase
+    .from('orders')
+    .select('id')
+    .eq('task_id', data.taskId)
+    .eq('payer_id', data.reviewerUserId)
+    .single();
+
+  const transactionId = data.transactionId || orderData?.id;
+
+  if (transactionId) {
     try {
-      await releaseEscrow(data.transactionId);
+      await releaseEscrow(transactionId);
     } catch (escrowError) {
-      console.error(`[ReviewService] CRITICAL: Escrow release failed for tx ${data.transactionId}:`, escrowError);
+      console.error(`[ReviewService] CRITICAL: Escrow release failed for tx ${transactionId}:`, escrowError);
       // Flag for manual ops review — funds are held safely, not lost.
     }
   }

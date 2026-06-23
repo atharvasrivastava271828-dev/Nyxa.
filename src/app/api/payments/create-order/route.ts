@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createOrder, CreateTransactionDTO } from '@/backend/services/payment.service';
+import { getAuthenticatedUser } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 
 const createOrderSchema = z.object({
@@ -9,15 +10,30 @@ const createOrderSchema = z.object({
   sellerUserId: z.string().uuid(),
   sellerAgentId: z.string().uuid().optional(),
   amount: z.number().positive()
-}).refine(data => data.taskId || data.apiId || data.sellerAgentId, {
-  message: "Either taskId, apiId, or sellerAgentId must be provided to create an order.",
+}).refine(data => {
+  const count = [data.taskId, data.apiId, data.sellerAgentId].filter(Boolean).length;
+  return count === 1;
+}, {
+  message: "Exactly one of taskId, apiId, or sellerAgentId must be provided to create an order.",
   path: ["taskId", "apiId", "sellerAgentId"]
 });
 
 export async function POST(req: Request) {
   try {
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const parsedData = createOrderSchema.parse(body);
+
+    if (user.id !== parsedData.buyerUserId) {
+      return NextResponse.json(
+        { error: 'Forbidden. buyerUserId must match your authenticated user ID.' },
+        { status: 403 }
+      );
+    }
 
     const result = await createOrder(parsedData as CreateTransactionDTO);
     return NextResponse.json(result, { status: 201 });

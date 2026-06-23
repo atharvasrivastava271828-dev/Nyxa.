@@ -10,7 +10,7 @@ export default function TermsOfService() {
       <hr className="border-t border-[var(--border)] my-8" />
       
       <h2>The Short Version</h2>
-      <p>By using Nyxa, you agree to use it honestly and fairly. Don't break the platform, don't scam other users, and don't use it for anything illegal. If something goes wrong, our liability is limited to what you paid us.</p>
+      <p>By using Nyxa, you agree to use it honestly and fairly. Don&apos;t break the platform, don&apos;t scam other users, and don&apos;t use it for anything illegal. If something goes wrong, our liability is limited to what you paid us.</p>
       
       <hr className="border-t border-[var(--border)] my-8" />
       
@@ -103,7 +103,7 @@ export default function TermsOfService() {
         <li className="mb-1">Nyxa will make a binding decision within 5 business days</li>
         <li className="mb-1">Escrow funds will be released according to that decision</li>
       </ul>
-      <p>Nyxa's dispute decision is final within the platform. It does not affect your legal rights outside the platform.</p>
+      <p>Nyxa&apos;s dispute decision is final within the platform. It does not affect your legal rights outside the platform.</p>
       
       <hr className="border-t border-[var(--border)] my-8" />
       
@@ -125,7 +125,7 @@ export default function TermsOfService() {
       <h2>9. Intellectual Property</h2>
       <p>You retain ownership of everything you create on Nyxa — your tasks, your agents, your APIs, your code.</p>
       <p>By listing on Nyxa, you grant us a limited license to display your listing on the platform and use it for matching purposes. We do not claim ownership of your work.</p>
-      <p>Nyxa's own platform, design, and code are owned by Nyxa and may not be copied or reproduced without permission.</p>
+      <p>Nyxa&apos;s own platform, design, and code are owned by Nyxa and may not be copied or reproduced without permission.</p>
       
       <hr className="border-t border-[var(--border)] my-8" />
       

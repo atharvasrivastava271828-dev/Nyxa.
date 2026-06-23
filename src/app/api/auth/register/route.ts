@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/backend/lib/supabase';
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 import { cookies } from 'next/headers';
 
@@ -16,22 +16,24 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password, fullName, is_buyer, is_provider } = registerSchema.parse(body);
 
-    // 1. Sign up with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const supabaseAnon = await createServerSupabaseClient();
+    
+    // 1. Sign up with Supabase Auth using anon client
+    const { data: authData, error: authError } = await supabaseAnon.auth.signUp({
       email,
       password,
     });
 
     if (authError) throw authError;
 
-    // 2. Insert into profiles table
-    // Convert boolean flags to array of roles
+    // 2. Insert into profiles table using admin client (bypasses RLS since session isn't persisted/cookie not set yet)
     const roles: string[] = [];
     if (is_buyer) roles.push('buyer');
     if (is_provider) roles.push('provider');
     if (roles.length === 0) roles.push('buyer'); // Default role
 
-    const { error: dbError } = await supabase
+    const supabaseAdmin = createAdminSupabaseClient();
+    const { error: dbError } = await supabaseAdmin
       .from('profiles')
       .insert({
         id: authData.user?.id,
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ user: authData.user });
+    return NextResponse.json({ user: authData.user, sessionCreated: !!session });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

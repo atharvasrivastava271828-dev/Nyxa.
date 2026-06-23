@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyPaymentAndHold } from '@/backend/services/payment.service';
+import { getAuthenticatedUser, createAdminSupabaseClient } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 
 const verifyPaymentSchema = z.object({
@@ -10,8 +11,32 @@ const verifyPaymentSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const parsedData = verifyPaymentSchema.parse(body);
+
+    // Verify order ownership
+    const supabase = createAdminSupabaseClient();
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('payer_id')
+      .eq('razorpay_order_id', parsedData.razorpayOrderId)
+      .single();
+
+    if (orderError || !order) {
+      return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+    }
+
+    if (order.payer_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Forbidden. You are not authorized to verify this payment.' },
+        { status: 403 }
+      );
+    }
 
     // This handles cryptographic verification to ensure the payment is authentic
     const transaction = await verifyPaymentAndHold(

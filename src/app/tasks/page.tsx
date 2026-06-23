@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface Task {
   id: string;
@@ -21,7 +22,6 @@ export default function TasksMarketplace() {
   const [userRoles, setUserRoles] = useState<string[]>([]);
 
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   
   // New task form fields for Sellers
@@ -31,73 +31,6 @@ export default function TasksMarketplace() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // 1. Session verification & load tasks
-  useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const uName = localStorage.getItem('nyxa_user_name');
-    const rolesStr = localStorage.getItem('nyxa_user_roles');
-    
-    if (id) {
-      setUserId(id);
-      setUserName(uName);
-      if (rolesStr) {
-        try {
-          const parsed = JSON.parse(rolesStr);
-          setUserRoles(Array.isArray(parsed) ? parsed : []);
-        } catch (e) {
-          setUserRoles([]);
-        }
-      }
-    } else {
-      async function checkSession() {
-        try {
-          const res = await fetch('/api/auth/me');
-          if (res.ok) {
-            const data = await res.json();
-            if (data.user) {
-              setUserId(data.user.id);
-              setUserName(data.user.name);
-              setUserRoles(data.user.roles || []);
-              
-              localStorage.setItem('nyxa_user_id', data.user.id);
-              localStorage.setItem('nyxa_user_name', data.user.name);
-              localStorage.setItem('nyxa_user_roles', JSON.stringify(data.user.roles || []));
-            }
-          }
-        } catch (err) {
-          console.error('Session fetch failed', err);
-        }
-      }
-      checkSession();
-    }
-    fetchTasks();
-  }, []);
-
-  // Handle query parameter search
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const search = params.get('search');
-      if (search) {
-        setSearchTerm(search);
-      }
-    }
-  }, [tasks]);
-
-  // Handle search filtering
-  useEffect(() => {
-    let result = tasks;
-    if (searchTerm.trim() !== '') {
-      const query = searchTerm.toLowerCase();
-      result = result.filter(
-        task =>
-          task.title.toLowerCase().includes(query) ||
-          task.description.toLowerCase().includes(query)
-      );
-    }
-    setFilteredTasks(result);
-  }, [searchTerm, tasks]);
 
   async function fetchTasks() {
     try {
@@ -110,6 +43,73 @@ export default function TasksMarketplace() {
       console.error('Failed to load tasks:', err);
     }
   }
+
+  // 1. Session verification & load tasks
+  useEffect(() => {
+    const id = localStorage.getItem('nyxa_user_id');
+    const uName = localStorage.getItem('nyxa_user_name');
+    const rolesStr = localStorage.getItem('nyxa_user_roles');
+    
+    if (id) {
+      setTimeout(() => {
+        setUserId(id);
+        setUserName(uName);
+        if (rolesStr) {
+          try {
+            const parsed = JSON.parse(rolesStr);
+            setUserRoles(Array.isArray(parsed) ? parsed : []);
+          } catch (e) {
+            setUserRoles([]);
+          }
+        }
+      }, 0);
+    } else {
+      async function checkSession() {
+        try {
+          const res = await fetch('/api/auth/me');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) {
+              setTimeout(() => {
+                setUserId(data.user.id);
+                setUserName(data.user.name);
+                setUserRoles(data.user.roles || []);
+              }, 0);
+              
+              localStorage.setItem('nyxa_user_id', data.user.id);
+              localStorage.setItem('nyxa_user_name', data.user.name);
+              localStorage.setItem('nyxa_user_roles', JSON.stringify(data.user.roles || []));
+            }
+          }
+        } catch (err) {
+          console.error('Session fetch failed', err);
+        }
+      }
+      checkSession();
+    }
+    setTimeout(() => {
+      fetchTasks();
+    }, 0);
+  }, []);
+
+  // Handle query parameter search
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const search = params.get('search');
+      if (search) {
+        setTimeout(() => setSearchTerm(search), 0);
+      }
+    }
+  }, [tasks]);
+
+  // Compute filtered tasks dynamically during render
+  const filteredTasks = tasks.filter(task => {
+    const query = searchTerm.toLowerCase();
+    return searchTerm.trim() === '' ||
+      task.title.toLowerCase().includes(query) ||
+      task.description.toLowerCase().includes(query);
+  });
 
   // 2. Publish new task offering (For Sellers)
   const handlePostTask = async (e: React.FormEvent) => {
@@ -151,8 +151,8 @@ export default function TasksMarketplace() {
       setDescription('');
       setPrice('');
       fetchTasks();
-    } catch (err: any) {
-      setError(err.message || 'Error occurred while saving task offering.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error occurred while saving task offering.');
     } finally {
       setLoading(false);
     }
@@ -212,8 +212,8 @@ export default function TasksMarketplace() {
         `Payment will be processed via Razorpay. Track your order in the Dashboard.`
       );
       fetchTasks();
-    } catch (err: any) {
-      alert(err.message || 'Checkout failed.');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Checkout failed.');
     }
   };
 
@@ -229,8 +229,8 @@ export default function TasksMarketplace() {
       {/* Guest Alert Banner */}
       {!userId && (
         <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm flex justify-between items-center rounded-lg">
-          <span>You're browsing as a guest. Log in to purchase tasks or offer your own services.</span>
-          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</a>
+          <span>You&apos;re browsing as a guest. Log in to purchase tasks or offer your own services.</span>
+          <Link href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</Link>
         </div>
       )}
 
@@ -340,7 +340,7 @@ export default function TasksMarketplace() {
 
           {filteredTasks.length === 0 ? (
             <div className="border border-[var(--border)] p-12 text-center text-sm text-[var(--muted)] rounded-lg">
-              No task offerings match your search.
+              {tasks.length === 0 ? 'No tasks listed yet. Be the first to offer one.' : 'No tasks match your search query.'}
             </div>
           ) : (
             filteredTasks.map(task => (

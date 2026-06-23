@@ -84,7 +84,7 @@ export async function extractCapabilities(taskText: string): Promise<string[]> {
  * @param taskText The raw unstructured text
  * @returns A JSON record of inferred requirements (e.g., urgency, tone)
  */
-export async function extractGoal(taskText: string): Promise<Record<string, any>> {
+export async function extractGoal(taskText: string): Promise<Record<string, unknown>> {
   // TODO: Implement actual LLM JSON extraction prompt here.
   return {
     raw_input: taskText,

@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
   
   // Statistics
   const [stats, setStats] = useState({
@@ -46,12 +45,8 @@ export default function Home() {
 
   useEffect(() => {
     setTimeout(() => {
-      setUserId(localStorage.getItem('nyxa_user_id'));
-      setUserName(localStorage.getItem('nyxa_user_name'));
+      fetchStats();
     }, 0);
-    
-    // Fetch live statistics from endpoints
-    fetchStats();
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -67,11 +62,13 @@ export default function Home() {
       {/* 1. Hero Section */}
       <section className="text-center py-16 border-b border-[var(--border)] flex flex-col items-center">
         {/* NYXA Logo in Hero */}
-        <div className="flex flex-col items-center mb-6 select-none">
-          <img 
+        <div className="flex flex-col items-center mb-6 select-none relative h-64 w-64">
+          <Image 
             src="/logo.png" 
             alt="Nyxa Logo" 
-            className="h-64 w-auto object-contain theme-logo"
+            fill
+            className="object-contain theme-logo"
+            priority
           />
         </div>
 

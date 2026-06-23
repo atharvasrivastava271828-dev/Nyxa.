@@ -48,9 +48,10 @@ export default function Dashboard() {
   const [myTasks, setMyTasks] = useState<Task[]>([]);
   const [myAgents, setMyAgents] = useState<Agent[]>([]);
   const [myApis, setMyApis] = useState<DeveloperApi[]>([]);
+  const [myPurchases, setMyPurchases] = useState<any[]>([]);
   
-  // Dashboard Tabs: tasks, agents, apis, transactions, reviews
-  const [activeTab, setActiveTab] = useState<'tasks' | 'agents' | 'apis' | 'transactions' | 'reviews'>('tasks');
+  // Dashboard Tabs: tasks, agents, apis, transactions, reviews, purchases
+  const [activeTab, setActiveTab] = useState<'tasks' | 'agents' | 'apis' | 'transactions' | 'reviews' | 'purchases'>('tasks');
   
   // Review submission state
   const [selectedTaskForReview, setSelectedTaskForReview] = useState<Task | null>(null);
@@ -61,56 +62,22 @@ export default function Dashboard() {
   const [dataLoading, setDataLoading] = useState(true);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const name = localStorage.getItem('nyxa_user_name');
-    const email = localStorage.getItem('nyxa_user_email');
-    const rolesStr = localStorage.getItem('nyxa_user_roles');
-
-    if (!id) {
-      router.push('/login');
-      return;
-    }
-
-    setUserId(id);
-    setUserName(name);
-    setUserEmail(email);
-    if (rolesStr) {
-      try {
-        const rolesArr = JSON.parse(rolesStr);
-        if (Array.isArray(rolesArr)) {
-          setUserRoles({
-            is_buyer: rolesArr.includes('buyer'),
-            is_provider: rolesArr.includes('provider')
-          });
-        } else {
-          setUserRoles({
-            is_buyer: !!rolesArr.is_buyer,
-            is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
-          });
-        }
-      } catch (e) {
-        setUserRoles(null);
-      }
-    }
-
-    fetchDashboardData(id);
-  }, []);
-
-  async function fetchDashboardData(currentUserId: string) {
+  const fetchDashboardData = async (currentUserId: string) => {
     setDataLoading(true);
     try {
       // Fetch tasks, agents, and APIs in parallel
-      const [resTasks, resAgents, resApis] = await Promise.all([
+      const [resTasks, resAgents, resApis, resOrders] = await Promise.all([
         fetch('/api/tasks'),
         fetch('/api/agents'),
-        fetch('/api/apis')
+        fetch('/api/apis'),
+        fetch(`/api/orders?userId=${currentUserId}`)
       ]);
 
-      const [tasksData, agentsData, apisData] = await Promise.all([
+      const [tasksData, agentsData, apisData, ordersData] = await Promise.all([
         resTasks.json(),
         resAgents.json(),
-        resApis.json()
+        resApis.json(),
+        resOrders.ok ? resOrders.json() : Promise.resolve({ orders: [] })
       ]);
 
       if (resTasks.ok) {
@@ -130,15 +97,67 @@ export default function Dashboard() {
         const userApis = allApis.filter(a => a.provider_id === currentUserId);
         setMyApis(userApis);
       }
+
+      if (resOrders.ok) {
+        setMyPurchases(ordersData.orders || []);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
       setDataLoading(false);
     }
-  }
+  };
 
-  const handleLogout = () => {
-    localStorage.clear();
+  useEffect(() => {
+    const id = localStorage.getItem('nyxa_user_id');
+    const name = localStorage.getItem('nyxa_user_name');
+    const email = localStorage.getItem('nyxa_user_email');
+    const rolesStr = localStorage.getItem('nyxa_user_roles');
+
+    if (!id) {
+      router.push('/login');
+      return;
+    }
+
+    setTimeout(() => {
+      setUserId(id);
+      setUserName(name);
+      setUserEmail(email);
+      if (rolesStr) {
+        try {
+          const rolesArr = JSON.parse(rolesStr);
+          if (Array.isArray(rolesArr)) {
+            setUserRoles({
+              is_buyer: rolesArr.includes('buyer'),
+              is_provider: rolesArr.includes('provider')
+            });
+          } else {
+            setUserRoles({
+              is_buyer: !!rolesArr.is_buyer,
+              is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
+            });
+          }
+        } catch (e) {
+          setUserRoles(null);
+        }
+      }
+    }, 0);
+
+    setTimeout(() => {
+      fetchDashboardData(id);
+    }, 0);
+  }, [router]);
+
+  const handleLogout = async () => {
+    localStorage.removeItem('nyxa_user_id');
+    localStorage.removeItem('nyxa_user_name');
+    localStorage.removeItem('nyxa_user_email');
+    localStorage.removeItem('nyxa_user_roles');
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error(e);
+    }
     router.push('/login');
   };
 
@@ -150,9 +169,13 @@ export default function Dashboard() {
 
     if (!selectedTaskForReview) return;
 
-    try {
-      const txMockId = '00000000-0000-0000-0000-000000000000'; // Fallback / mock UUID
+    // Look for a real transaction for this task from purchases
+    const realOrder = myPurchases.find(
+      (o: any) => o.task_id === selectedTaskForReview.id && o.status === 'completed'
+    );
+    const txMockId = realOrder?.id || null;
 
+    try {
       const response = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -162,7 +185,7 @@ export default function Dashboard() {
           revieweeAgentId: selectedTaskForReview.assigned_to_agent_id || '00000000-0000-0000-0000-000000000000',
           rating: parseInt(rating),
           comment,
-          transactionId: txMockId
+          transactionId: txMockId || undefined
         })
       });
 
@@ -319,6 +342,12 @@ export default function Dashboard() {
         >
           Reviews
         </button>
+        <button
+          onClick={() => setActiveTab('purchases')}
+          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'purchases' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
+        >
+          My Purchases
+        </button>
       </div>
 
       {/* Loading state indicator */}
@@ -434,7 +463,7 @@ export default function Dashboard() {
                 
                 {myTasks.length === 0 ? (
                   <p className="text-xs text-[var(--muted)]">
-                    You haven't posted any tasks yet.
+                    You haven&apos;t posted any tasks yet.
                   </p>
                 ) : (
                   <div className="nyxa-table-wrapper rounded-lg">
@@ -471,6 +500,74 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* TAB: PURCHASES */}
+          {activeTab === 'purchases' && (
+            <div className="flex flex-col gap-6">
+              <div>
+                <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
+                  My Purchases
+                </h2>
+                <p className="text-xs text-[var(--muted)] mb-4">
+                  Tasks, agents, and APIs you have purchased. Funds are held in escrow until you approve delivery.
+                </p>
+
+                {myPurchases.length === 0 ? (
+                  <div className="border border-[var(--border)] p-8 text-center text-sm text-[var(--muted)] rounded-lg">
+                    <p>You have not made any purchases yet.</p>
+                    <div className="flex gap-3 justify-center mt-4">
+                      <a href="/tasks" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse Tasks</a>
+                      <a href="/agents" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse Agents</a>
+                      <a href="/apis" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse APIs</a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="nyxa-table-wrapper rounded-lg">
+                    <table className="nyxa-table">
+                      <thead>
+                        <tr>
+                          <th>Order ID</th>
+                          <th>Type</th>
+                          <th>Amount</th>
+                          <th>Payment</th>
+                          <th>Escrow</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {myPurchases.map((order: any) => (
+                          <tr key={order.id}>
+                            <td className="tech-mono text-[10px] select-all">{order.id.slice(0, 8)}...</td>
+                            <td className="text-xs">
+                              {order.task_id ? 'Task' : order.api_id ? 'API' : order.agent_id ? 'Agent' : 'Unknown'}
+                            </td>
+                            <td className="tech-mono text-xs font-semibold">${order.amount?.toFixed(2)}</td>
+                            <td>
+                              <span className={`nyxa-badge text-[9px] ${
+                                order.status === 'completed' ? 'nyxa-badge-success' : 'nyxa-badge-active'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </td>
+                            <td>
+                              <span className={`nyxa-badge text-[9px] ${
+                                order.escrow_status === 'released' ? 'nyxa-badge-success' : 'nyxa-badge-active'
+                              }`}>
+                                {order.escrow_status}
+                              </span>
+                            </td>
+                            <td className="tech-mono text-xs">
+                              {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Recent'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* TAB: AGENTS */}
           {activeTab === 'agents' && (
             <div>
@@ -479,7 +576,7 @@ export default function Dashboard() {
               </h2>
               {myAgents.length === 0 ? (
                 <p className="text-xs text-[var(--muted)]">
-                  You haven't registered any agents yet.
+                  You haven&apos;t registered any agents yet.
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -527,7 +624,7 @@ export default function Dashboard() {
               </h2>
               {myApis.length === 0 ? (
                 <p className="text-xs text-[var(--muted)]">
-                  You haven't registered any APIs yet.
+                  You haven&apos;t registered any APIs yet.
                 </p>
               ) : (
                 <div className="nyxa-table-wrapper rounded-lg">

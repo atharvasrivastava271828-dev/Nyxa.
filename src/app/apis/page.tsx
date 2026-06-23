@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface DeveloperApi {
   id: string;
@@ -19,7 +20,6 @@ export default function ApiMarketplace() {
   const [userRoles, setUserRoles] = useState<{ is_provider: boolean } | null>(null);
 
   const [apis, setApis] = useState<DeveloperApi[]>([]);
-  const [filteredApis, setFilteredApis] = useState<DeveloperApi[]>([]);
   
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,59 +35,6 @@ export default function ApiMarketplace() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Session verification & load APIs
-  useEffect(() => {
-    const id = localStorage.getItem('nyxa_user_id');
-    const uName = localStorage.getItem('nyxa_user_name');
-    const rolesStr = localStorage.getItem('nyxa_user_roles');
-    
-    if (id) {
-      setUserId(id);
-      setUserName(uName);
-      if (rolesStr) {
-        try {
-          const rolesArr = JSON.parse(rolesStr);
-          if (Array.isArray(rolesArr)) {
-            setUserRoles({
-              is_provider: rolesArr.includes('provider')
-            });
-          } else {
-            setUserRoles({
-              is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
-            });
-          }
-        } catch (e) {
-          setUserRoles(null);
-        }
-      }
-    }
-    
-    fetchApis();
-  }, []);
-
-  // Filter logic
-  useEffect(() => {
-    let result = apis;
-
-    if (searchTerm.trim() !== '') {
-      const query = searchTerm.toLowerCase();
-      result = result.filter(
-        api =>
-          api.name.toLowerCase().includes(query) ||
-          api.endpoint_url.toLowerCase().includes(query) ||
-          (api.documentation && api.documentation.toLowerCase().includes(query))
-      );
-    }
-
-    if (selectedCategory !== 'all') {
-      result = result.filter(api =>
-        api.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-
-    setFilteredApis(result);
-  }, [searchTerm, selectedCategory, apis]);
-
   async function fetchApis() {
     try {
       const res = await fetch('/api/apis');
@@ -99,6 +46,54 @@ export default function ApiMarketplace() {
       console.error('Failed to load APIs:', err);
     }
   }
+
+  // 1. Session verification & load APIs
+  useEffect(() => {
+    const id = localStorage.getItem('nyxa_user_id');
+    const uName = localStorage.getItem('nyxa_user_name');
+    const rolesStr = localStorage.getItem('nyxa_user_roles');
+    
+    if (id) {
+      setTimeout(() => {
+        setUserId(id);
+        setUserName(uName);
+        if (rolesStr) {
+          try {
+            const rolesArr = JSON.parse(rolesStr);
+            if (Array.isArray(rolesArr)) {
+              setUserRoles({
+                is_provider: rolesArr.includes('provider')
+              });
+            } else {
+              setUserRoles({
+                is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
+              });
+            }
+          } catch (e) {
+            setUserRoles(null);
+          }
+        }
+      }, 0);
+    }
+    
+    setTimeout(() => {
+      fetchApis();
+    }, 0);
+  }, []);
+
+  // Compute filtered APIs dynamically during render
+  const filteredApis = apis.filter(api => {
+    const query = searchTerm.toLowerCase();
+    const matchesSearch = searchTerm.trim() === '' ||
+      api.name.toLowerCase().includes(query) ||
+      api.endpoint_url.toLowerCase().includes(query) ||
+      (api.documentation && api.documentation.toLowerCase().includes(query));
+
+    const matchesCategory = selectedCategory === 'all' ||
+      api.category.toLowerCase() === selectedCategory.toLowerCase();
+
+    return matchesSearch && matchesCategory;
+  });
 
   // Get unique categories for dynamic filtering
   const allCategories = Array.from(
@@ -222,8 +217,8 @@ export default function ApiMarketplace() {
       {/* Guest Alert Banner */}
       {!userId && (
         <div className="border border-[var(--border)] p-4 mb-8 bg-[var(--secondary-bg)] text-sm flex justify-between items-center rounded-lg">
-          <span>You're browsing as a guest. Log in to license or publish APIs.</span>
-          <a href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</a>
+          <span>You&apos;re browsing as a guest. Log in to license or publish APIs.</span>
+          <Link href="/login" className="nyxa-btn nyxa-btn-primary py-1 px-3 text-xs">Log In</Link>
         </div>
       )}
 

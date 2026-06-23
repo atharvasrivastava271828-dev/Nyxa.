@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Register() {
   const router = useRouter();
@@ -46,9 +47,16 @@ export default function Register() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      router.push('/login');
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      if (data.sessionCreated) {
+        router.push('/login');
+      } else {
+        setError('Registration successful! Please check your email to confirm your account before logging in.');
+        setFullName('');
+        setEmail('');
+        setPassword('');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -62,7 +70,7 @@ export default function Register() {
           <img src="/logo.png" alt="Nyxa Logo" className="h-16 w-auto object-contain theme-logo mb-4" />
           <h1 className="text-xl tracking-tight m-0 font-semibold">Create your account</h1>
           <p className="text-xs text-[var(--muted)] mt-1">
-            Join Nyxa — it's free to get started
+            Join Nyxa — it&apos;s free to get started
           </p>
         </div>
         
@@ -193,9 +201,9 @@ export default function Register() {
         
         <p className="text-xs text-center text-[var(--muted)] mt-6 mb-0">
           Already have an account?{' '}
-          <a href="/login" className="text-[var(--foreground)] font-semibold hover:underline">
+          <Link href="/login" className="text-[var(--foreground)] font-semibold hover:underline">
             Sign in &rarr;
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Login() {
   const router = useRouter();
@@ -143,10 +144,10 @@ export default function Login() {
         </div>
         
         <p className="text-xs text-center text-[var(--muted)] mt-6 mb-0">
-          Don't have an account?{' '}
-          <a href="/register" className="text-[var(--foreground)] font-semibold hover:underline">
+          Don&apos;t have an account?{' '}
+          <Link href="/register" className="text-[var(--foreground)] font-semibold hover:underline">
             Sign up &rarr;
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -82,9 +82,9 @@ CREATE TABLE IF NOT EXISTS orders (
   escrow_status escrow_status DEFAULT 'held',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   CONSTRAINT check_order_type CHECK (
-    (task_id IS NOT NULL)::integer + 
-    (api_id IS NOT NULL)::integer + 
-    (agent_id IS NOT NULL)::integer = 1
+    task_id IS NOT NULL OR 
+    api_id IS NOT NULL OR 
+    agent_id IS NOT NULL
   )
 );
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/backend/lib/supabase';
+import { createServerSupabaseClient } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 import { cookies } from 'next/headers';
 
@@ -12,6 +12,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { email, password } = loginSchema.parse(body);
+
+    const supabase = await createServerSupabaseClient();
 
     const { data: authData, error } = await supabase.auth.signInWithPassword({
       email,
@@ -38,7 +40,14 @@ export async function POST(req: Request) {
       });
     }
 
-    const { data: profile } = await supabase
+    // Now that the session is created, the supabase client would need the token to bypass RLS,
+    // but the client we created above doesn't have the new token because it was instantiated before login!
+    // We must instantiate a new client with the fresh token to read the profile safely, OR let it read as public
+    // since profiles read is public for authenticated users, we can just use the auth token directly.
+    const supabaseAuthenticated = await createServerSupabaseClient();
+    supabaseAuthenticated.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
+    
+    const { data: profile } = await supabaseAuthenticated
       .from('profiles')
       .select('name, roles')
       .eq('id', authData.user.id)
