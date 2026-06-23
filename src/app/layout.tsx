@@ -2,6 +2,7 @@
 
 import './globals.css';
 import { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/next';
 
 export default function RootLayout({
   children,
@@ -145,6 +146,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
