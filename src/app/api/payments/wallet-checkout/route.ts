@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
     // 3. If agentId, perform allowance check
     if (agentId) {
-      let { data: allowance, error: allowanceError } = await supabase
+      const { data: allowance, error: allowanceError } = await supabase
         .from('agent_allowances')
         .select('*')
         .eq('agent_id', agentId)

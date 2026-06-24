@@ -10,7 +10,7 @@
   --card-bg: #ffffff;
   --muted: #52525b;
   --accent: #000000;
-  --success: #097969;
+  --success: #000000;
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -24,6 +24,7 @@ html[data-theme="light"] {
   --card-bg: #ffffff;
   --muted: #52525b;
   --accent: #000000;
+  --success: #000000;
 }
 
 /* Force dark mode variables */
@@ -35,7 +36,7 @@ html[data-theme="dark"] {
   --card-bg: #000000;
   --muted: #a1a1aa;
   --accent: #ffffff;
-  --success: #10b981;
+  --success: #ffffff;
 }
 
 /* System preference defaults if override not explicitly set */
@@ -48,7 +49,7 @@ html[data-theme="dark"] {
     --card-bg: #000000;
     --muted: #a1a1aa;
     --accent: #ffffff;
-    --success: #10b981;
+    --success: #ffffff;
   }
 }
 

@@ -288,40 +288,54 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Profile summary block */}
-      <div className="border border-[var(--border)] p-6 bg-[var(--secondary-bg)] mb-8 flex flex-col md:flex-row justify-between items-stretch gap-6 rounded-lg">
-        <div className="flex flex-col gap-1.5 justify-center">
-          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Account Identity</span>
-          <h2 className="text-xl m-0 border-b-0 pb-0 font-semibold">{userName}</h2>
-          <span className="tech-mono text-xs text-[var(--muted)] select-all">{userEmail} &bull; ID: {userId}</span>
+      {/* Profile & Wallet Block */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {/* Card 1: Identity */}
+        <div className="border border-[var(--border)] p-6 bg-[var(--card-bg)] rounded-xl flex flex-col justify-between min-h-[140px] shadow-sm">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted)]">
+            Account Identity
+          </span>
+          <div className="mt-4">
+            <h2 className="text-lg tracking-tight m-0 font-bold text-[var(--foreground)]">{userName}</h2>
+            <span className="text-xs text-[var(--muted)] select-all block mt-1">{userEmail} &bull; ID: {userId}</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-1.5 justify-center md:items-center">
-          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Roles</span>
-          <div className="flex flex-wrap gap-2 mt-1">
+
+        {/* Card 2: Roles */}
+        <div className="border border-[var(--border)] p-6 bg-[var(--card-bg)] rounded-xl flex flex-col justify-between min-h-[140px] shadow-sm">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted)]">
+            Platform Roles
+          </span>
+          <div className="flex flex-wrap gap-2 mt-4">
             {userRoles?.is_buyer && (
-              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] rounded">
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] rounded-md">
                 Buyer
               </span>
             )}
             {userRoles?.is_provider && (
-              <span className="tech-mono text-xs px-2 py-0.5 border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)] rounded">
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 border border-[var(--border)] text-[var(--foreground)] bg-[var(--secondary-bg)] rounded-md">
                 Provider
               </span>
             )}
           </div>
         </div>
-        {/* Wallet Balance widget */}
-        <div className="flex flex-col gap-1.5 md:items-end justify-center pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-[var(--border)] md:pl-6">
-          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Wallet Balance</span>
-          <div className="text-2xl font-bold tech-mono text-[var(--foreground)] mt-0.5">
-            ${walletBalance.toFixed(2)}
+
+        {/* Card 3: Wallet */}
+        <div className="border border-[var(--foreground)] p-6 bg-[var(--foreground)] text-[var(--background)] rounded-xl flex flex-col justify-between min-h-[140px] shadow-md">
+          <div className="flex justify-between items-start">
+            <span className="text-[10px] font-semibold uppercase tracking-widest opacity-70">
+              Wallet Balance
+            </span>
+            <span className="text-xl font-bold tracking-tight">
+              ${walletBalance.toFixed(2)}
+            </span>
           </div>
           <button
             onClick={() => handleDeposit(50)}
             disabled={walletLoading}
-            className="nyxa-btn nyxa-btn-primary text-[10px] py-1 px-3 mt-1.5 rounded-md border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] hover:opacity-90"
+            className="w-full text-center py-2 px-4 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[var(--background)] text-[var(--foreground)] border border-transparent hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
-            {walletLoading ? 'Adding...' : 'Add $50 (Sandbox Test)'}
+            {walletLoading ? 'Processing...' : 'Deposit $50 (Sandbox)'}
           </button>
         </div>
       </div>
