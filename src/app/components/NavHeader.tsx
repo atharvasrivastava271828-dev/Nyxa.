@@ -13,12 +13,12 @@ export default function NavHeader() {
     const savedTheme = localStorage.getItem('nyxa_theme') as 'light' | 'dark' | null;
 
     if (savedTheme) {
-      setTheme(savedTheme);
+      setTimeout(() => setTheme(savedTheme), 0);
       document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const initialTheme = prefersDark ? 'dark' : 'light';
-      setTheme(initialTheme);
+      setTimeout(() => setTheme(initialTheme), 0);
       document.documentElement.setAttribute('data-theme', initialTheme);
     }
   }, []);

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -12,7 +12,7 @@
   --accent: #000000;
   --success: #097969;
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'Share Tech Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Force light mode variables */
@@ -321,5 +321,5 @@ p {
 }
 
 .search-input {
-  padding-left: 2.25rem !important;
+  padding-left: 4.25rem !important;
 }

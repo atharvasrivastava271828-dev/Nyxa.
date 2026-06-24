@@ -14,6 +14,10 @@ interface DeveloperApi {
   provider_id: string;
 }
 
+function generateMockPaymentId() {
+  return `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+}
+
 export default function ApiMarketplace() {
   const { userId, userName, userRoles, loading: authLoading } = useAuth();
   
@@ -47,7 +51,9 @@ export default function ApiMarketplace() {
 
   // 1. Load APIs
   useEffect(() => {
-    fetchApis();
+    setTimeout(() => {
+      fetchApis();
+    }, 0);
   }, []);
 
   // Compute filtered APIs dynamically during render
@@ -167,7 +173,7 @@ export default function ApiMarketplace() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           razorpayOrderId: data.order.id,
-          razorpayPaymentId: `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          razorpayPaymentId: generateMockPaymentId(),
           razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
         })
       });

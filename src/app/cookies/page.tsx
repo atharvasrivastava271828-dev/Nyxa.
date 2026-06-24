@@ -15,7 +15,7 @@ export default function CookiePolicy() {
       <hr className="border-t border-[var(--border)] my-8" />
       
       <h2>1. What Are Cookies</h2>
-      <p>Cookies are small files stored in your browser. Local storage works similarly — it stores small pieces of data on your device. Both are used to remember things between visits so you don't have to re-enter information every time.</p>
+      <p>Cookies are small files stored in your browser. Local storage works similarly — it stores small pieces of data on your device. Both are used to remember things between visits so you don&apos;t have to re-enter information every time.</p>
       
       <hr className="border-t border-[var(--border)] my-8" />
       

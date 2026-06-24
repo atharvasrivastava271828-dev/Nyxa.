@@ -14,6 +14,10 @@ interface Task {
   provider_id: string;
 }
 
+function generateMockPaymentId() {
+  return `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+}
+
 export default function TasksMarketplace() {
   const router = useRouter();
   
@@ -44,7 +48,9 @@ export default function TasksMarketplace() {
 
   // 1. Session verification & load tasks
   useEffect(() => {
-    fetchTasks();
+    setTimeout(() => {
+      fetchTasks();
+    }, 0);
   }, []);
 
   // Handle query parameter search
@@ -162,7 +168,7 @@ export default function TasksMarketplace() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           razorpayOrderId: data.order.id,
-          razorpayPaymentId: `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          razorpayPaymentId: generateMockPaymentId(),
           razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
         })
       });

@@ -15,6 +15,10 @@ interface Agent {
   provider_id: string;
 }
 
+function generateMockPaymentId() {
+  return `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+}
+
 export default function AgentMarketplace() {
   // Client session
   const [userId, setUserId] = useState<string | null>(null);
@@ -203,7 +207,7 @@ export default function AgentMarketplace() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           razorpayOrderId: data.order.id,
-          razorpayPaymentId: `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          razorpayPaymentId: generateMockPaymentId(),
           razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
         })
       });

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
+import Link from 'next/link';
 
 interface Task {
   id: string;
@@ -117,7 +118,9 @@ export default function Dashboard() {
         return;
       }
     } else {
-      fetchDashboardData(userId);
+      setTimeout(() => {
+        fetchDashboardData(userId);
+      }, 0);
     }
   }, [userId, router]);
 
@@ -480,9 +483,9 @@ export default function Dashboard() {
                   <div className="border border-[var(--border)] p-8 text-center text-sm text-[var(--muted)] rounded-lg">
                     <p>You have not made any purchases yet.</p>
                     <div className="flex gap-3 justify-center mt-4">
-                      <a href="/tasks" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse Tasks</a>
-                      <a href="/agents" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse Agents</a>
-                      <a href="/apis" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse APIs</a>
+                      <Link href="/tasks" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse Tasks</Link>
+                      <Link href="/agents" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse Agents</Link>
+                      <Link href="/apis" className="nyxa-btn nyxa-btn-secondary text-xs py-1.5 px-4 rounded-md">Browse APIs</Link>
                     </div>
                   </div>
                 ) : (

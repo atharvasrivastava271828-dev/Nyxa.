@@ -12,6 +12,10 @@ interface PurchaseTaskButtonProps {
   };
 }
 
+function generateMockPaymentId() {
+  return `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+}
+
 export default function PurchaseTaskButton({ task }: PurchaseTaskButtonProps) {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
@@ -19,7 +23,11 @@ export default function PurchaseTaskButton({ task }: PurchaseTaskButtonProps) {
 
   useEffect(() => {
     const id = localStorage.getItem('nyxa_user_id');
-    if (id) setUserId(id);
+    if (id) {
+      setTimeout(() => {
+        setUserId(id);
+      }, 0);
+    }
   }, []);
 
   const handlePurchaseTask = async () => {
@@ -72,7 +80,7 @@ export default function PurchaseTaskButton({ task }: PurchaseTaskButtonProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           razorpayOrderId: data.order.id,
-          razorpayPaymentId: `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          razorpayPaymentId: generateMockPaymentId(),
           razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
         })
       });
