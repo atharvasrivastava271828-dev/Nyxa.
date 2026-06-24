@@ -177,6 +177,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Failed to deduct funds from wallet' }, { status: 500 });
     }
 
+    // Insert wallet transaction record
+    let targetType = 'Item';
+    if (apiId) targetType = 'API';
+    if (taskId) targetType = 'Task';
+    if (agentId) targetType = 'Agent';
+    
+    await supabase.from('wallet_transactions').insert({
+      user_id: user.id,
+      type: 'purchase',
+      amount: price,
+      description: `Programmatic SDK purchase of ${targetType}`
+    });
+
     // 5. Create Order
     const { data: order, error: orderError } = await supabase
       .from('orders')

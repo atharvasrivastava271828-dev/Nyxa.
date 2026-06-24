@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { registerAgent, getAgents, CreateAgentDTO } from '@/backend/services/agent.service';
-import { createServerSupabaseClient } from '@/backend/lib/supabase-server';
+import { getAuthenticatedUser } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 
 const createAgentSchema = z.object({
@@ -26,10 +26,8 @@ export async function POST(req: Request) {
     // --- Auth Guard ---
     // Verify the session cookie and confirm the caller IS the provider_id in the body.
     // This prevents any user from impersonating another provider.
-    const serverClient = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await serverClient.auth.getUser();
-
-    if (authError || !user) {
+    const user = await getAuthenticatedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
     }
 

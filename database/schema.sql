@@ -228,3 +228,22 @@ CREATE POLICY "Providers can insert own agent allowances." ON agent_allowances F
 -- Index to quickly search allowances by agent
 CREATE INDEX IF NOT EXISTS idx_agent_allowances_agent_id ON agent_allowances (agent_id);
 
+-- ============================================================================
+-- 10. Wallet Transactions Table
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('deposit', 'purchase')),
+  amount NUMERIC NOT NULL CHECK (amount > 0),
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own wallet transactions." ON wallet_transactions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own wallet transactions." ON wallet_transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_id ON wallet_transactions (user_id);
+

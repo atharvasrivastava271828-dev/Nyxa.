@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { postTask, getTasks, CreateTaskDTO } from '@/backend/services/task.service';
-import { createServerSupabaseClient } from '@/backend/lib/supabase-server';
+import { getAuthenticatedUser } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 
 const createTaskSchema = z.object({
@@ -23,10 +23,8 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     // --- Auth Guard ---
-    const serverClient = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await serverClient.auth.getUser();
-
-    if (authError || !user) {
+    const user = await getAuthenticatedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
     }
 

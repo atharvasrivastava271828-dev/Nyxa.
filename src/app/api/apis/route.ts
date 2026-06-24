@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { registerApi, getApis, CreateApiDTO } from '@/backend/services/api.service';
-import { createServerSupabaseClient } from '@/backend/lib/supabase-server';
+import { getAuthenticatedUser } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 
 const createApiSchema = z.object({
@@ -24,11 +24,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    // --- Auth Guard ---
-    const serverClient = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await serverClient.auth.getUser();
+    const user = await getAuthenticatedUser();
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
     }
 

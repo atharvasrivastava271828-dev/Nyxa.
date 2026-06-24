@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Next.js Edge Middleware for route protection.
+ * Next.js Edge Middleware (proxy file) for route protection.
  *
  * PROTECTED ROUTES:  /dashboard/**  → requires active session cookie
  * AUTH REDIRECTS:    /login, /register → redirects logged-in users away
