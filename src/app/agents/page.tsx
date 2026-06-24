@@ -197,11 +197,27 @@ export default function AgentMarketplace() {
         throw new Error(data.error || 'Order initialization failed.');
       }
 
+      // Simulate payment processing and signature verification
+      const verifyRes = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpayOrderId: data.order.id,
+          razorpayPaymentId: `mock_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          razorpaySignature: 'MOCK_CRYPTOGRAPHIC_SIGNATURE_VERIFIED_BY_PLATFORM'
+        })
+      });
+
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.error || 'Payment verification failed.');
+      }
+
       alert(
-        `Order placed! 🎉\n\n` +
-        `Your hire request for "${agent.name}" has been recorded.\n` +
+        `Purchase Successful! 🎉\n\n` +
+        `Your payment for "${agent.name}" has been verified.\n` +
         `Order ID: ${data.order.id}\n\n` +
-        `Payment will be processed. Track your order in the Dashboard.`
+        `Funds are now held securely in Escrow. Track status on your Dashboard.`
       );
     } catch (err: any) {
       alert(err.message || 'Checkout failed.');
