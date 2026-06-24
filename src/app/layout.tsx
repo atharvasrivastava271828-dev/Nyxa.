@@ -19,6 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Preload critical LCP logo asset */}
+        <link rel="preload" as="image" href="/logo.png" />
+        
         {/* Inline theme script — runs before any paint to avoid flash */}
         <script
           dangerouslySetInnerHTML={{
