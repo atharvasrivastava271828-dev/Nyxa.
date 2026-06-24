@@ -90,6 +90,13 @@ export default function Home() {
             Get Started
           </button>
         </form>
+        
+        {/* User Guide Button */}
+        <div className="mt-6">
+          <Link href="/guides" className="nyxa-btn nyxa-btn-secondary text-xs px-6 py-2">
+            📖 Read User Guide & Tutorials
+          </Link>
+        </div>
       </section>
 
       {/* 2. Marketplace Overview */}

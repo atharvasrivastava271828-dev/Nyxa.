@@ -378,6 +378,12 @@ export default function Dashboard() {
         >
           My Purchases
         </button>
+        <Link
+          href="/guides"
+          className="nyxa-btn text-xs py-1.5 px-4 rounded-md border border-[var(--border)] text-[var(--foreground)] bg-[var(--card-bg)] hover:bg-[var(--secondary-bg)] md:ml-auto"
+        >
+          📖 Guide & Tutorials
+        </Link>
       </div>
 
       {/* Loading state indicator */}
