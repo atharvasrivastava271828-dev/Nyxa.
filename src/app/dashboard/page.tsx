@@ -49,6 +49,11 @@ export default function Dashboard() {
   const [myApis, setMyApis] = useState<DeveloperApi[]>([]);
   const [myPurchases, setMyPurchases] = useState<any[]>([]);
   
+  // Wallet state
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [walletTransactions, setWalletTransactions] = useState<any[]>([]);
+  const [walletLoading, setWalletLoading] = useState<boolean>(false);
+  
   // Dashboard Tabs: tasks, agents, apis, transactions, reviews, purchases
   const [activeTab, setActiveTab] = useState<'tasks' | 'agents' | 'apis' | 'transactions' | 'reviews' | 'purchases'>('tasks');
   
@@ -64,19 +69,21 @@ export default function Dashboard() {
   const fetchDashboardData = async (currentUserId: string) => {
     setDataLoading(true);
     try {
-      // Fetch tasks, agents, and APIs in parallel
-      const [resTasks, resAgents, resApis, resOrders] = await Promise.all([
+      // Fetch tasks, agents, APIs, and wallet in parallel
+      const [resTasks, resAgents, resApis, resOrders, resWallet] = await Promise.all([
         fetch('/api/tasks'),
         fetch('/api/agents'),
         fetch('/api/apis'),
-        fetch(`/api/orders?userId=${currentUserId}`)
+        fetch(`/api/orders?userId=${currentUserId}`),
+        fetch('/api/wallet')
       ]);
 
-      const [tasksData, agentsData, apisData, ordersData] = await Promise.all([
+      const [tasksData, agentsData, apisData, ordersData, walletData] = await Promise.all([
         resTasks.json(),
         resAgents.json(),
         resApis.json(),
-        resOrders.ok ? resOrders.json() : Promise.resolve({ orders: [] })
+        resOrders.ok ? resOrders.json() : Promise.resolve({ orders: [] }),
+        resWallet.ok ? resWallet.json() : Promise.resolve({ balance: 0, transactions: [] })
       ]);
 
       if (resTasks.ok) {
@@ -100,10 +107,37 @@ export default function Dashboard() {
       if (resOrders.ok) {
         setMyPurchases(ordersData.orders || []);
       }
+
+      if (resWallet.ok) {
+        setWalletBalance(walletData.balance || 0);
+        setWalletTransactions(walletData.transactions || []);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
       setDataLoading(false);
+    }
+  };
+
+  const handleDeposit = async (amount: number) => {
+    setWalletLoading(true);
+    try {
+      const res = await fetch('/api/wallet/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Deposit failed');
+      }
+      setWalletBalance(data.balance);
+      setWalletTransactions(data.transaction ? [data.transaction, ...walletTransactions] : walletTransactions);
+      alert(`Sandbox Deposit Successful! Added $${amount.toFixed(2)} to wallet.`);
+    } catch (err: any) {
+      alert(err.message || 'Deposit failed');
+    } finally {
+      setWalletLoading(false);
     }
   };
 
@@ -255,13 +289,13 @@ export default function Dashboard() {
       </div>
 
       {/* Profile summary block */}
-      <div className="border border-[var(--border)] p-6 bg-[var(--secondary-bg)] mb-8 flex flex-col md:flex-row justify-between gap-6 rounded-lg">
-        <div className="flex flex-col gap-1.5">
+      <div className="border border-[var(--border)] p-6 bg-[var(--secondary-bg)] mb-8 flex flex-col md:flex-row justify-between items-stretch gap-6 rounded-lg">
+        <div className="flex flex-col gap-1.5 justify-center">
           <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Account Identity</span>
           <h2 className="text-xl m-0 border-b-0 pb-0 font-semibold">{userName}</h2>
           <span className="tech-mono text-xs text-[var(--muted)] select-all">{userEmail} &bull; ID: {userId}</span>
         </div>
-        <div className="flex flex-col gap-1.5 md:items-end">
+        <div className="flex flex-col gap-1.5 justify-center md:items-center">
           <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Roles</span>
           <div className="flex flex-wrap gap-2 mt-1">
             {userRoles?.is_buyer && (
@@ -275,6 +309,20 @@ export default function Dashboard() {
               </span>
             )}
           </div>
+        </div>
+        {/* Wallet Balance widget */}
+        <div className="flex flex-col gap-1.5 md:items-end justify-center pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-[var(--border)] md:pl-6">
+          <span className="text-[10px] uppercase text-[var(--muted)] tracking-wider">Wallet Balance</span>
+          <div className="text-2xl font-bold tech-mono text-[var(--foreground)] mt-0.5">
+            ${walletBalance.toFixed(2)}
+          </div>
+          <button
+            onClick={() => handleDeposit(50)}
+            disabled={walletLoading}
+            className="nyxa-btn nyxa-btn-primary text-[10px] py-1 px-3 mt-1.5 rounded-md border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] hover:opacity-90"
+          >
+            {walletLoading ? 'Adding...' : 'Add $50 (Sandbox Test)'}
+          </button>
         </div>
       </div>
 
@@ -655,49 +703,96 @@ export default function Dashboard() {
 
           {/* TAB: TRANSACTIONS */}
           {activeTab === 'transactions' && (
-            <div>
-              <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
-                Transactions
-              </h2>
-              
-              {getEscrowTransactions().length === 0 ? (
-                <p className="text-xs text-[var(--muted)]">
-                  No transactions found.
-                </p>
-              ) : (
-                <div className="nyxa-table-wrapper rounded-lg">
-                  <table className="nyxa-table">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Reference</th>
-                        <th>Amount</th>
-                        <th>Fee</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {getEscrowTransactions().map(tx => (
-                        <tr key={tx.id}>
-                          <td className="tech-mono text-xs font-semibold">{tx.id}</td>
-                          <td className="tech-mono text-[10px] text-[var(--muted)]">{tx.type}</td>
-                          <td className="text-xs truncate max-w-[200px]" title={tx.ref}>{tx.ref}</td>
-                          <td className="tech-mono text-xs">${tx.amount.toFixed(2)}</td>
-                          <td className="tech-mono text-xs">${tx.fee.toFixed(2)}</td>
-                          <td className="tech-mono text-xs font-bold">${tx.total.toFixed(2)}</td>
-                          <td>
-                            <span className={`nyxa-badge text-[9px] ${tx.status === 'RELEASED' ? 'nyxa-badge-success' : 'nyxa-badge-active'}`}>
-                              {tx.status === 'RELEASED' ? 'Released' : tx.status === 'REFUNDED' ? 'Refunded' : 'Held'}
-                            </span>
-                          </td>
+            <div className="flex flex-col gap-8">
+              {/* Wallet Transaction Ledger */}
+              <div>
+                <h3 className="text-sm font-semibold border-b border-[var(--border)] pb-1.5 mb-3">
+                  Wallet Account Ledger
+                </h3>
+                {walletTransactions.length === 0 ? (
+                  <p className="text-xs text-[var(--muted)]">
+                    No wallet transactions recorded. Use the sandbox deposit button to fund your account.
+                  </p>
+                ) : (
+                  <div className="nyxa-table-wrapper rounded-lg mb-2">
+                    <table className="nyxa-table">
+                      <thead>
+                        <tr>
+                          <th>Transaction ID</th>
+                          <th>Type</th>
+                          <th>Description</th>
+                          <th>Amount</th>
+                          <th>Date</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {walletTransactions.map((tx: any) => (
+                          <tr key={tx.id}>
+                            <td className="tech-mono text-xs font-semibold select-all">{tx.id}</td>
+                            <td>
+                              <span className={`nyxa-badge text-[9px] ${tx.type === 'deposit' ? 'nyxa-badge-success' : 'nyxa-badge-active'}`}>
+                                {tx.type.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="text-xs">{tx.description}</td>
+                            <td className="tech-mono text-xs font-semibold">
+                              {tx.type === 'deposit' ? '+' : '-'}${tx.amount.toFixed(2)}
+                            </td>
+                            <td className="tech-mono text-xs">
+                              {new Date(tx.createdAt).toLocaleDateString()} {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Escrow Transaction Ledger */}
+              <div>
+                <h3 className="text-sm font-semibold border-b border-[var(--border)] pb-1.5 mb-3">
+                  Escrow Lockups
+                </h3>
+                {getEscrowTransactions().length === 0 ? (
+                  <p className="text-xs text-[var(--muted)]">
+                    No escrow lockup transactions found.
+                  </p>
+                ) : (
+                  <div className="nyxa-table-wrapper rounded-lg">
+                    <table className="nyxa-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Type</th>
+                          <th>Reference</th>
+                          <th>Amount</th>
+                          <th>Fee</th>
+                          <th>Total</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getEscrowTransactions().map(tx => (
+                          <tr key={tx.id}>
+                            <td className="tech-mono text-xs font-semibold">{tx.id}</td>
+                            <td className="tech-mono text-[10px] text-[var(--muted)]">{tx.type}</td>
+                            <td className="text-xs truncate max-w-[200px]" title={tx.ref}>{tx.ref}</td>
+                            <td className="tech-mono text-xs">${tx.amount.toFixed(2)}</td>
+                            <td className="tech-mono text-xs">${tx.fee.toFixed(2)}</td>
+                            <td className="tech-mono text-xs font-bold">${tx.total.toFixed(2)}</td>
+                            <td>
+                              <span className={`nyxa-badge text-[9px] ${tx.status === 'RELEASED' ? 'nyxa-badge-success' : 'nyxa-badge-active'}`}>
+                                {tx.status === 'RELEASED' ? 'Released' : tx.status === 'REFUNDED' ? 'Refunded' : 'Held'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

@@ -228,4 +228,42 @@ export class NyxaClient {
       body: JSON.stringify(payload)
     });
   }
+
+  // --- WALLET METHODS ---
+
+  /**
+   * Fetches the current wallet balance and recent transactions.
+   */
+  async getWalletBalance() {
+    return this.request<{ balance: number; transactions: any[] }>('/api/wallet', {
+      method: 'GET'
+    });
+  }
+
+  /**
+   * Deposits mock/sandbox funds into the developer wallet.
+   * 
+   * @param amount The numeric amount to add (sandbox environment)
+   */
+  async depositWalletFunds(amount: number) {
+    return this.request<{ balance: number; transaction: any }>('/api/wallet/deposit', {
+      method: 'POST',
+      body: JSON.stringify({ amount })
+    });
+  }
+
+  /**
+   * Purchases a task, API, or agent capability using funds from the wallet.
+   * Decrements wallet balance and logs the transaction.
+   */
+  async purchaseWithWallet(payload: {
+    taskId?: string;
+    apiId?: string;
+    agentId?: string;
+  }) {
+    return this.request<{ success: boolean; message: string; order: any; wallet: any }>('/api/payments/wallet-checkout', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
 }

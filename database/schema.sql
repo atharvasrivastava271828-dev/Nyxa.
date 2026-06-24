@@ -122,40 +122,7 @@ CREATE POLICY "Users can update their own tasks." ON tasks FOR UPDATE USING (aut
 CREATE POLICY "Users can view own orders." ON orders FOR SELECT USING (auth.uid() = payer_id OR auth.uid() = payee_id);
 CREATE POLICY "Users can create orders as payer." ON orders FOR INSERT WITH CHECK (auth.uid() = payer_id);
 
--- 6. Reviews Table
-CREATE TABLE IF NOT EXISTS reviews (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
-  reviewer_user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  reviewee_agent_id UUID REFERENCES agents(id) ON DELETE CASCADE NOT NULL,
-  rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
-  comment TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- 7. Task Matches Table
-CREATE TABLE IF NOT EXISTS task_matches (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
-  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE NOT NULL,
-  match_score NUMERIC NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- RLS for Reviews and Task Matches
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE task_matches ENABLE ROW LEVEL SECURITY;
-
--- Reviews policies
-CREATE POLICY "Public reviews are viewable by everyone." ON reviews FOR SELECT USING (true);
-CREATE POLICY "Users can insert own reviews." ON reviews FOR INSERT WITH CHECK (auth.uid() = reviewer_user_id);
-
--- Task Matches policies
-CREATE POLICY "Public matches are viewable by everyone." ON task_matches FOR SELECT USING (true);
-
--- ============================================================================
--- 6. Reviews Table
--- ============================================================================
+--- 6. Reviews Table
 CREATE TABLE IF NOT EXISTS reviews (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
@@ -166,15 +133,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
-
--- Reviews are public for trust transparency; only reviewer can insert
-CREATE POLICY "Reviews are viewable by everyone." ON reviews FOR SELECT USING (true);
-CREATE POLICY "Users can submit their own reviews." ON reviews FOR INSERT WITH CHECK (auth.uid() = reviewer_user_id);
-
--- ============================================================================
 -- 7. Task Matches Table (populated by matching engine)
--- ============================================================================
 CREATE TABLE IF NOT EXISTS task_matches (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   task_id UUID REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
@@ -184,10 +143,17 @@ CREATE TABLE IF NOT EXISTS task_matches (
   UNIQUE (task_id, agent_id)
 );
 
+-- Enable RLS
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_matches ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Task matches viewable by anyone." ON task_matches FOR SELECT USING (true);
-CREATE POLICY "Backend can insert task matches." ON task_matches FOR INSERT WITH CHECK (true);
+-- Reviews Policies
+CREATE POLICY "Public reviews are viewable by everyone." ON reviews FOR SELECT USING (true);
+CREATE POLICY "Users can insert own reviews." ON reviews FOR INSERT WITH CHECK (auth.uid() = reviewer_user_id);
+
+-- Task Matches Policies
+-- Task matches are viewable by everyone. Since only the backend (which uses service_role bypassing RLS) inserts matches, we do not define any INSERT/UPDATE policies here.
+CREATE POLICY "Task matches are viewable by everyone." ON task_matches FOR SELECT USING (true);
 
 -- ============================================================================
 -- Performance Indexes
@@ -204,3 +170,61 @@ CREATE INDEX IF NOT EXISTS idx_tasks_provider_id ON tasks (provider_id);
 -- Index to quickly find orders by payer or payee
 CREATE INDEX IF NOT EXISTS idx_orders_payer_id ON orders (payer_id);
 CREATE INDEX IF NOT EXISTS idx_orders_payee_id ON orders (payee_id);
+
+-- ============================================================================
+-- 8. Wallets Table
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS wallets (
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE PRIMARY KEY,
+  balance NUMERIC DEFAULT 0.00 NOT NULL CHECK (balance >= 0),
+  currency TEXT DEFAULT 'INR' NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE wallets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own wallet." ON wallets FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own wallet." ON wallets FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own wallet." ON wallets FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ============================================================================
+-- 9. Agent Allowances Table
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS agent_allowances (
+  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE PRIMARY KEY,
+  max_spend_per_call NUMERIC DEFAULT 10.00 NOT NULL CHECK (max_spend_per_call >= 0),
+  daily_budget NUMERIC DEFAULT 50.00 NOT NULL CHECK (daily_budget >= 0),
+  daily_spend_accumulated NUMERIC DEFAULT 0.00 NOT NULL CHECK (daily_spend_accumulated >= 0),
+  last_spend_date DATE DEFAULT CURRENT_DATE NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE agent_allowances ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Providers can view own agent allowances." ON agent_allowances FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM agents 
+    WHERE agents.id = agent_allowances.agent_id 
+    AND agents.provider_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Providers can update own agent allowances." ON agent_allowances FOR UPDATE USING (
+  EXISTS (
+    SELECT 1 FROM agents 
+    WHERE agents.id = agent_allowances.agent_id 
+    AND agents.provider_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Providers can insert own agent allowances." ON agent_allowances FOR INSERT WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM agents 
+    WHERE agents.id = agent_allowances.agent_id 
+    AND agents.provider_id = auth.uid()
+  )
+);
+
+-- Index to quickly search allowances by agent
+CREATE INDEX IF NOT EXISTS idx_agent_allowances_agent_id ON agent_allowances (agent_id);
+
