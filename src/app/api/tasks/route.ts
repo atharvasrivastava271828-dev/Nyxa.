@@ -3,11 +3,31 @@ import { postTask, getTasks, CreateTaskDTO } from '@/backend/services/task.servi
 import { getAuthenticatedUser } from '@/backend/lib/supabase-server';
 import { z } from 'zod';
 
+const validClasses = ['Business', 'Education'] as const;
+const validKindsMap: Record<string, string[]> = {
+  Business: ['Competitor Analysis', 'Market Research', 'Business Plans', 'SWOT Analysis'],
+  Education: ['Quiz Generation', 'Study Plans', 'Notes Summaries', 'Exam Preparation']
+};
+
 const createTaskSchema = z.object({
   provider_id: z.string().uuid(),
   title: z.string().min(5).max(200),
   description: z.string().min(10),
-  price: z.number().positive()
+  price: z.number().nonnegative(), // Free or Paid
+  class: z.enum(validClasses),
+  kind: z.string(),
+  dubs: z.array(z.string().regex(/^\}[a-zA-Z0-9_-]+$/, 'Dubs must start with } and be alphanumeric.')),
+  inputs_required: z.record(z.string(), z.any()),
+  outputs_delivered: z.record(z.string(), z.any()),
+  delivery_time: z.string().min(2),
+  hosting_method: z.enum(['link', 'iframe', 'native']),
+  hosting_url: z.string().url()
+}).refine(data => {
+  const allowedKinds = validKindsMap[data.class] || [];
+  return allowedKinds.includes(data.kind);
+}, {
+  message: "Invalid Kind for the selected Class.",
+  path: ["kind"]
 });
 
 export async function GET() {

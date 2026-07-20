@@ -5,12 +5,20 @@ export interface CreateTaskDTO {
   title: string;
   description: string;
   price: number;
+  class: string;
+  kind: string;
+  dubs: string[];
+  inputs_required: Record<string, any>;
+  outputs_delivered: Record<string, any>;
+  delivery_time: string;
+  hosting_method: 'link' | 'iframe' | 'native';
+  hosting_url: string;
 }
 
 /**
- * Publishes a new predefined task (gig) to the catalog.
+ * Publishes a new standardized task to the catalog.
  *
- * @param data The seller input defining the predefined task
+ * @param data The provider input defining the task template
  * @returns The created task database record
  */
 export async function postTask(data: CreateTaskDTO) {
@@ -23,6 +31,14 @@ export async function postTask(data: CreateTaskDTO) {
       title: data.title,
       description: data.description,
       price: data.price,
+      class: data.class,
+      kind: data.kind,
+      dubs: data.dubs,
+      inputs_required: data.inputs_required,
+      outputs_delivered: data.outputs_delivered,
+      delivery_time: data.delivery_time,
+      hosting_method: data.hosting_method,
+      hosting_url: data.hosting_url,
       status: 'active'
     })
     .select()

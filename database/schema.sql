@@ -63,6 +63,14 @@ CREATE TABLE IF NOT EXISTS tasks (
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   price NUMERIC NOT NULL,
+  class TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  dubs TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
+  inputs_required JSONB DEFAULT '{}'::JSONB NOT NULL,
+  outputs_delivered JSONB DEFAULT '{}'::JSONB NOT NULL,
+  delivery_time TEXT NOT NULL,
+  hosting_method TEXT DEFAULT 'link' CHECK (hosting_method IN ('link', 'iframe', 'native')),
+  hosting_url TEXT NOT NULL,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'paused')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -246,4 +254,66 @@ CREATE POLICY "Users can view own wallet transactions." ON wallet_transactions F
 CREATE POLICY "Users can insert own wallet transactions." ON wallet_transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_id ON wallet_transactions (user_id);
+
+-- ============================================================================
+-- 11. Task Requests Table (TaskBidder)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS task_requests (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  requester_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  request_type TEXT DEFAULT 'paid' CHECK (request_type IN ('free', 'paid', 'bounty')),
+  budget NUMERIC,
+  deadline TIMESTAMP WITH TIME ZONE,
+  inputs_required JSONB DEFAULT '{}'::JSONB NOT NULL,
+  outputs_delivered JSONB DEFAULT '{}'::JSONB NOT NULL,
+  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'matched', 'completed', 'expired')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE task_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Task requests viewable by everyone." ON task_requests FOR SELECT USING (true);
+CREATE POLICY "Users can create task requests." ON task_requests FOR INSERT WITH CHECK (auth.uid() = requester_id);
+CREATE POLICY "Users can update own task requests." ON task_requests FOR UPDATE USING (auth.uid() = requester_id);
+
+CREATE INDEX IF NOT EXISTS idx_task_requests_requester ON task_requests (requester_id);
+
+-- ============================================================================
+-- 12. Task Bids Table (TaskBidder)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS task_bids (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  request_id UUID REFERENCES task_requests(id) ON DELETE CASCADE NOT NULL,
+  provider_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  bid_amount NUMERIC NOT NULL CHECK (bid_amount >= 0),
+  delivery_time TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE task_bids ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Bids are viewable by requester and provider." ON task_bids FOR SELECT USING (
+  auth.uid() = provider_id OR 
+  EXISTS (
+    SELECT 1 FROM task_requests 
+    WHERE task_requests.id = task_bids.request_id 
+    AND task_requests.requester_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Providers can place bids." ON task_bids FOR INSERT WITH CHECK (auth.uid() = provider_id);
+CREATE POLICY "Providers/Requesters can update bid status." ON task_bids FOR UPDATE USING (
+  auth.uid() = provider_id OR 
+  EXISTS (
+    SELECT 1 FROM task_requests 
+    WHERE task_requests.id = task_bids.request_id 
+    AND task_requests.requester_id = auth.uid()
+  )
+);
+
+CREATE INDEX IF NOT EXISTS idx_task_bids_request ON task_bids (request_id);
+CREATE INDEX IF NOT EXISTS idx_task_bids_provider ON task_bids (provider_id);
 

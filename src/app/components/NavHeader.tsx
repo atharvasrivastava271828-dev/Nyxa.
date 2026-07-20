@@ -37,8 +37,8 @@ export default function NavHeader() {
 
   const navLinks = [
     { href: '/tasks', label: 'Tasks' },
-    { href: '/agents', label: 'Agents' },
-    { href: '/apis', label: 'APIs' },
+    { href: '/bidder', label: 'TaskBidder' },
+    { href: '/developer', label: 'Developer' },
     { href: '/dashboard', label: 'Dashboard' },
   ];
 
