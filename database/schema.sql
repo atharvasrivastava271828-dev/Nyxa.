@@ -192,8 +192,8 @@ CREATE TABLE IF NOT EXISTS wallets (
 ALTER TABLE wallets ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own wallet." ON wallets FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can update own wallet." ON wallets FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own wallet." ON wallets FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Note: All updates to wallet balances (deposits, payouts, debits) must be processed through backend API routes using the admin client. Client-side modifications are disabled.
 
 -- ============================================================================
 -- 9. Agent Allowances Table
@@ -304,15 +304,17 @@ CREATE POLICY "Bids are viewable by requester and provider." ON task_bids FOR SE
   )
 );
 
-CREATE POLICY "Providers can place bids." ON task_bids FOR INSERT WITH CHECK (auth.uid() = provider_id);
-CREATE POLICY "Providers/Requesters can update bid status." ON task_bids FOR UPDATE USING (
-  auth.uid() = provider_id OR 
+CREATE POLICY "Providers can place bids on open requests." ON task_bids FOR INSERT WITH CHECK (
+  auth.uid() = provider_id AND
   EXISTS (
     SELECT 1 FROM task_requests 
-    WHERE task_requests.id = task_bids.request_id 
-    AND task_requests.requester_id = auth.uid()
+    WHERE task_requests.id = request_id 
+    AND task_requests.status = 'open' 
+    AND task_requests.requester_id != auth.uid()
   )
 );
+
+-- Note: All updates to task_bids status must be executed via Next.js server endpoints using the admin client. Client-side updates are disabled.
 
 CREATE INDEX IF NOT EXISTS idx_task_bids_request ON task_bids (request_id);
 CREATE INDEX IF NOT EXISTS idx_task_bids_provider ON task_bids (provider_id);
