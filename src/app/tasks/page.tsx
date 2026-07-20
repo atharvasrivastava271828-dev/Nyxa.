@@ -35,6 +35,7 @@ export default function TasksMarketplace() {
   const [selectedClass, setSelectedClass] = useState<string>('All');
   const [selectedKind, setSelectedKind] = useState<string>('All');
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
+  const [dynamicInputs, setDynamicInputs] = useState<Record<string, string>>({});
 
   const [loading, setLoading] = useState(true);
 
@@ -42,6 +43,9 @@ export default function TasksMarketplace() {
     Business: ['Competitor Analysis', 'Market Research', 'Business Plans', 'SWOT Analysis'],
     Education: ['Quiz Generation', 'Study Plans', 'Notes Summaries', 'Exam Preparation']
   };
+
+  // Get all unique dubs from tasks for the popular tag cloud
+  const allDubs = Array.from(new Set(tasks.flatMap(t => t.dubs || [])));
 
   async function fetchTasks() {
     setLoading(true);
@@ -103,6 +107,14 @@ export default function TasksMarketplace() {
       return;
     }
 
+    // Verify dynamic inputs are filled
+    const inputKeys = Object.keys(task.inputs_required);
+    const missingKeys = inputKeys.filter(k => !dynamicInputs[`${task.id}_${k}`]?.trim());
+    if (missingKeys.length > 0) {
+      alert(`Please fill in the required inputs: ${missingKeys.join(', ')}`);
+      return;
+    }
+
     const platformFee = task.price * 0.10;
     const totalAmount = task.price + platformFee;
 
@@ -111,6 +123,11 @@ export default function TasksMarketplace() {
       `Task Price: $${task.price.toFixed(2)}\n` +
       `Platform Fee (10%): $${platformFee.toFixed(2)}\n` +
       `Total Charged: $${totalAmount.toFixed(2)}\n\n` +
+      `Your Inputs: ${JSON.stringify(
+        inputKeys.reduce((acc, k) => ({ ...acc, [k]: dynamicInputs[`${task.id}_${k}`] }), {}),
+        null,
+        2
+      )}\n\n` +
       `Funds will be held in Escrow until delivery is confirmed.`
     );
 
@@ -163,11 +180,16 @@ export default function TasksMarketplace() {
 
   return (
     <div className="nyxa-container">
-      <div className="border-b border-[var(--border)] pb-6 mb-8">
-        <h1 className="tracking-tight">Task Marketplace</h1>
-        <p className="m-0 text-sm">
-          Browse standardized outcome-based tasks. Focus on results, not tools.
-        </p>
+      <div className="border-b border-[var(--border)] pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="tracking-tight">Task Marketplace</h1>
+          <p className="m-0 text-sm">
+            Browse standardized outcome-based tasks. Focus on results, not tools.
+          </p>
+        </div>
+        <Link href="/bidder" className="nyxa-btn nyxa-btn-primary text-xs py-2 px-6 rounded-md self-start">
+          Custom Task Requests 📋
+        </Link>
       </div>
 
       {/* Guest Alert Banner */}
@@ -178,21 +200,43 @@ export default function TasksMarketplace() {
         </div>
       )}
 
+      {/* Popular Dubs tag cloud */}
+      {allDubs.length > 0 && (
+        <div className="mb-8 border border-[var(--border)] p-4 bg-[var(--card-bg)] rounded-lg">
+          <span className="text-[10px] uppercase font-bold text-[var(--muted)] block mb-3">Popular Dubs Tags</span>
+          <div className="flex flex-wrap gap-2">
+            {allDubs.map(dub => (
+              <button
+                key={dub}
+                onClick={() => setSearchTerm(dub === searchTerm ? '' : dub)}
+                className={`text-xs px-3 py-1 rounded-full font-mono border transition-colors cursor-pointer ${
+                  searchTerm === dub
+                    ? 'bg-[var(--foreground)] text-[var(--background)] border-transparent'
+                    : 'bg-[var(--secondary-bg)] border-[var(--border)] hover:bg-[var(--card-bg)] text-[var(--foreground)]'
+                }`}
+              >
+                {dub}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Structured Layout Grid */}
       <div className="nyxa-grid-sidebar">
         {/* Left Sidebar: Controls & Filters */}
         <aside className="flex flex-col gap-6">
           {/* Marketplace Search Panel */}
           <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-bold text-sm">Search Catalog</h3>
+            <h3 className="border-b border-[var(--border)] pb-2 mb-4 font-bold text-sm">Filters</h3>
             <div className="flex flex-col gap-4">
               <div>
-                <label className="nyxa-label text-[10px]">Keywords / Dubs</label>
+                <label className="nyxa-label text-[10px]">Keywords / Search</label>
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Scraping, }startup, SEO..."
+                  placeholder="Scraping, SEO, quiz..."
                   className="nyxa-input text-xs mt-1"
                 />
               </div>
@@ -230,20 +274,12 @@ export default function TasksMarketplace() {
               )}
             </div>
           </div>
-
-          <div className="nyxa-card bg-[var(--secondary-bg)] border-dashed">
-            <h4 className="text-xs font-semibold mb-2">Need a custom task?</h4>
-            <p className="text-[11px] text-[var(--muted)] mb-3">Post a request on our TaskBidder board and let developers build it.</p>
-            <Link href="/bidder" className="nyxa-btn nyxa-btn-secondary text-center text-xs py-1.5 w-full block">
-              Open TaskBidder
-            </Link>
-          </div>
         </aside>
 
         {/* Right Main Panel: Task Catalog */}
         <section className="flex flex-col gap-4">
           <h2 className="text-base tracking-tight mb-2 font-semibold border-b border-[var(--border)] pb-2 flex justify-between items-center">
-            <span>Standardized Outcomes</span>
+            <span>Marketplace Outcomes</span>
             <span className="tech-mono text-xs text-[var(--muted)]">
               {loading ? 'Loading...' : `${filteredTasks.length} tasks found`}
             </span>
@@ -289,28 +325,65 @@ export default function TasksMarketplace() {
                   ))}
                 </div>
 
-                {/* Expand / View Details drawer */}
-                <div>
+                {/* Outcome Flow Diagram */}
+                <div className="border border-[var(--border)] p-3 bg-[var(--secondary-bg)] rounded-lg my-1 flex flex-col md:flex-row items-center justify-center gap-4 text-center">
+                  <div className="p-2 bg-[var(--card-bg)] border border-[var(--border)] rounded text-[10px] font-semibold w-full md:w-auto">
+                    📥 Input payload
+                  </div>
+                  <div className="text-[var(--muted)] text-sm hidden md:block">&rarr;</div>
+                  <div className="p-2 bg-[var(--foreground)] text-[var(--background)] font-bold rounded text-[10px] w-full md:w-auto">
+                    ⚙️ {task.title}
+                  </div>
+                  <div className="text-[var(--muted)] text-sm hidden md:block">&rarr;</div>
+                  <div className="p-2 bg-[var(--card-bg)] border border-[var(--border)] rounded text-[10px] font-semibold w-full md:w-auto">
+                    📤 Output outcome
+                  </div>
+                </div>
+
+                {/* Dynamic Input Form & Execution Details */}
+                <div className="border-t border-[var(--border)] pt-3.5 mt-2">
                   <button
                     onClick={() => setExpandedTask(expandedTask === task.id ? null : task.id)}
-                    className="text-[10px] text-[var(--muted)] font-semibold hover:text-[var(--foreground)] border-0 bg-transparent cursor-pointer"
+                    className="text-[10px] text-[var(--foreground)] font-semibold hover:underline border-0 bg-transparent cursor-pointer flex items-center gap-1.5"
                   >
-                    {expandedTask === task.id ? 'Hide Details' : 'View Inputs & Outputs Schemas'}
+                    <span>{expandedTask === task.id ? '▼ Close Execution Console' : '▶ Open Execution Console (Try Inputs)'}</span>
                   </button>
 
                   {expandedTask === task.id && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 pt-3 border-t border-[var(--border)]">
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-[var(--muted)] block">Inputs Required</span>
-                        <pre className="p-2.5 mt-1 bg-[var(--secondary-bg)] rounded text-[10px] tech-mono overflow-auto max-h-[150px]">
-                          {JSON.stringify(task.inputs_required, null, 2)}
-                        </pre>
+                    <div className="mt-4 p-4 bg-[var(--secondary-bg)] border border-[var(--border)] rounded-lg flex flex-col gap-4">
+                      <h4 className="text-xs font-bold border-b border-[var(--border)] pb-1.5 m-0">Provide Input Parameters</h4>
+                      
+                      <div className="grid grid-cols-1 gap-3">
+                        {Object.keys(task.inputs_required).map(key => (
+                          <div key={key}>
+                            <label className="text-[10px] uppercase font-bold text-[var(--muted)] block">{key}</label>
+                            <input
+                              type={typeof task.inputs_required[key] === 'number' ? 'number' : 'text'}
+                              placeholder={`e.g. ${task.inputs_required[key] || 'string'}`}
+                              value={dynamicInputs[`${task.id}_${key}`] || ''}
+                              onChange={(e) => setDynamicInputs({
+                                ...dynamicInputs,
+                                [`${task.id}_${key}`]: e.target.value
+                              })}
+                              className="w-full mt-1 p-2 bg-[var(--card-bg)] border border-[var(--border)] rounded text-xs tech-mono"
+                            />
+                          </div>
+                        ))}
                       </div>
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-[var(--muted)] block">Outputs Delivered</span>
-                        <pre className="p-2.5 mt-1 bg-[var(--secondary-bg)] rounded text-[10px] tech-mono overflow-auto max-h-[150px]">
-                          {JSON.stringify(task.outputs_delivered, null, 2)}
-                        </pre>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[var(--border)] pt-3 mt-1">
+                        <div>
+                          <span className="text-[9px] uppercase font-bold text-[var(--muted)] block">Input Specification JSON</span>
+                          <pre className="p-2 mt-1 bg-[var(--card-bg)] border border-[var(--border)] rounded text-[9px] tech-mono overflow-auto max-h-[80px]">
+                            {JSON.stringify(task.inputs_required, null, 2)}
+                          </pre>
+                        </div>
+                        <div>
+                          <span className="text-[9px] uppercase font-bold text-[var(--muted)] block">Delivered Output JSON</span>
+                          <pre className="p-2 mt-1 bg-[var(--card-bg)] border border-[var(--border)] rounded text-[9px] tech-mono overflow-auto max-h-[80px]">
+                            {JSON.stringify(task.outputs_delivered, null, 2)}
+                          </pre>
+                        </div>
                       </div>
                     </div>
                   )}

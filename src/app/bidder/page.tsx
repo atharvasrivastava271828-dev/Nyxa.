@@ -292,10 +292,24 @@ export default function TaskBidderBoard() {
                   </div>
 
                   <p className="text-xs text-[var(--muted)] mt-2">{req.description}</p>
+
+                  {/* Activity Stepper */}
+                  <div className="flex flex-wrap items-center gap-3 mt-3 p-3 bg-[var(--secondary-bg)] border border-[var(--border)] rounded-lg text-[9px] font-bold uppercase tracking-wider">
+                    <span className={req.status === 'open' ? 'text-[var(--foreground)] border-b-2 border-[var(--foreground)] pb-0.5' : 'text-[var(--muted)]'}>
+                      ⏳ 1. Bidding
+                    </span>
+                    <span className="text-[var(--border)] font-normal">&rarr;</span>
+                    <span className={req.status === 'matched' ? 'text-[var(--foreground)] border-b-2 border-[var(--foreground)] pb-0.5' : 'text-[var(--muted)]'}>
+                      🔒 2. Escrow Locked
+                    </span>
+                    <span className="text-[var(--border)] font-normal">&rarr;</span>
+                    <span className={req.status === 'completed' ? 'text-[var(--foreground)] border-b-2 border-[var(--foreground)] pb-0.5' : 'text-[var(--muted)]'}>
+                      ✅ 3. Completed
+                    </span>
+                  </div>
                   
                   <div className="flex gap-4 mt-3 text-[10px] text-[var(--muted)] font-mono">
-                    <span>Status: <strong className="text-[var(--foreground)]">{req.status.toUpperCase()}</strong></span>
-                    <span>Ends: {new Date(req.deadline).toLocaleDateString()}</span>
+                    <span>Deadline: {new Date(req.deadline).toLocaleDateString()}</span>
                   </div>
 
                   {/* Bids drawer section */}
