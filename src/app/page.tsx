@@ -64,7 +64,7 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center mb-6 select-none relative h-48 w-48" style={{ color: 'var(--foreground)' }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-full h-full transition-transform hover:rotate-180 duration-1000 ease-in-out drop-shadow-2xl">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="0.5" fill="none" />
-            <path d="M12 2 A 5 5 0 0 1 12 12 A 5 5 0 0 0 12 22 A 10 10 0 0 0 12 2 Z" fill="currentColor" />
+            <path d="M12 2 A 5 5 0 0 0 12 12 A 5 5 0 0 1 12 22 A 10 10 0 0 0 12 2 Z" fill="currentColor" />
             <circle cx="12" cy="7" r="1.5" style={{ fill: 'var(--background)' }} />
             <circle cx="12" cy="17" r="1.5" fill="currentColor" />
           </svg>
