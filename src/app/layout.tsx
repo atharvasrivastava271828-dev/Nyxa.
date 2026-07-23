@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* Preload critical LCP logo asset */}
-        <link rel="preload" as="image" href="/yinyang.png" />
+
         
         {/* Inline theme script — runs before any paint to avoid flash */}
         <script

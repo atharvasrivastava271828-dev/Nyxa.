@@ -68,7 +68,14 @@ export default function Register() {
       <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
         <div className="text-center mb-6 flex flex-col items-center">
           {/* Logo mark */}
-          <img src="/yinyang.png" alt="Nyxa Logo" className="h-16 w-auto object-contain theme-logo mb-4" />
+          <div className="mb-4 h-16 w-16" style={{ color: 'var(--foreground)' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-full h-full transition-transform hover:rotate-180 duration-1000 ease-in-out">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="0.5" fill="none" />
+              <path d="M12 2 A 5 5 0 0 1 12 12 A 5 5 0 0 0 12 22 A 10 10 0 0 0 12 2 Z" fill="currentColor" />
+              <circle cx="12" cy="7" r="1.5" style={{ fill: 'var(--background)' }} />
+              <circle cx="12" cy="17" r="1.5" fill="currentColor" />
+            </svg>
+          </div>
           <h1 className="text-xl tracking-tight m-0 font-semibold">Create your account</h1>
           <p className="text-xs text-[var(--muted)] mt-1">
             Join Nyxa — it&apos;s free to get started
