@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/hooks/useAuth';
 
@@ -96,9 +96,8 @@ export default function DeveloperPortal() {
     Education: ['Quiz Generation', 'Study Plans', 'Notes Summaries', 'Exam Preparation']
   };
 
-  const fetchDeveloperData = async () => {
+  const fetchDeveloperData = useCallback(async () => {
     if (!userId) return;
-    setLoading(true);
     try {
       const [resTasks, resAgents, resApis, resRequests] = await Promise.all([
         fetch('/api/tasks'),
@@ -132,13 +131,14 @@ export default function DeveloperPortal() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     if (userId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchDeveloperData();
     }
-  }, [userId]);
+  }, [userId, fetchDeveloperData]);
 
   const handleRegisterTask = async (e: React.FormEvent) => {
     e.preventDefault();

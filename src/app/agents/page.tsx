@@ -74,7 +74,7 @@ export default function AgentMarketplace() {
                 is_provider: !!rolesArr.is_provider || !!rolesArr.is_developer || !!rolesArr.is_seller
               });
             }
-          } catch (e) {
+          } catch (_e) {
             setUserRoles(null);
           }
         }
@@ -409,7 +409,7 @@ export default function AgentMarketplace() {
                          const data = await res.json();
                          alert('Failed to load agents: ' + (data.error || 'Unknown error'));
                       }
-                    } catch (err) {
+                    } catch (_err) {
                       alert('Failed to load agents.');
                     } finally {
                       setLoading(false);

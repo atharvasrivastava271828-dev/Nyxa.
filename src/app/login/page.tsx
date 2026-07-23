@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState } from 'react';
@@ -49,7 +50,7 @@ export default function Login() {
       <div className="nyxa-card p-8 border-2 border-[var(--foreground)]">
         <div className="text-center mb-6 flex flex-col items-center">
           {/* Logo mark */}
-          <img src="/logo.png" alt="Nyxa Logo" className="h-16 w-auto object-contain theme-logo mb-4" />
+          <img src="/yinyang.png" alt="Nyxa Logo" className="h-16 w-auto object-contain theme-logo mb-4" />
           <h1 className="text-xl tracking-tight m-0 font-semibold">Welcome back</h1>
           <p className="text-xs text-[var(--muted)] mt-1">
             Sign in to your Nyxa account

@@ -41,7 +41,7 @@ export function useAuth() {
                 is_provider: !!parsed.is_provider || !!parsed.is_developer || !!parsed.is_seller
               });
             }
-          } catch (e) {
+          } catch (_e) {
             setUserRoles({ is_buyer: false, is_provider: false });
           }
         }
@@ -92,8 +92,8 @@ export function useAuth() {
     setUserRoles({ is_buyer: false, is_provider: false });
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (e) {
-      console.error(e);
+    } catch (_e) {
+      console.error(_e);
     }
   };
 

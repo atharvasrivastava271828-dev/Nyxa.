@@ -218,7 +218,7 @@ export default function Dashboard() {
         try {
           const errorData = await response.json();
           if (errorData.error) errorMsg = errorData.error;
-        } catch (e) {
+        } catch (_e) {
           // ignore json parse error
         }
         alert(errorMsg);
@@ -608,7 +608,7 @@ export default function Dashboard() {
                                         });
                                         if (!res.ok) throw new Error('Failed to release escrow');
                                         fetchDashboardData(userId as string);
-                                      } catch (err) {
+                                      } catch (_err) {
                                         alert('Error releasing escrow.');
                                       }
                                     }

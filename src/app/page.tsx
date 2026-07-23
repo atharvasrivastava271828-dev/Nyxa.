@@ -64,7 +64,7 @@ export default function Home() {
         {/* NYXA Logo in Hero */}
         <div className="flex flex-col items-center mb-6 select-none relative h-64 w-64">
           <Image 
-            src="/logo.png" 
+            src="/yinyang.png" 
             alt="Nyxa Logo" 
             fill
             className="object-contain theme-logo"

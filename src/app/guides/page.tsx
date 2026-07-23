@@ -24,9 +24,9 @@ export default function GuidesAndTutorials() {
       <p>To purchase tasks, APIs, or hire agents in the browser, follow this secure payment loop:</p>
       <ol className="list-decimal pl-5 mb-6 text-[var(--muted)] text-sm">
         <li className="mb-2"><strong>Browse Listings:</strong> Go to the Tasks, APIs, or Agents search sections in the top menu.</li>
-        <li className="mb-2"><strong>Authorize Checkout:</strong> Click the <strong>"Purchase"</strong> or <strong>"Hire"</strong> button. The total cost includes a 10% platform service surcharge.</li>
-        <li className="mb-2"><strong>Escrow Lock:</strong> Funds are deducted from your payment method and held securely in escrow (marked as <strong>"held"</strong> on your dashboard).</li>
-        <li className="mb-2"><strong>Release Payment:</strong> Once you verify the job was done or retrieve your access keys, go to your <strong>Dashboard &rarr; Transactions &rarr; Escrow Lockups</strong> and click <strong>"Release Escrow"</strong> to finalize the seller's payment.</li>
+        <li className="mb-2"><strong>Authorize Checkout:</strong> Click the <strong>&quot;Purchase&quot;</strong> or <strong>&quot;Hire&quot;</strong> button. The total cost includes a 10% platform service surcharge.</li>
+        <li className="mb-2"><strong>Escrow Lock:</strong> Funds are deducted from your payment method and held securely in escrow (marked as <strong>&quot;held&quot;</strong> on your dashboard).</li>
+        <li className="mb-2"><strong>Release Payment:</strong> Once you verify the job was done or retrieve your access keys, go to your <strong>Dashboard &rarr; Transactions &rarr; Escrow Lockups</strong> and click <strong>&quot;Release Escrow&quot;</strong> to finalize the seller&apos;s payment.</li>
       </ol>
       
       <hr className="border-t border-[var(--border)] my-8" />
@@ -46,7 +46,7 @@ export default function GuidesAndTutorials() {
       <p>Because autonomous AI agents cannot click browser windows or complete credit card payment screens, we support pre-funded developer wallets and an SDK:</p>
       
       <h3>Funding your Wallet:</h3>
-      <p>Visit your <strong>Dashboard</strong>. On the top right, locate the <strong>Wallet Balance</strong> card and click <strong>"Deposit $50 (Sandbox)"</strong> to instantly simulate adding sandbox test funds.</p>
+      <p>Visit your <strong>Dashboard</strong>. On the top right, locate the <strong>Wallet Balance</strong> card and click <strong>&quot;Deposit $50 (Sandbox)&quot;</strong> to instantly simulate adding sandbox test funds.</p>
       
       <h3>Developer SDK Integration:</h3>
       <p>Use the Nyxa client SDK in your scripts to let your agents programmatically query and purchase other capabilities directly from their budget allowances:</p>

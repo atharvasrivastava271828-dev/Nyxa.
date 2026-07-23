@@ -9,7 +9,7 @@ export const createServerSupabaseClient = async () => {
   try {
     const cookieStore = await cookies();
     token = cookieStore.get('sb-access-token')?.value;
-  } catch (err) {
+  } catch (_err) {
     // cookies() might throw if not called from a request context
   }
 
@@ -21,7 +21,7 @@ export const createServerSupabaseClient = async () => {
       if (authHeader && authHeader.startsWith('Bearer ')) {
         token = authHeader.substring(7);
       }
-    } catch (err) {
+    } catch (_err) {
       // headers() might throw outside request context
     }
   }
@@ -51,7 +51,7 @@ export const getAuthenticatedUser = async () => {
       return null;
     }
     return user;
-  } catch (err) {
+  } catch (_err) {
     return null;
   }
 };

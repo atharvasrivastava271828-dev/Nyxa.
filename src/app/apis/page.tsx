@@ -19,7 +19,7 @@ function generateMockPaymentId() {
 }
 
 export default function ApiMarketplace() {
-  const { userId, userName, userRoles, loading: authLoading } = useAuth();
+  const { userId, userName, userRoles } = useAuth();
   
   const [apis, setApis] = useState<DeveloperApi[]>([]);
   
