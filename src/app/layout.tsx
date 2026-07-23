@@ -4,7 +4,7 @@ import Link from 'next/link';
 import NavHeader from '@/app/components/NavHeader';
 
 export const metadata: Metadata = {
-  title: 'Nyxa. — The AI Capability Exchange',
+  title: 'Nyxa — The AI Capability Exchange',
   description: 'Discover, purchase, and integrate predefined AI tasks, agents, and APIs — all with secure escrow payments.',
   icons: {
     icon: '/favicon.svg',
@@ -54,7 +54,7 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <Link href="/" className="flex items-center text-decoration-none group">
               <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
-                Nyxa.
+                Nyxa
               </span>
             </Link>
 
@@ -78,7 +78,7 @@ export default function RootLayout({
 
           {/* Legal Bar */}
           <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-[10px] text-[var(--muted)] m-0">© 2026 Nyxa.</p>
+            <p className="text-[10px] text-[var(--muted)] m-0">© 2026 Nyxa</p>
             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2">
               <Link href="/cookies" className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors uppercase tracking-widest font-semibold">
                 Cookie Policy

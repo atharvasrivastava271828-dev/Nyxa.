@@ -48,7 +48,7 @@ export default function NavHeader() {
         {/* Logo */}
         <Link href="/" className="flex items-center text-decoration-none group">
           <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
-            Nyxa.
+            Nyxa
           </span>
         </Link>
 
