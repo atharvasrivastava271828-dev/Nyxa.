@@ -11,7 +11,7 @@
   <circle cx="50" cy="50" r="48" fill="url(#goldenHalo)" />
   
   <!-- Yin-Yang Base with a Golden Stroke to ensure visibility on all backgrounds -->
-  <circle cx="50" cy="50" r="36" fill="#050505" stroke="#FFDF00" stroke-width="2" />
+  <circle cx="50" cy="50" r="36" fill="#050505" stroke="#FFDF00" stroke-width="0.5" />
   
   <!-- Yin-Yang White S-curve (Left Side) -->
   <path d="M 50 14 A 36 36 0 0 0 50 86 A 18 18 0 0 0 50 50 A 18 18 0 0 1 50 14 Z" fill="#FFFFFF"/>
