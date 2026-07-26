@@ -86,9 +86,9 @@ export default function Home() {
         
         {/* User Guide Button */}
         <div className="mt-6">
-          <Link href="/guides" className="nyxa-btn nyxa-btn-secondary text-xs px-6 py-2">
-            📖 Read User Guide & Tutorials
-          </Link>
+          <a href="#how-it-works" className="nyxa-btn nyxa-btn-secondary text-xs px-6 py-2 border-[var(--halo-2)] hover:shadow-[0_0_15px_var(--halo-1)] transition-shadow duration-300">
+            ⚡ See How It Works
+          </a>
         </div>
       </section>
 
@@ -173,7 +173,7 @@ export default function Home() {
       </section>
 
       {/* 4. How It Works (User Guide) */}
-      <section className="py-16 border-b border-[var(--border)]">
+      <section id="how-it-works" className="py-16 border-b border-[var(--border)] scroll-mt-20">
         <h2 className="text-2xl tracking-tight mb-2 text-center font-bold">How Nyxa Works</h2>
         <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
           Skip the prompt engineering. Buy digital labor exactly like you buy physical products.
