@@ -34,6 +34,10 @@ export default function TasksMarketplace() {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
 
+  // AI Search State
+  const [isAiSearching, setIsAiSearching] = useState(false);
+  const [aiMatchedIds, setAiMatchedIds] = useState<string[] | null>(null);
+
   const [checkoutTask, setCheckoutTask] = useState<Task | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
@@ -71,6 +75,12 @@ export default function TasksMarketplace() {
 
   // Compute filtered tasks dynamically
   const filteredTasks = tasks.filter(task => {
+    // If AI has performed a semantic search, strictly use those matches
+    if (aiMatchedIds !== null) {
+      return aiMatchedIds.includes(task.id);
+    }
+    
+    // Otherwise fallback to simple keyword matching
     const query = searchTerm.toLowerCase();
     return (
       searchTerm.trim() === '' ||
@@ -79,6 +89,32 @@ export default function TasksMarketplace() {
       task.dubs.some(tag => tag.toLowerCase().includes(query))
     );
   });
+
+  const handleAiSearch = async () => {
+    if (!searchTerm.trim()) {
+      setAiMatchedIds(null);
+      return;
+    }
+    setIsAiSearching(true);
+    try {
+      const res = await fetch('/api/tasks/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: searchTerm })
+      });
+      const data = await res.json();
+      if (res.ok && data.matchedIds) {
+        setAiMatchedIds(data.matchedIds);
+      } else {
+        setAiMatchedIds(null); // Fallback to keyword
+      }
+    } catch (err) {
+      console.error('AI search failed', err);
+      setAiMatchedIds(null);
+    } finally {
+      setIsAiSearching(false);
+    }
+  };
 
   // Extract all unique dubs
   const allDubs = Array.from(new Set(tasks.flatMap(t => t.dubs)));
@@ -146,26 +182,46 @@ export default function TasksMarketplace() {
         </p>
         
         {/* Massive Search Bar */}
-        <div className="w-full max-w-2xl relative mb-6">
+        <div className="w-full max-w-2xl relative mb-6 flex items-center shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-full transition-shadow hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-[var(--foreground)] bg-[var(--background)]">
           <input
             type="text"
             placeholder="Search for Market Research, SEO, Design..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-4 pl-6 pr-16 bg-[var(--background)] border-2 border-[var(--foreground)] rounded-full text-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] focus:outline-none transition-shadow hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (e.target.value === '') setAiMatchedIds(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleAiSearch();
+              }
+            }}
+            className="w-full p-4 pl-6 text-lg focus:outline-none bg-transparent"
           />
-          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-50">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-          </div>
+          <button 
+            onClick={handleAiSearch}
+            disabled={isAiSearching}
+            className="absolute right-2 px-5 py-2.5 bg-[var(--foreground)] text-[var(--background)] rounded-full font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+          >
+            {isAiSearching ? (
+               <div className="w-4 h-4 border-2 border-[var(--background)]/30 border-t-[var(--background)] rounded-full animate-spin"></div>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+              </svg>
+            )}
+            AI Match
+          </button>
         </div>
 
         {/* Quick Filter Dubs */}
         {!loading && allDubs.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 max-w-3xl">
             <button 
-              onClick={() => setSearchTerm('')} 
+              onClick={() => {
+                setSearchTerm('');
+                setAiMatchedIds(null);
+              }} 
               className={`text-xs px-4 py-2 rounded-full font-medium transition-all ${searchTerm === '' ? 'bg-[var(--foreground)] text-[var(--background)] shadow-md' : 'bg-[var(--secondary-bg)] text-[var(--muted)] hover:text-[var(--foreground)]'}`}
             >
               All
@@ -173,7 +229,10 @@ export default function TasksMarketplace() {
             {allDubs.map(dub => (
               <button
                 key={dub}
-                onClick={() => setSearchTerm(dub)}
+                onClick={() => {
+                  setSearchTerm(dub);
+                  setAiMatchedIds(null); // Dub clicks bypass AI for strict keyword match
+                }}
                 className={`text-xs px-4 py-2 rounded-full font-medium transition-all ${searchTerm === dub ? 'bg-[var(--foreground)] text-[var(--background)] shadow-md' : 'bg-[var(--secondary-bg)] text-[var(--muted)] hover:text-[var(--foreground)]'}`}
               >
                 {dub}
