@@ -264,7 +264,7 @@ export default function TaskBidderBoard() {
             className="absolute inset-0 bg-[var(--background)]/60 backdrop-blur-md transition-opacity animate-in fade-in duration-300" 
             onClick={() => setIsFormOpen(false)}
           ></div>
-          <div className="relative bg-[var(--card-bg)] border border-[var(--border)]/50 rounded-[2.5rem] p-8 max-w-md w-full shadow-[0_20px_60px_rgb(0,0,0,0.12)] flex flex-col animate-in zoom-in-95 fade-in duration-300 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-[var(--card-bg)] border border-[var(--border)]/50 rounded-[2.5rem] p-8 max-w-md w-full shadow-[0_20px_60px_rgb(0,0,0,0.12)] flex flex-col animate-in zoom-in-95 fade-in duration-300 max-h-[90vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             
             <div className="flex justify-between items-center border-b border-[var(--border)]/50 pb-4 mb-6">
               <h3 className="font-bold text-xl tracking-tight">Describe Your Need</h3>

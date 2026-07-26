@@ -407,26 +407,25 @@ export default function DeveloperPortal() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-[10px] uppercase font-semibold text-[var(--muted)]">Class</label>
-                        <select
+                        <input
+                          type="text"
+                          placeholder="e.g. Business Tasks, Data Science, etc."
                           value={taskForm.class}
-                          onChange={(e) => setTaskForm({ ...taskForm, class: e.target.value, kind: validKindsMap[e.target.value][0] })}
+                          onChange={(e) => setTaskForm({ ...taskForm, class: e.target.value })}
                           className="w-full mt-1 p-2 bg-[var(--secondary-bg)] border border-[var(--border)] rounded text-sm"
-                        >
-                          <option value="Business">Business Tasks</option>
-                          <option value="Education">Education Tasks</option>
-                        </select>
+                          required
+                        />
                       </div>
                       <div>
                         <label className="text-[10px] uppercase font-semibold text-[var(--muted)]">Kind</label>
-                        <select
+                        <input
+                          type="text"
+                          placeholder="e.g. Competitor Analysis, NLP Model, etc."
                           value={taskForm.kind}
                           onChange={(e) => setTaskForm({ ...taskForm, kind: e.target.value })}
                           className="w-full mt-1 p-2 bg-[var(--secondary-bg)] border border-[var(--border)] rounded text-sm"
-                        >
-                          {validKindsMap[taskForm.class].map(k => (
-                            <option key={k} value={k}>{k}</option>
-                          ))}
-                        </select>
+                          required
+                        />
                       </div>
                     </div>
 
