@@ -4,7 +4,7 @@ import Link from 'next/link';
 import NavHeader from '@/app/components/NavHeader';
 
 export const metadata: Metadata = {
-  title: 'Nyxa — The Ultimate Task Exchange',
+  title: 'Nyxa — Frictionless Execution',
   description: 'Discover, purchase, and integrate predefined digital tasks and workflow solutions — all with secure escrow payments.',
   icons: {
     icon: '/favicon.svg',
