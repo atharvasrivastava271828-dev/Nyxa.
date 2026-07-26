@@ -2,17 +2,16 @@
   <defs>
     <!-- Subtle Golden Halo Gradient -->
     <radialGradient id="goldenHalo" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FFDF00" stop-opacity="0.8"/>
-      <stop offset="60%" stop-color="#D4AF37" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="60%" stop-color="#FFDF00" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#FFDF00" stop-opacity="0"/>
     </radialGradient>
   </defs>
   
   <!-- Golden Halo Aura -->
   <circle cx="50" cy="50" r="48" fill="url(#goldenHalo)" />
   
-  <!-- Yin-Yang Black Base -->
-  <circle cx="50" cy="50" r="36" fill="#050505" />
+  <!-- Yin-Yang Base with a Golden Stroke to ensure visibility on all backgrounds -->
+  <circle cx="50" cy="50" r="36" fill="#050505" stroke="#FFDF00" stroke-width="2" />
   
   <!-- Yin-Yang White S-curve (Left Side) -->
   <path d="M 50 14 A 36 36 0 0 0 50 86 A 18 18 0 0 0 50 50 A 18 18 0 0 1 50 14 Z" fill="#FFFFFF"/>
