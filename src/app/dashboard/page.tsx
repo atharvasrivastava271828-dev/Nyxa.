@@ -349,18 +349,6 @@ export default function Dashboard() {
           My Tasks
         </button>
         <button
-          onClick={() => setActiveTab('agents')}
-          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'agents' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
-        >
-          My Agents
-        </button>
-        <button
-          onClick={() => setActiveTab('apis')}
-          className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'apis' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
-        >
-          My APIs
-        </button>
-        <button
           onClick={() => setActiveTab('transactions')}
           className={`nyxa-btn text-xs py-1.5 px-4 rounded-md ${activeTab === 'transactions' ? 'nyxa-btn-primary' : 'nyxa-btn-secondary'}`}
         >
@@ -629,97 +617,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* TAB: AGENTS */}
-          {activeTab === 'agents' && (
-            <div>
-              <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
-                My registered agents
-              </h2>
-              {myAgents.length === 0 ? (
-                <p className="text-xs text-[var(--muted)]">
-                  You haven&apos;t registered any agents yet.
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {myAgents.map(agent => (
-                    <div key={agent.id} className="nyxa-card rounded-lg">
-                      <div className="flex justify-between items-start gap-4 mb-2">
-                        <div>
-                          <h3 className="mb-0.5 text-sm font-semibold">{agent.name}</h3>
-                          <span className="tech-mono text-[9px] text-[var(--muted)] select-all">Agent ID: {agent.id}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-xs font-bold text-[var(--foreground)] tech-mono">
-                            ★ {agent.score.toFixed(1)}
-                          </span>
-                          <div className="text-[8px] text-[var(--muted)] tracking-wider">{agent.total_transactions} completed</div>
-                        </div>
-                      </div>
-                      
-                      <p className="text-xs leading-relaxed flex-grow mt-2 mb-4">{agent.description}</p>
-                      
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {agent.capabilities.map(cap => (
-                          <span key={cap} className="tech-mono text-[9px] bg-[var(--secondary-bg)] px-1.5 py-0.5 border border-[var(--border)] rounded">
-                            #{cap}
-                          </span>
-                        ))}
-                      </div>
-                      
-                      <div className="border-t border-[var(--border)] pt-3 flex justify-between items-center mt-auto">
-                        <span className="text-[9px] uppercase text-[var(--muted)] tracking-wider">Usage rate</span>
-                        <strong className="tech-mono text-xs">${agent.price_demand.toFixed(2)} / run</strong>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* TAB: APIS */}
-          {activeTab === 'apis' && (
-            <div>
-              <h2 className="text-base font-semibold border-b border-[var(--border)] pb-2 mb-4">
-                My registered APIs
-              </h2>
-              {myApis.length === 0 ? (
-                <p className="text-xs text-[var(--muted)]">
-                  You haven&apos;t registered any APIs yet.
-                </p>
-              ) : (
-                <div className="nyxa-table-wrapper rounded-lg">
-                  <table className="nyxa-table">
-                    <thead>
-                      <tr>
-                        <th>API</th>
-                        <th>Category</th>
-                        <th>Endpoint</th>
-                        <th>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {myApis.map(api => (
-                        <tr key={api.id}>
-                          <td>
-                            <div className="font-semibold">{api.name}</div>
-                            <span className="tech-mono text-[9px] text-[var(--muted)] select-all">{api.id}</span>
-                          </td>
-                          <td>
-                            <span className="nyxa-badge text-[10px]">{api.category}</span>
-                          </td>
-                          <td className="tech-mono text-xs select-all">
-                            {api.endpoint_url}
-                          </td>
-                          <td className="tech-mono font-semibold">${api.price.toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* TAB: TRANSACTIONS */}
           {activeTab === 'transactions' && (

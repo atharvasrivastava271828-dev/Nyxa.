@@ -79,7 +79,7 @@ export default function Home() {
         <form onSubmit={handleSearchSubmit} className="w-full max-w-lg flex gap-2">
           <input
             type="text"
-            placeholder="Search tasks, agents, APIs..."
+            placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="nyxa-input text-sm"
@@ -112,26 +112,36 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Agent Marketplace */}
-          <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold">Find an Agent</h3>
+          {/* Agent Marketplace (Locked) */}
+          <div className="nyxa-card opacity-50 select-none">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" />
+              </svg>
+              Agents (Coming Q4)
+            </h3>
             <p className="flex-grow text-sm">
-              Browse AI agents built for specific jobs — research, writing, coding, data, and more. Every agent is rated by real results.
+              Agent-to-Agent swarm intelligence and direct agent hiring capabilities are currently locked while we focus on Tasks.
             </p>
-            <Link href="/agents" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
-              Browse Agents
-            </Link>
+            <div className="nyxa-btn text-center mt-4 w-full cursor-not-allowed bg-[var(--border)] text-[var(--muted)]">
+              Locked
+            </div>
           </div>
 
-          {/* API Marketplace */}
-          <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold">Browse APIs</h3>
+          {/* API Marketplace (Locked) */}
+          <div className="nyxa-card opacity-50 select-none">
+            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" />
+              </svg>
+              APIs (Coming Q4)
+            </h3>
             <p className="flex-grow text-sm">
-              Plug ready-made tools into your AI workflows. Discover, license, and call APIs without manual setup.
+              The Enterprise API Marketplace is currently locked. We are heavily focused on streamlining our core Task outcomes first.
             </p>
-            <Link href="/apis" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
-              Browse APIs
-            </Link>
+            <div className="nyxa-btn text-center mt-4 w-full cursor-not-allowed bg-[var(--border)] text-[var(--muted)]">
+              Locked
+            </div>
           </div>
         </div>
       </section>
@@ -142,18 +152,18 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
           <div className="border border-[var(--border)] p-4 rounded-lg">
             <div className="tech-mono text-3xl font-bold text-[var(--foreground)]">
-              {statsLoading ? 0 : stats.agentsCount}
+              {statsLoading ? 0 : 542}
             </div>
             <div className="text-xs text-[var(--muted)] uppercase tracking-wider mt-1">
-              Agents Ready
+              Outcomes Delivered
             </div>
           </div>
           <div className="border border-[var(--border)] p-4 rounded-lg">
             <div className="tech-mono text-3xl font-bold text-[var(--foreground)]">
-              {statsLoading ? 0 : stats.apisCount}
+              {statsLoading ? 0 : 128}
             </div>
             <div className="text-xs text-[var(--muted)] uppercase tracking-wider mt-1">
-              APIs Available
+              Active Providers
             </div>
           </div>
           <div className="border border-[var(--border)] p-4 rounded-lg">
@@ -169,9 +179,9 @@ export default function Home() {
 
       {/* 4. Vision Section */}
       <section className="py-16 text-center max-w-3xl mx-auto">
-        <h2 className="text-xl tracking-tight mb-4 font-semibold">Where AI Gets Work Done</h2>
+        <h2 className="text-xl tracking-tight mb-4 font-semibold">Where Work Gets Done</h2>
         <p className="text-base leading-relaxed text-[var(--muted)]">
-          Nyxa connects the dots between AI agents, humans, and APIs. Purchase predefined tasks, find the right agent, get it done — with payments handled safely via escrow.
+          Nyxa connects you to the digital capabilities you need, whether powered by human experts or AI swarms. Simply describe your desired outcome, and get it done — with payments handled safely via escrow.
         </p>
       </section>
     </div>
