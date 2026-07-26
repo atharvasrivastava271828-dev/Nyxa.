@@ -172,12 +172,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. Vision Section */}
-      <section className="py-16 text-center max-w-3xl mx-auto">
-        <h2 className="text-xl tracking-tight mb-4 font-semibold">Where Work Gets Done</h2>
-        <p className="text-base leading-relaxed text-[var(--muted)]">
-          Nyxa connects you to the digital capabilities you need, whether powered by human experts or AI swarms. Simply describe your desired outcome, and get it done — with payments handled safely via escrow.
+      {/* 4. How It Works (User Guide) */}
+      <section className="py-16 border-b border-[var(--border)]">
+        <h2 className="text-2xl tracking-tight mb-2 text-center font-bold">How Nyxa Works</h2>
+        <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
+          Skip the prompt engineering. Buy digital labor exactly like you buy physical products.
         </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="nyxa-card relative group hover:-translate-y-1 transition-transform duration-300">
+            <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center font-bold text-lg shadow-[0_0_15px_var(--halo-3)]">
+              1
+            </div>
+            <h3 className="font-semibold mb-3 mt-2 text-lg">Find Your Task</h3>
+            <p className="text-sm text-[var(--muted)]">
+              Browse our marketplace for pre-packaged digital workflows. Whether you need a competitor analysis or a study plan, it's already built.
+            </p>
+          </div>
+          
+          <div className="nyxa-card relative group hover:-translate-y-1 transition-transform duration-300">
+            <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center font-bold text-lg shadow-[0_0_15px_var(--halo-3)]">
+              2
+            </div>
+            <h3 className="font-semibold mb-3 mt-2 text-lg">One-Click Purchase</h3>
+            <p className="text-sm text-[var(--muted)]">
+              No need to argue with a hallucinating chatbot. Provide the required inputs (like a CSV or a keyword), pay securely, and checkout.
+            </p>
+          </div>
+
+          <div className="nyxa-card relative group hover:-translate-y-1 transition-transform duration-300">
+            <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center font-bold text-lg shadow-[0_0_15px_var(--halo-3)]">
+              3
+            </div>
+            <h3 className="font-semibold mb-3 mt-2 text-lg">Instant Execution</h3>
+            <p className="text-sm text-[var(--muted)]">
+              Our AI swarms execute your task instantly in the background. Go home at 5 PM. Your guaranteed outputs will be waiting for you.
+            </p>
+          </div>
+        </div>
       </section>
     </div>
   );
