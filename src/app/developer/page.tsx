@@ -370,20 +370,18 @@ export default function DeveloperPortal() {
               💼 Standardized Tasks
             </button>
             <button
-              onClick={() => setActiveSubTab('agents')}
-              className={`w-full text-left py-2.5 px-4 text-xs font-semibold rounded-lg border ${
-                activeSubTab === 'agents' ? 'bg-[var(--foreground)] text-[var(--background)] border-transparent' : 'bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:bg-[var(--secondary-bg)]'
-              }`}
+              disabled
+              className="w-full flex justify-between items-center py-2.5 px-4 text-xs font-semibold rounded-lg border bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] opacity-50 cursor-not-allowed"
             >
-              🤖 Agentic Capabilities
+              <span>🤖 Agentic Capabilities</span>
+              <span className="text-[9px] uppercase tracking-wider font-bold bg-[var(--background)] px-2 py-0.5 rounded text-[var(--muted)]">Locked</span>
             </button>
             <button
-              onClick={() => setActiveSubTab('apis')}
-              className={`w-full text-left py-2.5 px-4 text-xs font-semibold rounded-lg border ${
-                activeSubTab === 'apis' ? 'bg-[var(--foreground)] text-[var(--background)] border-transparent' : 'bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:bg-[var(--secondary-bg)]'
-              }`}
+              disabled
+              className="w-full flex justify-between items-center py-2.5 px-4 text-xs font-semibold rounded-lg border bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] opacity-50 cursor-not-allowed"
             >
-              🔌 Developer APIs
+              <span>🔌 Developer APIs</span>
+              <span className="text-[9px] uppercase tracking-wider font-bold bg-[var(--background)] px-2 py-0.5 rounded text-[var(--muted)]">Locked</span>
             </button>
             <button
               onClick={() => setActiveSubTab('requests')}
