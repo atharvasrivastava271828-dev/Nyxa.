@@ -4,7 +4,7 @@ import Link from 'next/link';
 import NavHeader from '@/app/components/NavHeader';
 
 export const metadata: Metadata = {
-  title: 'Nyxa — The Shortcut Party',
+  title: '☯ Nyxa — The Shortcut Party',
   description: 'Discover, purchase, and integrate predefined digital tasks and workflow solutions — all with secure escrow payments.',
   icons: {
     icon: '/favicon.svg',
@@ -52,7 +52,8 @@ export default function RootLayout({
         {/* Footer */}
         <footer className="border-t border-[var(--border)] bg-[var(--secondary-bg)] py-8 px-6 mt-12">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-            <Link href="/" className="flex items-center text-decoration-none group">
+            <Link href="/" className="flex items-center text-decoration-none group gap-2">
+              <img src="/favicon.svg" alt="Nyxa Logo" className="w-6 h-6" />
               <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
                 Nyxa.
               </span>
