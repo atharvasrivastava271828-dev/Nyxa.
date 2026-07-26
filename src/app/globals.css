@@ -13,10 +13,13 @@
   --success: #000000;
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --halo-1: rgba(212, 175, 55, 0.08);
+  --halo-2: rgba(212, 175, 55, 0.2);
+  --halo-3: rgba(212, 175, 55, 0.35);
 }
 
 ::selection {
-  background-color: rgba(255, 223, 0, 0.2);
+  background-color: var(--halo-3);
 }
 
 /* Force light mode variables */
@@ -29,6 +32,9 @@ html[data-theme="light"] {
   --muted: #52525b;
   --accent: #000000;
   --success: #000000;
+  --halo-1: rgba(212, 175, 55, 0.08);
+  --halo-2: rgba(212, 175, 55, 0.2);
+  --halo-3: rgba(212, 175, 55, 0.35);
 }
 
 /* Force dark mode variables */
@@ -41,6 +47,9 @@ html[data-theme="dark"] {
   --muted: #a1a1aa;
   --accent: #ffffff;
   --success: #ffffff;
+  --halo-1: rgba(255, 223, 0, 0.03);
+  --halo-2: rgba(255, 223, 0, 0.1);
+  --halo-3: rgba(255, 223, 0, 0.25);
 }
 
 /* System preference defaults if override not explicitly set */
@@ -54,6 +63,9 @@ html[data-theme="dark"] {
     --muted: #a1a1aa;
     --accent: #ffffff;
     --success: #ffffff;
+    --halo-1: rgba(255, 223, 0, 0.03);
+    --halo-2: rgba(255, 223, 0, 0.1);
+    --halo-3: rgba(255, 223, 0, 0.25);
   }
 }
 
@@ -84,11 +96,11 @@ body {
 }
 
 header {
-  box-shadow: 0 4px 25px -5px rgba(255, 223, 0, 0.02);
+  box-shadow: 0 4px 25px -5px var(--halo-1);
 }
 
 footer {
-  box-shadow: 0 -4px 25px -5px rgba(255, 223, 0, 0.02);
+  box-shadow: 0 -4px 25px -5px var(--halo-1);
 }
 
 /* Headings: Clean, modern, humanistic */
@@ -172,12 +184,12 @@ p {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 10px rgba(255, 223, 0, 0.015);
+  box-shadow: 0 2px 10px var(--halo-1);
 }
 
 .nyxa-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 8px 30px rgba(255, 223, 0, 0.08);
+  box-shadow: 0 8px 30px var(--halo-2);
 }
 
 /* Inputs & Forms: sharp, dense */
@@ -205,7 +217,7 @@ p {
 
 .nyxa-input:focus, .nyxa-select:focus, .nyxa-textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(255, 223, 0, 0.12);
+  box-shadow: 0 0 0 2px var(--halo-2);
 }
 
 /* Buttons */
@@ -221,7 +233,7 @@ p {
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid var(--border);
-  box-shadow: 0 2px 5px rgba(255, 223, 0, 0.02);
+  box-shadow: 0 2px 5px var(--halo-1);
 }
 
 .nyxa-btn-primary {
@@ -232,7 +244,7 @@ p {
 
 .nyxa-btn-primary:hover {
   opacity: 0.9;
-  box-shadow: 0 4px 15px rgba(255, 223, 0, 0.12);
+  box-shadow: 0 4px 15px var(--halo-2);
 }
 
 .nyxa-btn-secondary {
@@ -244,7 +256,7 @@ p {
 .nyxa-btn-secondary:hover {
   background-color: var(--secondary-bg);
   border-color: var(--accent);
-  box-shadow: 0 4px 15px rgba(255, 223, 0, 0.08);
+  box-shadow: 0 4px 15px var(--halo-2);
 }
 
 .nyxa-btn:disabled {
@@ -263,7 +275,7 @@ p {
   color: var(--muted);
   text-transform: uppercase;
   border-radius: 6px; /* Softened badge corners */
-  box-shadow: 0 2px 5px rgba(255, 223, 0, 0.02);
+  box-shadow: 0 2px 5px var(--halo-1);
 }
 
 .nyxa-badge-active {
@@ -297,7 +309,7 @@ p {
   border: 1px solid var(--border);
   margin-top: 1rem;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(255, 223, 0, 0.015);
+  box-shadow: 0 2px 10px var(--halo-1);
 }
 
 .nyxa-table {
