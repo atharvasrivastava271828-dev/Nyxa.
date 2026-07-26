@@ -157,13 +157,15 @@ p {
   border: 1px solid var(--border);
   padding: 1.5rem;
   border-radius: 12px; /* Apple squircle/rounded corner style */
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 2px 15px rgba(255, 223, 0, 0.03);
 }
 
 .nyxa-card:hover {
   border-color: var(--accent);
+  box-shadow: 0 8px 30px rgba(255, 223, 0, 0.12);
 }
 
 /* Inputs & Forms: sharp, dense */
@@ -191,6 +193,7 @@ p {
 
 .nyxa-input:focus, .nyxa-select:focus, .nyxa-textarea:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 223, 0, 0.2);
 }
 
 /* Buttons */
@@ -206,6 +209,7 @@ p {
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid var(--border);
+  box-shadow: 0 2px 5px rgba(255, 223, 0, 0.05);
 }
 
 .nyxa-btn-primary {
@@ -216,6 +220,7 @@ p {
 
 .nyxa-btn-primary:hover {
   opacity: 0.9;
+  box-shadow: 0 4px 15px rgba(255, 223, 0, 0.2);
 }
 
 .nyxa-btn-secondary {
@@ -227,6 +232,7 @@ p {
 .nyxa-btn-secondary:hover {
   background-color: var(--secondary-bg);
   border-color: var(--accent);
+  box-shadow: 0 4px 15px rgba(255, 223, 0, 0.1);
 }
 
 .nyxa-btn:disabled {
