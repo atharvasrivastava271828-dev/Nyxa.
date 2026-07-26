@@ -38,7 +38,6 @@ export default function NavHeader() {
   const navLinks = [
     { href: '/tasks', label: 'Tasks' },
     { href: '/bidder', label: 'TaskBidder' },
-    { href: '/developer', label: 'Developer' },
     { href: '/dashboard', label: 'Dashboard' },
   ];
 
@@ -80,6 +79,16 @@ export default function NavHeader() {
               </svg>
             )}
           </button>
+
+          {/* Discrete Developer Portal Link */}
+          <Link
+            href="/developer"
+            className="p-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary-bg)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors cursor-pointer flex items-center justify-center font-mono text-xs"
+            title="Provider Access"
+            aria-label="Provider Access"
+          >
+            &lt;/&gt;
+          </Link>
 
           {/* Desktop auth links */}
           <div className="hidden md:flex items-center gap-4">

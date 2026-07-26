@@ -53,6 +53,11 @@ export default function DeveloperPortal() {
   const [activeSubTab, setActiveSubTab] = useState<'tasks' | 'agents' | 'apis' | 'requests'>('tasks');
   const [loading, setLoading] = useState(false);
 
+  // Separate Dev Auth State
+  const [isDevAuthenticated, setIsDevAuthenticated] = useState(false);
+  const [devPasscode, setDevPasscode] = useState('');
+  const [authError, setAuthError] = useState('');
+
   // Lists
   const [myTasks, setMyTasks] = useState<Task[]>([]);
   const [myAgents, setMyAgents] = useState<Agent[]>([]);
@@ -134,11 +139,30 @@ export default function DeveloperPortal() {
   }, [userId]);
 
   useEffect(() => {
-    if (userId) {
+    // Check dev auth cookie/local storage
+    const storedAuth = localStorage.getItem('dev_auth');
+    if (storedAuth === 'true') {
+      setIsDevAuthenticated(true);
+    }
+
+    if (userId && storedAuth === 'true') {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchDeveloperData();
     }
   }, [userId, fetchDeveloperData]);
+
+  const handleDevAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (devPasscode === 'DevelopTheFuture7') {
+      setIsDevAuthenticated(true);
+      localStorage.setItem('dev_auth', 'true');
+      if (userId) {
+        fetchDeveloperData();
+      }
+    } else {
+      setAuthError('Invalid Developer Passcode');
+    }
+  };
 
   const handleRegisterTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -294,13 +318,46 @@ export default function DeveloperPortal() {
       </div>
 
       {!userId && (
-        <div className="border border-[var(--border)] p-6 bg-[var(--secondary-bg)] text-center rounded-lg">
-          <p className="text-sm">Please log in to access the Developer Portal.</p>
-          <Link href="/login" className="nyxa-btn nyxa-btn-primary py-2 px-6 rounded-md">Log In</Link>
+        <div className="border border-[var(--border)] p-6 bg-[var(--secondary-bg)] text-center rounded-lg max-w-md mx-auto mt-16">
+          <div className="w-12 h-12 bg-[var(--foreground)] rounded-full mx-auto flex items-center justify-center mb-4">
+            <span className="text-[var(--background)] font-bold font-mono">&lt;/&gt;</span>
+          </div>
+          <h3 className="text-xl font-bold mb-2 tracking-tight">Provider Access Only</h3>
+          <p className="text-sm text-[var(--muted)] mb-6">Please log in to your account first.</p>
+          <Link href="/login" className="nyxa-btn nyxa-btn-primary py-2 px-6 rounded-full w-full block">Log In to Account</Link>
         </div>
       )}
 
-      {userId && (
+      {userId && !isDevAuthenticated && (
+        <div className="border border-[var(--border)] p-8 bg-[var(--card-bg)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center rounded-2xl max-w-md mx-auto mt-16">
+          <div className="w-12 h-12 bg-[var(--foreground)] rounded-full mx-auto flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-[var(--background)]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold mb-2 tracking-tight">Restricted Area</h3>
+          <p className="text-sm text-[var(--muted)] mb-6">Enter Developer Passcode to unlock.</p>
+          
+          <form onSubmit={handleDevAuth} className="flex flex-col gap-4">
+            <input 
+              type="password" 
+              placeholder="Passcode" 
+              value={devPasscode}
+              onChange={(e) => {
+                setDevPasscode(e.target.value);
+                setAuthError('');
+              }}
+              className="w-full p-3 bg-[var(--secondary-bg)] border-2 border-[var(--border)] focus:border-[var(--foreground)] focus:outline-none rounded-full text-center tracking-widest font-mono text-sm transition-colors"
+            />
+            {authError && <p className="text-red-500 text-xs m-0">{authError}</p>}
+            <button type="submit" className="nyxa-btn nyxa-btn-primary py-3 rounded-full w-full font-bold shadow-md hover:shadow-lg transition-all">
+              Unlock Portal
+            </button>
+          </form>
+        </div>
+      )}
+
+      {userId && isDevAuthenticated && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Navigation Sidebar */}
           <aside className="lg:col-span-1 flex flex-col gap-3">
