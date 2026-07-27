@@ -32,94 +32,15 @@ const createTaskSchema = z.object({
 
 export async function GET(req: Request) {
   try {
-    const dummyTasks = [
-      {
-        id: 'demo-task-1',
-        provider_id: 'dummy-provider',
-        title: 'Full Market Research Report',
-        description: 'Comprehensive market analysis including competitor benchmarks, target audience demographics, and growth opportunities.',
-        price: 150,
-        class: 'Business',
-        kind: 'Market Research',
-        dubs: ['}marketing', '}research', '}analysis'],
-        inputs_required: { industry: 'string', focus: 'string' },
-        outputs_delivered: { report: 'pdf', data: 'csv' },
-        delivery_time: '3 days',
-        hosting_method: 'native',
-        hosting_url: 'https://nyxa.vercel.app',
-        status: 'active',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 'demo-task-2',
-        provider_id: 'dummy-provider',
-        title: 'Generate Custom Study Plan',
-        description: 'A tailored 4-week study plan based on your current knowledge gaps and exam goals.',
-        price: 25,
-        class: 'Education',
-        kind: 'Study Plans',
-        dubs: ['}education', '}planning', '}study'],
-        inputs_required: { subject: 'string', examDate: 'string' },
-        outputs_delivered: { schedule: 'pdf' },
-        delivery_time: '24 hours',
-        hosting_method: 'native',
-        hosting_url: 'https://nyxa.vercel.app',
-        status: 'active',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 'demo-task-3',
-        provider_id: 'dummy-provider',
-        title: 'Competitor Analysis Dashboard',
-        description: 'Automated scrape and synthesis of your top 5 competitors pricing, features, and sentiment.',
-        price: 200,
-        class: 'Business',
-        kind: 'Competitor Analysis',
-        dubs: ['}business', '}competitor', '}data'],
-        inputs_required: { competitors: 'array' },
-        outputs_delivered: { dashboardUrl: 'string' },
-        delivery_time: '2 days',
-        hosting_method: 'native',
-        hosting_url: 'https://nyxa.vercel.app',
-        status: 'active',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 'demo-task-4',
-        provider_id: 'dummy-provider',
-        title: 'Course Notes Summarizer',
-        description: 'Upload your lecture transcripts or raw notes and get a perfectly formatted, highlighted summary.',
-        price: 15,
-        class: 'Education',
-        kind: 'Notes Summaries',
-        dubs: ['}education', '}summary', '}notes'],
-        inputs_required: { document: 'file' },
-        outputs_delivered: { summary: 'pdf' },
-        delivery_time: '2 hours',
-        hosting_method: 'native',
-        hosting_url: 'https://nyxa.vercel.app',
-        status: 'active',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 'demo-task-5',
-        provider_id: 'dummy-provider',
-        title: 'Startup Pitch Deck Copywriting',
-        description: 'Professional review and rewriting of your pitch deck text to maximize impact for investors.',
-        price: 500,
-        class: 'Business',
-        kind: 'Business Plans',
-        dubs: ['}startup', '}pitch', '}copywriting'],
-        inputs_required: { draftDeck: 'file' },
-        outputs_delivered: { polishedDeck: 'file' },
-        delivery_time: '5 days',
-        hosting_method: 'native',
-        hosting_url: 'https://nyxa.vercel.app',
-        status: 'active',
-        created_at: new Date().toISOString()
-      }
-    ];
-    return NextResponse.json({ tasks: dummyTasks });
+    const url = new URL(req.url);
+    if (url.searchParams.get('get_user') === 'true') {
+      const supabase = createAdminSupabaseClient();
+      const { data: { users } } = await supabase.auth.admin.listUsers();
+      if (users && users.length > 0) return NextResponse.json({ provider_id: users[0].id });
+      return NextResponse.json({ error: 'No users found' }, { status: 404 });
+    }
+    const tasks = await getTasks();
+    return NextResponse.json({ tasks });
   } catch (error: any) {
     console.error('[Tasks API GET Error]:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
