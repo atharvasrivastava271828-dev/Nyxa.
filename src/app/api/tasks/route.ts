@@ -49,9 +49,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const validKey = 'AQ.Ab8RN6L0' + 'epso8Rd8x_YddkLMTS' + 'lupRrwOBsA_uz37tj3BbMgaw';
-    const isApiKeyAuth = authHeader === `Bearer ${validKey}`;
+    const validKey = process.env.GEMINI_API_KEY || '';
+    const isApiKeyAuth = Boolean(validKey) && authHeader === `Bearer ${validKey}`;
     
     // --- Auth Guard ---
     let user;

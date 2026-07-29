@@ -2,6 +2,7 @@ import { getTaskById } from '@/backend/services/task.service';
 import { supabase } from '@/backend/lib/supabase';
 import { notFound } from 'next/navigation';
 import PurchaseTaskButton from '@/app/components/PurchaseTaskButton';
+import TaskRunner from '@/components/TaskRunner';
 
 export default async function TaskDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -38,6 +39,11 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-2">Deliverables & Description</h3>
           <p className="text-sm leading-relaxed">{task.description}</p>
+        </div>
+
+        {/* Client-side Zero-Cost Task Runner */}
+        <div className="mb-8 border-t border-b border-[var(--border)] py-6">
+          <TaskRunner taskSlug={task.id} taskTitle={task.title} />
         </div>
 
         <div className="bg-[var(--secondary-bg)] p-4 border border-[var(--border)] rounded-lg mb-8 flex justify-between items-center">

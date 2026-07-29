@@ -120,8 +120,12 @@ export default function TasksMarketplace() {
   const allDubs = Array.from(new Set(tasks.flatMap(t => t.dubs)));
 
   const handlePurchaseTaskClick = (task: Task) => {
+    if (task.price === 0) {
+      router.push(`/tasks/${task.id}`);
+      return;
+    }
     if (!userId) {
-      alert('Please log in to purchase this task.');
+      alert('Please log in to purchase this paid task.');
       return;
     }
     if (userId === task.provider_id) {
