@@ -49,6 +49,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const authHeader = req.headers.get('authorization');
     const validKey = process.env.GEMINI_API_KEY || '';
     const isApiKeyAuth = Boolean(validKey) && authHeader === `Bearer ${validKey}`;
     
