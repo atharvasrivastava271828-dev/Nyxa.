@@ -50,7 +50,7 @@ interface BidderRequest {
 
 export default function DeveloperPortal() {
   const { userId, userName, userRoles } = useAuth();
-  const [activeSubTab, setActiveSubTab] = useState<'tasks' | 'agents' | 'apis' | 'requests'>('tasks');
+  const [activeSubTab, setActiveSubTab] = useState<'sdk' | 'tasks' | 'agents' | 'apis' | 'requests'>('sdk');
   const [loading, setLoading] = useState(false);
 
   // Separate Dev Auth State
@@ -362,12 +362,20 @@ export default function DeveloperPortal() {
           {/* Navigation Sidebar */}
           <aside className="lg:col-span-1 flex flex-col gap-3">
             <button
+              onClick={() => setActiveSubTab('sdk')}
+              className={`w-full text-left py-2.5 px-4 text-xs font-semibold rounded-lg border ${
+                activeSubTab === 'sdk' ? 'bg-[var(--foreground)] text-[var(--background)] border-transparent' : 'bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:bg-[var(--secondary-bg)]'
+              }`}
+            >
+              ⚡ @nyxa/sdk Developer Guide
+            </button>
+            <button
               onClick={() => setActiveSubTab('tasks')}
               className={`w-full text-left py-2.5 px-4 text-xs font-semibold rounded-lg border ${
                 activeSubTab === 'tasks' ? 'bg-[var(--foreground)] text-[var(--background)] border-transparent' : 'bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:bg-[var(--secondary-bg)]'
               }`}
             >
-              💼 Standardized Tasks
+              💼 Published Tasks ({myTasks.length})
             </button>
             <button
               disabled
@@ -395,6 +403,92 @@ export default function DeveloperPortal() {
 
           {/* Main workspace area */}
           <main className="lg:col-span-3">
+            {/* SUBTAB: SDK */}
+            {activeSubTab === 'sdk' && (
+              <div className="flex flex-col gap-8 animate-in fade-in duration-300">
+                {/* Intro Card */}
+                <div className="nyxa-card p-6 bg-gradient-to-br from-[var(--secondary-bg)] to-[var(--card-bg)]">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-2xl">⚡</span>
+                    <h2 className="text-xl font-bold tracking-tight">Nyxa Developer SDK & CLI</h2>
+                  </div>
+                  <p className="text-xs text-[var(--muted)] leading-relaxed mb-6">
+                    Build high-performance client-side utility tools with 100% in-browser processing. Zero backend server costs, zero API latency.
+                  </p>
+
+                  {/* CLI Quickstart Commands */}
+                  <div className="space-y-3">
+                    <span className="text-[10px] uppercase font-bold text-[var(--muted)] tracking-wider block">1. Install SDK & Publish CLI</span>
+                    <div className="p-3 bg-slate-950 text-emerald-400 font-mono text-xs rounded-xl flex justify-between items-center border border-slate-800">
+                      <code>npm install @nyxa/sdk</code>
+                      <button 
+                        onClick={() => navigator.clipboard.writeText('npm install @nyxa/sdk')}
+                        className="text-[10px] text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800"
+                      >
+                        Copy
+                      </button>
+                    </div>
+
+                    <span className="text-[10px] uppercase font-bold text-[var(--muted)] tracking-wider block pt-2">2. Publish Tool to Nyxa Marketplace</span>
+                    <div className="p-3 bg-slate-950 text-amber-400 font-mono text-xs rounded-xl flex justify-between items-center border border-slate-800">
+                      <code>npx nyxa publish --file my-tool.tsx</code>
+                      <button 
+                        onClick={() => navigator.clipboard.writeText('npx nyxa publish --file my-tool.tsx')}
+                        className="text-[10px] text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live React Starter Template */}
+                <div className="nyxa-card p-6">
+                  <h3 className="text-base font-bold mb-2">Boilerplate Component Starter</h3>
+                  <p className="text-xs text-[var(--muted)] mb-4">
+                    Sample React component using <code className="text-xs font-mono text-[var(--foreground)] font-bold">defineNyxaTask()</code> schema wrapper:
+                  </p>
+                  
+                  <pre className="p-4 bg-slate-950 text-slate-200 font-mono text-xs rounded-xl overflow-x-auto border border-slate-800 max-h-[350px]">
+{`'use client';
+
+import React, { useState } from 'react';
+import { defineNyxaTask } from '@nyxa/sdk';
+
+export const taskConfig = defineNyxaTask({
+  id: 'my-custom-tool',
+  title: 'Custom Text Converter',
+  description: 'Built with @nyxa/sdk for instant client-side execution.',
+  price: 0,
+  category: 'Utility',
+  tags: ['converter', 'text', 'utility'],
+  inputs: {
+    text: { type: 'string', label: 'Input Text', required: true }
+  },
+  outputs: {
+    result: { type: 'string', label: 'Processed Output' }
+  }
+});
+
+export default function CustomTool() {
+  const [val, setVal] = useState('');
+  return (
+    <div className="nyxa-card p-6">
+      <input 
+        className="nyxa-input" 
+        value={val} 
+        onChange={(e) => setVal(e.target.value)} 
+        placeholder="Type here..." 
+      />
+      <p className="font-mono text-sm mt-4">{val.toUpperCase()}</p>
+    </div>
+  );
+}`}
+                  </pre>
+                </div>
+              </div>
+            )}
+
             {/* SUBTAB: TASKS */}
             {activeSubTab === 'tasks' && (
               <div className="flex flex-col gap-8">
