@@ -4,18 +4,18 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #000000;
-  --border: #e4e4e7;
+  --foreground: #09090b;
+  --border: #f4f4f5;
   --secondary-bg: #fafafa;
   --card-bg: #ffffff;
-  --muted: #52525b;
-  --accent: #000000;
-  --success: #000000;
+  --muted: #71717a;
+  --accent: #09090b;
+  --success: #10b981;
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --halo-1: rgba(212, 175, 55, 0.35);
-  --halo-2: rgba(212, 175, 55, 0.65);
-  --halo-3: rgba(212, 175, 55, 0.85);
+  --halo-1: rgba(0, 0, 0, 0.03);
+  --halo-2: rgba(0, 0, 0, 0.06);
+  --halo-3: rgba(0, 0, 0, 0.1);
 }
 
 ::selection {
@@ -39,33 +39,33 @@ html[data-theme="light"] {
 
 /* Force dark mode variables */
 html[data-theme="dark"] {
-  --background: #000000;
-  --foreground: #ffffff;
-  --border: #18181b;
-  --secondary-bg: #09090b;
-  --card-bg: #000000;
+  --background: #09090b;
+  --foreground: #fafafa;
+  --border: #27272a;
+  --secondary-bg: #121215;
+  --card-bg: #121215;
   --muted: #a1a1aa;
   --accent: #ffffff;
-  --success: #ffffff;
-  --halo-1: rgba(255, 223, 0, 0.35);
-  --halo-2: rgba(255, 223, 0, 0.65);
-  --halo-3: rgba(255, 223, 0, 0.85);
+  --success: #10b981;
+  --halo-1: rgba(255, 255, 255, 0.03);
+  --halo-2: rgba(255, 255, 255, 0.06);
+  --halo-3: rgba(255, 255, 255, 0.1);
 }
 
 /* System preference defaults if override not explicitly set */
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) {
-    --background: #000000;
-    --foreground: #ffffff;
-    --border: #18181b;
-    --secondary-bg: #09090b;
-    --card-bg: #000000;
+    --background: #09090b;
+    --foreground: #fafafa;
+    --border: #27272a;
+    --secondary-bg: #121215;
+    --card-bg: #121215;
     --muted: #a1a1aa;
     --accent: #ffffff;
-    --success: #ffffff;
-    --halo-1: rgba(255, 223, 0, 0.35);
-    --halo-2: rgba(255, 223, 0, 0.65);
-    --halo-3: rgba(255, 223, 0, 0.85);
+    --success: #10b981;
+    --halo-1: rgba(255, 255, 255, 0.03);
+    --halo-2: rgba(255, 255, 255, 0.06);
+    --halo-3: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -96,11 +96,12 @@ body {
 }
 
 header {
-  box-shadow: 0 4px 25px -5px var(--halo-1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 footer {
-  box-shadow: 0 -4px 25px -5px var(--halo-1);
+  border-t: 1px solid var(--border);
 }
 
 /* Headings: Clean, modern, humanistic */

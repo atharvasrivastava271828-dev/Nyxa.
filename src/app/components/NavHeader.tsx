@@ -42,20 +42,20 @@ export default function NavHeader() {
   ];
 
   return (
-    <header className="border-b border-[var(--border)] px-6 py-4 bg-[var(--background)] sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <header className="border-b border-[var(--border)] px-4 sm:px-6 py-3 bg-[var(--background)]/80 backdrop-blur-md sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center text-decoration-none group gap-2">
-          <img src="/favicon.svg" alt="Nyxa Logo" className="w-6 h-6" />
-          <span className="font-bold tracking-tight text-xl text-[var(--foreground)]">
+          <img src="/favicon.svg" alt="Nyxa Logo" className="w-5 h-5" />
+          <span className="font-bold tracking-tight text-lg text-[var(--foreground)]">
             Nyxa.
           </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <nav className="hidden md:flex items-center gap-6" aria-label="Main navigation">
           {navLinks.map(link => (
-            <Link key={link.href} href={link.href} className="nav-link">
+            <Link key={link.href} href={link.href} className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
               {link.label}
             </Link>
           ))}

@@ -94,49 +94,54 @@ export default function Home() {
 
       {/* 2. Marketplace Overview */}
       <section className="py-12 border-b border-[var(--border)]">
-        <h2 className="text-xl tracking-tight mb-8 text-center md:text-left font-semibold">What You Can Do on Nyxa</h2>
-        <div className="nyxa-grid-3">
-          {/* Task Marketplace */}
-          <div className="nyxa-card">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold">Predefined Tasks</h3>
-            <p className="flex-grow text-sm">
-              Purchase predefined tasks and digital capabilities. Select a catalog listing to execute instantly with secure escrow payments.
-            </p>
-            <Link href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center mt-4 w-full">
-              Browse Tasks
+        <h2 className="text-xl tracking-tight mb-8 text-center md:text-left font-semibold border-0 pb-0">Core Platform Features</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Instant Execution */}
+          <div className="nyxa-card p-6 justify-between space-y-3">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-[var(--secondary-bg)] border border-[var(--border)] flex items-center justify-center text-lg mb-3">
+                ⚡
+              </div>
+              <h3 className="font-semibold text-base mb-1">Instant Execution</h3>
+              <p className="text-xs text-[var(--muted)] leading-relaxed m-0">
+                Run standard digital tasks directly in your browser without installs or server dependencies.
+              </p>
+            </div>
+            <Link href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center text-xs mt-2 w-full">
+              Explore Tasks ➔
             </Link>
           </div>
 
-          {/* Agent Marketplace (Locked) */}
-          <div className="nyxa-card opacity-50 select-none">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" />
-              </svg>
-              Agents (Coming Q4)
-            </h3>
-            <p className="flex-grow text-sm">
-              Agent-to-Agent swarm intelligence and direct agent hiring capabilities are currently locked while we focus on Tasks.
-            </p>
-            <div className="nyxa-btn text-center mt-4 w-full cursor-not-allowed bg-[var(--border)] text-[var(--muted)]">
-              Locked
+          {/* Client-Side Privacy */}
+          <div className="nyxa-card p-6 justify-between space-y-3">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-[var(--secondary-bg)] border border-[var(--border)] flex items-center justify-center text-lg mb-3">
+                🛡️
+              </div>
+              <h3 className="font-semibold text-base mb-1">100% Client-Side Privacy</h3>
+              <p className="text-xs text-[var(--muted)] leading-relaxed m-0">
+                Your data stays local in your browser session. Zero telemetry, zero external database leaks.
+              </p>
             </div>
+            <Link href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center text-xs mt-2 w-full">
+              Try Free Utilities ➔
+            </Link>
           </div>
 
-          {/* API Marketplace (Locked) */}
-          <div className="nyxa-card opacity-50 select-none">
-            <h3 className="border-b border-[var(--border)] pb-2 mb-3 font-semibold flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" />
-              </svg>
-              APIs (Coming Q4)
-            </h3>
-            <p className="flex-grow text-sm">
-              The Enterprise API Marketplace is currently locked. We are heavily focused on streamlining our core Task outcomes first.
-            </p>
-            <div className="nyxa-btn text-center mt-4 w-full cursor-not-allowed bg-[var(--border)] text-[var(--muted)]">
-              Locked
+          {/* Escrow Payments */}
+          <div className="nyxa-card p-6 justify-between space-y-3">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-[var(--secondary-bg)] border border-[var(--border)] flex items-center justify-center text-lg mb-3">
+                🔒
+              </div>
+              <h3 className="font-semibold text-base mb-1">Escrow Protection</h3>
+              <p className="text-xs text-[var(--muted)] leading-relaxed m-0">
+                Funds for paid digital outcomes are safely held in escrow until deliverables pass audit.
+              </p>
             </div>
+            <Link href="/bidder" className="nyxa-btn nyxa-btn-secondary text-center text-xs mt-2 w-full">
+              Open TaskBidder ➔
+            </Link>
           </div>
         </div>
       </section>
