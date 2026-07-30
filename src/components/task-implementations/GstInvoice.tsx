@@ -574,7 +574,7 @@ export default function GstInvoice() {
                 Client-Side Live
               </span>
             </h1>
-            <p className="text-xs text-slate-500">Fast, GST-Compliant Indian Tax Invoice Generator</p>
+            <p className="text-xs text-slate-500">Fast, GST-Compliant Tax Invoice Generator</p>
           </div>
         </div>
 

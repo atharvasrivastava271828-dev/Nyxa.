@@ -317,8 +317,8 @@ export default function DocumentValidator() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" /> Verhoeff & Pattern Verification Engine
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Indian Document Validator
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--foreground)]">
+            Document & ID Validator
           </h1>
           <p className="text-sm text-slate-400 max-w-lg mx-auto">
             Instant validation & metadata extraction for PAN, Aadhaar (Verhoeff), IFSC & Pincodes.

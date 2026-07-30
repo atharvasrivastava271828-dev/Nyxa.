@@ -70,7 +70,7 @@ export default function Home() {
           Get your daily tasks done in seconds.
         </h1>
         <p className="text-sm sm:text-base text-[var(--muted)] max-w-lg mt-1 mb-8 text-center font-normal">
-          Simple, free, and private utilities designed for students, freelancers, and small businesses across India.
+          Simple, free, and private utilities designed for students, freelancers, and small businesses.
         </p>
 
         {/* Search Bar */}
