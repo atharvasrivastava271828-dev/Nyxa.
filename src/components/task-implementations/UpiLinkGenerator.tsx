@@ -3,29 +3,19 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   QrCode,
-  Printer,
-  Download,
   Copy,
   Check,
-  Smartphone,
-  Building,
-  Sparkles,
-  Sliders,
-  Image as ImageIcon,
-  CheckCircle2,
-  ExternalLink,
-  ShieldCheck,
-  Grid,
-  Tag,
-  Palette,
   Share2,
+  Download,
+  Sparkles,
+  Smartphone,
+  Building2,
+  ExternalLink,
 } from 'lucide-react';
 
 // ============================================================================
 // PURE CLIENT-SIDE QR CODE MATRIX GENERATOR (NO NPM DEPENDENCIES)
-// GF(256) Reed-Solomon Error Correction & QR Grid Placement
 // ============================================================================
-
 const EXP_TABLE = new Uint8Array(256);
 const LOG_TABLE = new Uint8Array(256);
 (function initGF256() {
@@ -91,7 +81,7 @@ const QR_CAPACITIES_M = [
   { ver: 10, size: 57, dataCap: 213, ecLen: 30 },
 ];
 
-export function generateQrMatrix(text: string): boolean[][] {
+function generateQrMatrix(text: string): boolean[][] {
   const textBytes = Array.from(new TextEncoder().encode(text));
   const len = textBytes.length;
 
@@ -208,131 +198,44 @@ export function generateQrMatrix(text: string): boolean[][] {
   return grid.map((row) => row.map((cell) => cell ?? false));
 }
 
-// Popular Indian Bank UPI handles
-const POPULAR_UPI_HANDLES = [
-  '@paytm',
-  '@okaxis',
-  '@oksbi',
-  '@okicici',
-  '@ybl',
-  '@upi',
-  '@apl',
-  '@ibl',
-  '@postbank',
-  '@axl',
-  '@barodampay',
-  '@kotak',
-];
+const POPULAR_HANDLES = ['@paytm', '@okaxis', '@oksbi', '@okicici', '@ybl', '@upi'];
 
 export default function UpiLinkGenerator() {
-  const [activeTab, setActiveTab] = useState<'single' | 'sheet'>('single');
-
-  // Inputs
-  const [vpaUsername, setVpaUsername] = useState('shopkeeper');
-  const [vpaHandle, setVpaHandle] = useState('@upi');
-  const [payeeName, setPayeeName] = useState('Akash Traders & Grocery');
-  const [amount, setAmount] = useState('250.00');
-  const [note, setNote] = useState('Grocery Order Payment');
-  const [merchantCode, setMerchantCode] = useState('');
-
-  // Branding & Styling Options
-  const [qrFgColor, setQrFgColor] = useState('#0f172a');
-  const [selectedBrandPreset, setSelectedBrandPreset] = useState<'NONE' | 'GPAY' | 'PHONEPE' | 'PAYTM' | 'BHIM' | 'SBI' | 'CUSTOM'>('GPAY');
-  const [customLogoUrl, setCustomLogoUrl] = useState<string>('');
-  const [copySuccess, setCopySuccess] = useState(false);
-
-  // Sticker Sheet Config
-  const [sheetLayout, setSheetLayout] = useState<'2x3' | '3x4' | '4x5' | '6x4'>('3x4');
-  const [stickerHeader, setStickerHeader] = useState('SCAN & PAY WITH ANY UPI APP');
-  const [stickerTheme, setStickerTheme] = useState<'navy' | 'emerald' | 'violet' | 'amber'>('navy');
-  const [showPriceTag, setShowPriceTag] = useState(true);
-  const [showCutLines, setShowCutLines] = useState(true);
+  const [upiId, setUpiId] = useState('shopkeeper@upi');
+  const [payeeName, setPayeeName] = useState('Akash Traders');
+  const [amount, setAmount] = useState('250');
+  const [note, setNote] = useState('Store Purchase');
+  const [copied, setCopied] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Full VPA Address
-  const fullVpa = useMemo(() => `${vpaUsername.trim()}${vpaHandle}`, [vpaUsername, vpaHandle]);
+  // Generate UPI URI
+  const upiUri = useMemo(() => {
+    const cleanId = upiId.trim();
+    const cleanName = encodeURIComponent(payeeName.trim());
+    const cleanNote = encodeURIComponent(note.trim());
 
-  // Standard Universal UPI URI Intent
-  const upiIntentUri = useMemo(() => {
-    const encodedName = encodeURIComponent(payeeName.trim());
-    const encodedNote = encodeURIComponent(note.trim());
-    let uri = `upi://pay?pa=${fullVpa}&pn=${encodedName}&cu=INR`;
-
-    const numericAmount = parseFloat(amount);
-    if (!isNaN(numericAmount) && numericAmount > 0) {
-      uri += `&am=${numericAmount.toFixed(2)}`;
+    let uri = `upi://pay?pa=${cleanId}&pn=${cleanName}&cu=INR`;
+    const numAmount = parseFloat(amount);
+    if (!isNaN(numAmount) && numAmount > 0) {
+      uri += `&am=${numAmount.toFixed(2)}`;
     }
     if (note.trim()) {
-      uri += `&tn=${encodedNote}`;
+      uri += `&tn=${cleanNote}`;
     }
-    if (merchantCode.trim()) {
-      uri += `&mc=${encodeURIComponent(merchantCode.trim())}`;
-    }
-
     return uri;
-  }, [fullVpa, payeeName, amount, note, merchantCode]);
+  }, [upiId, payeeName, amount, note]);
 
-  // Brand Logo Drawing Helper
-  const drawLogoOverlay = (ctx: CanvasRenderingContext2D, size: number) => {
-    const logoSize = Math.floor(size * 0.22);
-    const center = size / 2;
-
-    // Draw solid white circular background badge
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(center, center, logoSize / 2 + 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Render Text / Icon Badge
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    if (selectedBrandPreset === 'GPAY') {
-      ctx.fillStyle = '#4285F4';
-      ctx.font = `bold ${Math.floor(logoSize * 0.38)}px sans-serif`;
-      ctx.fillText('GPay', center, center);
-    } else if (selectedBrandPreset === 'PHONEPE') {
-      ctx.fillStyle = '#5f259f';
-      ctx.font = `bold ${Math.floor(logoSize * 0.32)}px sans-serif`;
-      ctx.fillText('PhonePe', center, center);
-    } else if (selectedBrandPreset === 'PAYTM') {
-      ctx.fillStyle = '#00baf2';
-      ctx.font = `bold ${Math.floor(logoSize * 0.35)}px sans-serif`;
-      ctx.fillText('Paytm', center, center);
-    } else if (selectedBrandPreset === 'BHIM') {
-      ctx.fillStyle = '#00529b';
-      ctx.font = `bold ${Math.floor(logoSize * 0.35)}px sans-serif`;
-      ctx.fillText('BHIM', center, center);
-    } else if (selectedBrandPreset === 'SBI') {
-      ctx.fillStyle = '#280071';
-      ctx.font = `bold ${Math.floor(logoSize * 0.38)}px sans-serif`;
-      ctx.fillText('SBI', center, center);
-    } else if (selectedBrandPreset === 'CUSTOM' && customLogoUrl) {
-      const img = new Image();
-      img.src = customLogoUrl;
-      img.onload = () => {
-        ctx.drawImage(img, center - logoSize / 2, center - logoSize / 2, logoSize, logoSize);
-      };
-    }
-  };
-
-  // Render Canvas QR Code
+  // Render QR Code onto Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     try {
-      const matrix = generateQrMatrix(upiIntentUri);
+      const matrix = generateQrMatrix(upiUri);
       const matrixSize = matrix.length;
-
       const scale = 10;
       const margin = 2;
       const canvasSize = (matrixSize + margin * 2) * scale;
@@ -343,7 +246,7 @@ export default function UpiLinkGenerator() {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-      ctx.fillStyle = qrFgColor;
+      ctx.fillStyle = '#0f172a'; // Slate 900
       for (let r = 0; r < matrixSize; r++) {
         for (let c = 0; c < matrixSize; c++) {
           if (matrix[r][c]) {
@@ -354,452 +257,192 @@ export default function UpiLinkGenerator() {
         }
       }
 
-      if (selectedBrandPreset !== 'NONE') {
-        drawLogoOverlay(ctx, canvasSize);
-      }
-    } catch (e) {
-      console.error('Failed to generate QR Matrix:', e);
-    }
-  }, [upiIntentUri, qrFgColor, selectedBrandPreset, customLogoUrl]);
+      // Add clean central badge
+      const badgeSize = Math.floor(canvasSize * 0.22);
+      const center = canvasSize / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(center, center, badgeSize / 2 + 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
-  // Download Canvas Image
-  const downloadQrPng = () => {
+      ctx.fillStyle = '#2563eb';
+      ctx.font = `bold ${Math.floor(badgeSize * 0.4)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('UPI', center, center);
+    } catch (e) {
+      console.error('QR rendering error:', e);
+    }
+  }, [upiUri]);
+
+  // Copy Link
+  const copyLink = () => {
+    navigator.clipboard.writeText(upiUri);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // WhatsApp Share Link
+  const shareWhatsApp = () => {
+    const text = `Pay ₹${amount || '0'} to ${payeeName} via UPI:\n${upiUri}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  // Download QR Code image
+  const downloadQr = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = url;
-    a.download = `UPI_QR_${payeeName.replace(/\s+/g, '_')}_${amount}INR.png`;
+    a.download = `UPI_QR_${payeeName.replace(/\s+/g, '_')}.png`;
     a.click();
   };
 
-  // Copy Intent Link
-  const copyLink = () => {
-    navigator.clipboard.writeText(upiIntentUri);
-    setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 2500);
-  };
-
-  // Handle Custom Upload
-  const handleCustomLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setCustomLogoUrl(ev.target?.result as string);
-        setSelectedBrandPreset('CUSTOM');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Grid item count for sticker sheet
-  const stickerCount = useMemo(() => {
-    if (sheetLayout === '2x3') return 6;
-    if (sheetLayout === '3x4') return 12;
-    if (sheetLayout === '4x5') return 20;
-    return 24; // 6x4
-  }, [sheetLayout]);
-
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-6 font-sans">
-      {/* Printable Sheet CSS Overrides */}
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden;
-            background: white !important;
-            color: black !important;
-          }
-          #upi-print-sheet, #upi-print-sheet * {
-            visibility: visible;
-          }
-          #upi-print-sheet {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 12px;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
-
-      {/* Header Bar */}
-      <div className="max-w-7xl mx-auto mb-6 no-print">
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="bg-blue-500/20 text-blue-300 text-xs font-semibold px-2.5 py-1 rounded border border-blue-500/30 flex items-center gap-1.5">
-                <QrCode className="w-3.5 h-3.5" />
-                NPCI UPI INTENT & BRAND QR BUILDER
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1.5 flex items-center gap-2">
-              UPI Smart QR Code & Printable Sticker Sheet Suite
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Custom logo embedding, instant bank app intent links, and printable counter QR sticker sheet generator.
-            </p>
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 md:p-10 font-sans flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
+            <QrCode className="w-3.5 h-3.5" /> Instant UPI Payment Link & QR Generator
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => window.print()}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
-            >
-              <Printer className="w-4 h-4" />
-              Print Sticker Sheet
-            </button>
-
-            <button
-              onClick={downloadQrPng}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Download QR Image
-            </button>
-          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            UPI QR Code & Link Generator
+          </h1>
+          <p className="text-sm text-slate-400 max-w-lg mx-auto">
+            Generate standard NPCI payment QR codes and deep links instantly for Google Pay, PhonePe, Paytm & BHIM.
+          </p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-2 mt-4 flex overflow-x-auto gap-2">
-          <button
-            onClick={() => setActiveTab('single')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 ${
-              activeTab === 'single' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700/60'
-            }`}
-          >
-            <QrCode className="w-4 h-4" />
-            1. Single QR Code & Intent Deep-Links
-          </button>
-          <button
-            onClick={() => setActiveTab('sheet')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 ${
-              activeTab === 'sheet' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700/60'
-            }`}
-          >
-            <Grid className="w-4 h-4" />
-            2. Printable QR Sticker Sheet Generator
-          </button>
-        </div>
-      </div>
-
-      {/* Main Tab Content */}
-      <div className="max-w-7xl mx-auto">
-        {/* TAB 1: SINGLE QR CODE BUILDER & INTENT LINKS */}
-        {activeTab === 'single' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Controls */}
-            <div className="lg:col-span-6 bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
-              <h3 className="text-base font-bold text-blue-400 border-b border-slate-700 pb-2 flex items-center gap-2">
-                <Sliders className="w-4 h-4" />
-                Merchant & Payment Details
-              </h3>
-
-              {/* VPA Inputs */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  UPI ID (VPA) *
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={vpaUsername}
-                    onChange={(e) => setVpaUsername(e.target.value.toLowerCase().trim())}
-                    placeholder="username"
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono"
-                  />
-                  <select
-                    value={vpaHandle}
-                    onChange={(e) => setVpaHandle(e.target.value)}
-                    className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-amber-300 font-mono font-bold"
+        {/* Main Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          {/* Left Form */}
+          <div className="md:col-span-7 space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                UPI ID (VPA) *
+              </label>
+              <input
+                type="text"
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+                placeholder="e.g. name@upi"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500 transition"
+              />
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {POPULAR_HANDLES.map((handle) => (
+                  <button
+                    key={handle}
+                    type="button"
+                    onClick={() => {
+                      const prefix = upiId.split('@')[0] || 'shopkeeper';
+                      setUpiId(`${prefix}${handle}`);
+                    }}
+                    className="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono px-2 py-0.5 rounded transition"
                   >
-                    {POPULAR_UPI_HANDLES.map((h) => (
-                      <option key={h} value={h}>
-                        {h}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {handle}
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Payee Business Name *</label>
-                  <input
-                    type="text"
-                    value={payeeName}
-                    onChange={(e) => setPayeeName(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-semibold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Amount (₹ INR)</label>
-                  <input
-                    type="text"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-amber-300 font-bold font-mono"
-                  />
-                </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                Payee / Business Name *
+              </label>
+              <input
+                type="text"
+                value={payeeName}
+                onChange={(e) => setPayeeName(e.target.value)}
+                placeholder="e.g. Akash Traders"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-500 transition"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Amount (₹ INR)
+                </label>
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="e.g. 250"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-amber-400 font-bold font-mono focus:outline-none focus:border-blue-500 transition"
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Transaction Note</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Note / Remarks
+                </label>
                 <input
                   type="text"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                  placeholder="e.g. Grocery payment"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition"
                 />
-              </div>
-
-              {/* Logo / Brand Preset Switcher */}
-              <div className="border-t border-slate-700 pt-4 space-y-3">
-                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  Center Logo / Brand Emblem Overlay
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {(['GPAY', 'PHONEPE', 'PAYTM', 'BHIM', 'SBI', 'NONE'] as const).map((preset) => (
-                    <button
-                      key={preset}
-                      onClick={() => setSelectedBrandPreset(preset)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                        selectedBrandPreset === preset
-                          ? 'bg-blue-500 text-white shadow'
-                          : 'bg-slate-900 text-slate-300 hover:bg-slate-700'
-                      }`}
-                    >
-                      {preset}
-                    </button>
-                  ))}
-                  <label className="bg-slate-900 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition flex items-center gap-1">
-                    <ImageIcon className="w-3.5 h-3.5" />
-                    Custom Logo
-                    <input type="file" accept="image/*" onChange={handleCustomLogoUpload} className="hidden" />
-                  </label>
-                </div>
-              </div>
-
-              {/* QR Color Picker */}
-              <div className="flex items-center gap-3 pt-2">
-                <span className="text-xs font-semibold text-slate-300">QR Modules Color:</span>
-                <input
-                  type="color"
-                  value={qrFgColor}
-                  onChange={(e) => setQrFgColor(e.target.value)}
-                  className="w-8 h-8 rounded border border-slate-700 cursor-pointer bg-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Right Pane: Live QR Canvas & Intent Apps */}
-            <div className="lg:col-span-6 space-y-6">
-              {/* Canvas Card */}
-              <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl flex flex-col items-center justify-center space-y-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Live NPCI Standard QR Code
-                </span>
-
-                <div className="bg-white p-4 rounded-xl shadow-2xl border-4 border-slate-900">
-                  <canvas ref={canvasRef} className="w-64 h-64" />
-                </div>
-
-                <div className="text-center">
-                  <div className="font-extrabold text-lg text-white">{payeeName}</div>
-                  <div className="text-xs text-amber-300 font-mono font-bold">{fullVpa}</div>
-                  {amount && <div className="text-xs font-black text-emerald-400 mt-1">₹ {amount}</div>}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={copyLink}
-                    className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    {copySuccess ? 'Copied URI Link!' : 'Copy Intent Link'}
-                  </button>
-                  <button
-                    onClick={downloadQrPng}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download PNG
-                  </button>
-                </div>
-              </div>
-
-              {/* Direct Indian Bank Apps Intent Launchers */}
-              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-3">
-                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Smartphone className="w-4 h-4" />
-                  Instant UPI Deep-Link Triggers (Indian Banking Apps)
-                </h4>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { name: 'Google Pay', scheme: 'gpay://upi/pay' },
-                    { name: 'PhonePe', scheme: 'phonepe://pay' },
-                    { name: 'Paytm', scheme: 'paytmmp://pay' },
-                    { name: 'BHIM UPI', scheme: 'bhim://pay' },
-                    { name: 'Amazon Pay', scheme: 'amazonpay://upi/pay' },
-                    { name: 'CRED Pay', scheme: 'cred://pay' },
-                    { name: 'WhatsApp Pay', scheme: 'whatsapp://pay' },
-                    { name: 'YONO SBI', scheme: 'yonosbi://pay' },
-                  ].map((app) => (
-                    <a
-                      key={app.name}
-                      href={upiIntentUri}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-lg p-2 text-center text-xs font-bold text-slate-200 transition flex items-center justify-center gap-1"
-                    >
-                      {app.name}
-                      <ExternalLink className="w-3 h-3 text-slate-400" />
-                    </a>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* TAB 2: PRINTABLE QR STICKER SHEET GENERATOR */}
-        {activeTab === 'sheet' && (
-          <div className="space-y-6">
-            {/* Sheet Options Bar */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4 no-print">
-              <h3 className="text-base font-bold text-blue-400 flex items-center gap-2">
-                <Printer className="w-4 h-4" />
-                Custom Counter QR Sticker Sheet Layout Options
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Sticker Grid Layout</label>
-                  <select
-                    value={sheetLayout}
-                    onChange={(e) => setSheetLayout(e.target.value as any)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold"
-                  >
-                    <option value="2x3">2 x 3 (6 Large Banners / Page)</option>
-                    <option value="3x4">3 x 4 (12 Standard Shop Stickers)</option>
-                    <option value="4x5">4 x 5 (20 Medium Product Tags)</option>
-                    <option value="6x4">6 x 4 (24 Mini QR Badges)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Banner Header Text</label>
-                  <input
-                    type="text"
-                    value={stickerHeader}
-                    onChange={(e) => setStickerHeader(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white uppercase font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Sticker Theme</label>
-                  <select
-                    value={stickerTheme}
-                    onChange={(e) => setStickerTheme(e.target.value as any)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                  >
-                    <option value="navy">Classic Navy & Gold</option>
-                    <option value="emerald">Emerald Green</option>
-                    <option value="violet">Royal Violet</option>
-                    <option value="amber">Warm Amber</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 pt-2 border-t border-slate-700 text-xs">
-                <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={showPriceTag}
-                    onChange={(e) => setShowPriceTag(e.target.checked)}
-                    className="w-4 h-4 rounded accent-blue-500"
-                  />
-                  Display Price / Amount Tag
-                </label>
-
-                <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={showCutLines}
-                    onChange={(e) => setShowCutLines(e.target.checked)}
-                    className="w-4 h-4 rounded accent-blue-500"
-                  />
-                  Show Scissors Cut Lines
-                </label>
-              </div>
+          {/* Right Live QR & Actions */}
+          <div className="md:col-span-5 flex flex-col items-center justify-center space-y-5 bg-slate-950/60 p-6 rounded-xl border border-slate-800/80">
+            {/* Live QR Canvas */}
+            <div className="bg-white p-3 rounded-2xl shadow-xl border-4 border-slate-800">
+              <canvas ref={canvasRef} className="w-52 h-52 sm:w-56 sm:h-56" />
             </div>
 
-            {/* Scaled Printable A4 Sheet View */}
-            <div className="overflow-x-auto pb-6 flex justify-center bg-slate-950 p-6 rounded-xl border border-slate-800">
-              <div
-                id="upi-print-sheet"
-                className="bg-white text-black p-6 shadow-2xl rounded-sm w-[210mm] min-h-[297mm] font-sans"
+            <div className="text-center space-y-0.5">
+              <div className="font-bold text-base text-white">{payeeName || 'Payee Name'}</div>
+              <div className="text-xs font-mono text-slate-400">{upiId || 'upi-id@bank'}</div>
+              {amount && (
+                <div className="text-sm font-black text-emerald-400 mt-1">₹ {amount} INR</div>
+              )}
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="w-full space-y-2.5 pt-1">
+              <button
+                onClick={copyLink}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2"
               >
-                <div
-                  className={`grid gap-4 ${
-                    sheetLayout === '2x3'
-                      ? 'grid-cols-2'
-                      : sheetLayout === '3x4'
-                      ? 'grid-cols-3'
-                      : sheetLayout === '4x5'
-                      ? 'grid-cols-4'
-                      : 'grid-cols-4'
-                  }`}
+                {copied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copied UPI Intent Link!' : 'Copy UPI Intent Link'}
+              </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={shareWhatsApp}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow"
                 >
-                  {Array.from({ length: stickerCount }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-lg flex flex-col items-center justify-between text-center ${
-                        showCutLines ? 'border-2 border-dashed border-slate-400' : 'border border-slate-200'
-                      } ${
-                        stickerTheme === 'navy'
-                          ? 'bg-slate-900 text-white'
-                          : stickerTheme === 'emerald'
-                          ? 'bg-emerald-900 text-white'
-                          : stickerTheme === 'violet'
-                          ? 'bg-purple-900 text-white'
-                          : 'bg-amber-900 text-white'
-                      }`}
-                    >
-                      <div className="text-[10px] font-black uppercase tracking-wider border-b border-white/20 pb-1 w-full">
-                        {stickerHeader}
-                      </div>
+                  <Share2 className="w-3.5 h-3.5" />
+                  WhatsApp
+                </button>
 
-                      <div className="my-2 bg-white p-2 rounded-lg shadow-md border border-black">
-                        {/* Mini SVG QR representation */}
-                        <div className="w-24 h-24 bg-slate-100 flex items-center justify-center font-mono text-[9px] text-black">
-                          [QR CODE]
-                        </div>
-                      </div>
-
-                      <div className="w-full space-y-0.5">
-                        <div className="font-extrabold text-[11px] truncate uppercase">{payeeName}</div>
-                        <div className="text-[9px] font-mono text-amber-300 truncate">{fullVpa}</div>
-                        {showPriceTag && amount && (
-                          <div className="bg-white/20 rounded py-0.5 text-[10px] font-black mt-1">
-                            ₹ {amount}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <button
+                  onClick={downloadQr}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 border border-slate-700"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                </button>
               </div>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Quick Launcher Info */}
+        <div className="text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+          <Smartphone className="w-3.5 h-3.5 text-slate-400" />
+          Works with GPay, PhonePe, Paytm, BHIM, Amazon Pay, Cred & All Banking Apps
+        </div>
       </div>
     </div>
   );
