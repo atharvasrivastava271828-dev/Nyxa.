@@ -580,7 +580,7 @@ export default function ExpenseSplitter() {
   };
 
   // Load Preset
-  const handleLoadPreset = (preset: PresetGroup) => {
+  const handleLoadPreset = (preset: GroupPreset) => {
     setGroupName(preset.groupName);
     setParticipants(preset.participants);
     setExpenses(preset.expenses);

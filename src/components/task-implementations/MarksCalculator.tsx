@@ -1136,7 +1136,7 @@ export default function MarksCalculator() {
 
             {savedReports.length === 0 ? (
               <p className="text-sm text-[var(--muted)] text-center py-6">
-                No saved reports yet. Click "Save Result" above to save grade cards.
+                No saved reports yet. Click &quot;Save Result&quot; above to save grade cards.
               </p>
             ) : (
               <div className="space-y-3">

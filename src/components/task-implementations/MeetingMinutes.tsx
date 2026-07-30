@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useId } from 'react';
+import { useState, useEffect, useId } from 'react';
 
 export interface AgendaItem {
   id: string;
@@ -166,7 +166,15 @@ export default function MeetingMinutes() {
     actionItems: ActionItem[];
   } | null>(null);
 
-  const [savedDrafts, setSavedDrafts] = useState<MeetingDetails[]>([]);
+  const [savedDrafts, setSavedDrafts] = useState<MeetingDetails[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('nyxa_meeting_drafts');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Load saved drafts
   useEffect(() => {
@@ -269,7 +277,7 @@ export default function MeetingMinutes() {
     const lines = rawTranscriptText.split(/\.|\n/).map((s) => s.trim()).filter((s) => s.length > 0);
     const extractedDecisions: string[] = [];
     const extractedActions: ActionItem[] = [];
-    let summaryBuffer: string[] = [];
+    const summaryBuffer: string[] = [];
 
     lines.forEach((sentence, idx) => {
       const lower = sentence.toLowerCase();
@@ -494,7 +502,7 @@ export default function MeetingMinutes() {
       const blobText = new Blob([generateMarkdown()], { type: 'text/plain' });
       const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
       navigator.clipboard.write(data);
-    } catch (e) {
+    } catch {
       navigator.clipboard.writeText(htmlText);
     }
     setCopyHtmlStatus(true);
@@ -563,6 +571,12 @@ export default function MeetingMinutes() {
             className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
           >
             Save Draft
+          </button>
+          <button
+            onClick={handleCopyHTML}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            {copyHtmlStatus ? 'HTML Copied!' : 'Copy HTML'}
           </button>
           <button
             onClick={handleDownloadMarkdown}

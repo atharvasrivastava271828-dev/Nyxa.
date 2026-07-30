@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useMemo } from 'react';
 
 export type EisenhowerQuadrant = 'Q1' | 'Q2' | 'Q3' | 'Q4';
 
@@ -137,7 +137,15 @@ export default function TaskSorter() {
   const maxBlockId = useId();
   const breakDurationId = useId();
 
-  const [tasks, setTasks] = useState<PriorityTask[]>([]);
+  const [tasks, setTasks] = useState<PriorityTask[]>(() => {
+    if (typeof window === 'undefined') return DEFAULT_TASKS;
+    try {
+      const stored = localStorage.getItem('nyxa_eisenhower_tasks');
+      return stored ? JSON.parse(stored) : DEFAULT_TASKS;
+    } catch {
+      return DEFAULT_TASKS;
+    }
+  });
   const [viewMode, setViewMode] = useState<'matrix' | 'list'>('matrix');
 
   // Drag and Drop State
@@ -164,22 +172,6 @@ export default function TaskSorter() {
   const [startTime, setStartTime] = useState<string>('09:00');
   const [maxBlockMinutes, setMaxBlockMinutes] = useState<number>(50);
   const [breakMinutes, setBreakMinutes] = useState<number>(10);
-  const [suggestedSchedule, setSuggestedSchedule] = useState<TimeBlock[]>([]);
-
-  // Load from local storage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('nyxa_eisenhower_tasks');
-      if (stored) {
-        setTasks(JSON.parse(stored));
-      } else {
-        setTasks(DEFAULT_TASKS);
-      }
-    } catch (e) {
-      console.error('Failed to load tasks', e);
-      setTasks(DEFAULT_TASKS);
-    }
-  }, []);
 
   const saveTasks = (updated: PriorityTask[]) => {
     setTasks(updated);
@@ -192,30 +184,34 @@ export default function TaskSorter() {
 
   // POMODORO TIMER TICKER
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-    if (isPomoRunning && pomoTimeLeft > 0) {
-      timer = setInterval(() => {
-        setPomoTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (isPomoRunning && pomoTimeLeft === 0) {
-      setIsPomoRunning(false);
-      // If work session finished, update completed Pomodoros count on active task
-      if (pomoMode === 'work' && selectedTaskForPomo) {
-        const updated = tasks.map((t) =>
-          t.id === selectedTaskForPomo.id
-            ? { ...t, completedPomodoros: t.completedPomodoros + 1 }
-            : t
-        );
-        saveTasks(updated);
-        alert(`🍅 Pomodoro Finished for task: "${selectedTaskForPomo.title}"! Take a break.`);
-      } else {
-        alert('☕ Break Session Completed! Ready to get back to work?');
-      }
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isPomoRunning, pomoTimeLeft, pomoMode, selectedTaskForPomo, tasks]);
+    if (!isPomoRunning) return;
+    const timer = setInterval(() => {
+      setPomoTimeLeft((prev) => {
+        if (prev <= 1) {
+          setIsPomoRunning(false);
+          if (pomoMode === 'work' && selectedTaskForPomo) {
+            setTasks((currTasks) => {
+              const updated = currTasks.map((t) =>
+                t.id === selectedTaskForPomo.id
+                  ? { ...t, completedPomodoros: t.completedPomodoros + 1 }
+                  : t
+              );
+              try {
+                localStorage.setItem('nyxa_eisenhower_tasks', JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
+            setTimeout(() => alert(`🍅 Pomodoro Finished for task: "${selectedTaskForPomo.title}"! Take a break.`), 50);
+          } else {
+            setTimeout(() => alert('☕ Break Session Completed! Ready to get back to work?'), 50);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isPomoRunning, pomoMode, selectedTaskForPomo]);
 
   const handleStartPomoForTask = (task: PriorityTask) => {
     setSelectedTaskForPomo(task);
@@ -332,11 +328,11 @@ export default function TaskSorter() {
     taskList.reduce((acc, t) => acc + (t.completed ? 0 : t.estimatedMinutes), 0);
 
   // Time-Block Schedule Generator
-  const generateSchedule = () => {
+  const suggestedSchedule = useMemo(() => {
+    if (!showScheduleModal) return [];
     const activeTasks = tasks.filter((t) => !t.completed);
     if (activeTasks.length === 0) {
-      setSuggestedSchedule([]);
-      return;
+      return [];
     }
 
     const priorityOrder: EisenhowerQuadrant[] = ['Q1', 'Q2', 'Q3', 'Q4'];
@@ -394,13 +390,7 @@ export default function TaskSorter() {
       }
     });
 
-    setSuggestedSchedule(blocks);
-  };
-
-  useEffect(() => {
-    if (showScheduleModal) {
-      generateSchedule();
-    }
+    return blocks;
   }, [showScheduleModal, startTime, maxBlockMinutes, breakMinutes, tasks]);
 
   const totalWorkloadMinutes = getSumMinutes(tasks);
@@ -678,7 +668,7 @@ export default function TaskSorter() {
                 {tasks.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center py-6 text-[var(--muted)]">
-                      No tasks found. Click "+ Add Task" to get started.
+                      No tasks found. Click &quot;+ Add Task&quot; to get started.
                     </td>
                   </tr>
                 ) : (
