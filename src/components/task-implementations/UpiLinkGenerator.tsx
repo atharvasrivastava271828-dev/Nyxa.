@@ -1,13 +1,31 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  QrCode,
+  Printer,
+  Download,
+  Copy,
+  Check,
+  Smartphone,
+  Building,
+  Sparkles,
+  Sliders,
+  Image as ImageIcon,
+  CheckCircle2,
+  ExternalLink,
+  ShieldCheck,
+  Grid,
+  Tag,
+  Palette,
+  Share2,
+} from 'lucide-react';
 
 // ============================================================================
 // PURE CLIENT-SIDE QR CODE MATRIX GENERATOR (NO NPM DEPENDENCIES)
 // GF(256) Reed-Solomon Error Correction & QR Grid Placement
 // ============================================================================
 
-// GF(256) Log & Exp tables for Galois Field arithmetic (Primitive Poly: 0x11D = 285)
 const EXP_TABLE = new Uint8Array(256);
 const LOG_TABLE = new Uint8Array(256);
 (function initGF256() {
@@ -60,13 +78,11 @@ function calcErrorCorrection(data: number[], ecLen: number): number[] {
   return res.slice(data.length);
 }
 
-// Version capacities (Byte mode, Level M)
-// V1: 14 bytes, V2: 26, V3: 42, V4: 62, V5: 84, V6: 106, V7: 122, V8: 152, V9: 180, V10: 213
 const QR_CAPACITIES_M = [
   { ver: 1, size: 21, dataCap: 14, ecLen: 10 },
   { ver: 2, size: 25, dataCap: 26, ecLen: 16 },
   { ver: 3, size: 29, dataCap: 42, ecLen: 26 },
-  { ver: 4, size: 33, dataCap: 62, ecLen: 18 }, // 2 blocks
+  { ver: 4, size: 33, dataCap: 62, ecLen: 18 },
   { ver: 5, size: 37, dataCap: 84, ecLen: 24 },
   { ver: 6, size: 41, dataCap: 106, ecLen: 28 },
   { ver: 7, size: 45, dataCap: 122, ecLen: 18 },
@@ -79,13 +95,11 @@ export function generateQrMatrix(text: string): boolean[][] {
   const textBytes = Array.from(new TextEncoder().encode(text));
   const len = textBytes.length;
 
-  // Pick suitable version
   let config = QR_CAPACITIES_M.find((c) => c.dataCap >= len + 3);
   if (!config) config = QR_CAPACITIES_M[QR_CAPACITIES_M.length - 1];
 
   const { ver, size, dataCap, ecLen } = config;
 
-  // Build BitStream
   const bits: number[] = [];
   const addBits = (val: number, count: number) => {
     for (let i = count - 1; i >= 0; i--) {
@@ -93,18 +107,12 @@ export function generateQrMatrix(text: string): boolean[][] {
     }
   };
 
-  // 1. Byte Mode Indicator (0100)
   addBits(4, 4);
-  // 2. Character Count Indicator (8 bits for V1-9)
   addBits(len, 8);
-  // 3. Data bytes
   textBytes.forEach((b) => addBits(b, 8));
-  // 4. Terminator (up to 4 zeros)
   addBits(0, Math.min(4, dataCap * 8 - bits.length));
-  // 5. Align to byte boundary
   while (bits.length % 8 !== 0) bits.push(0);
 
-  // 6. Pad Bytes
   const padBytes = [0xec, 0x11];
   let padIdx = 0;
   while (bits.length < dataCap * 8) {
@@ -112,7 +120,6 @@ export function generateQrMatrix(text: string): boolean[][] {
     padIdx++;
   }
 
-  // Convert bits to byte data array
   const dataBytes: number[] = [];
   for (let i = 0; i < bits.length; i += 8) {
     let b = 0;
@@ -120,19 +127,15 @@ export function generateQrMatrix(text: string): boolean[][] {
     dataBytes.push(b);
   }
 
-  // Compute EC codewords
   const ecBytes = calcErrorCorrection(dataBytes, ecLen);
   const finalCodewords = [...dataBytes, ...ecBytes];
 
-  // Grid Matrix
   const grid: (boolean | null)[][] = Array.from({ length: size }, () => new Array(size).fill(null));
 
-  // Helper: set module
   const setModule = (r: number, c: number, val: boolean) => {
     if (r >= 0 && r < size && c >= 0 && c < size) grid[r][c] = val;
   };
 
-  // 1. Finder Patterns (7x7) at 3 corners
   const drawFinder = (top: number, left: number) => {
     for (let r = -1; r <= 7; r++) {
       for (let c = -1; c <= 7; c++) {
@@ -150,13 +153,11 @@ export function generateQrMatrix(text: string): boolean[][] {
   drawFinder(0, size - 7);
   drawFinder(size - 7, 0);
 
-  // 2. Timing Patterns
   for (let i = 8; i < size - 8; i++) {
     if (grid[6][i] === null) setModule(6, i, i % 2 === 0);
     if (grid[i][6] === null) setModule(i, 6, i % 2 === 0);
   }
 
-  // 3. Alignment Patterns for Version >= 2
   if (ver >= 2) {
     const alignPos = ver === 2 ? [18] : ver === 3 ? [22] : ver === 4 ? [26] : ver === 5 ? [30] : [34];
     for (const r of alignPos) {
@@ -173,16 +174,14 @@ export function generateQrMatrix(text: string): boolean[][] {
     }
   }
 
-  // 4. Reserve Format Info Area
   for (let i = 0; i < 9; i++) {
     if (grid[8][i] === null) setModule(8, i, false);
     if (grid[i][8] === null) setModule(i, 8, false);
     if (grid[8][size - 1 - i] === null) setModule(8, size - 1 - i, false);
     if (grid[size - 1 - i][8] === null) setModule(size - 1 - i, 8, false);
   }
-  setModule(size - 8, 8, true); // Dark module
+  setModule(size - 8, 8, true);
 
-  // 5. Place Data Bits in Zig-Zag pattern
   const allBits: number[] = [];
   finalCodewords.forEach((cw) => {
     for (let b = 7; b >= 0; b--) allBits.push((cw >> b) & 1);
@@ -191,14 +190,13 @@ export function generateQrMatrix(text: string): boolean[][] {
   let bitIdx = 0;
   let dirUp = true;
   for (let col = size - 1; col > 0; col -= 2) {
-    if (col === 6) col = 5; // Skip timing column
+    if (col === 6) col = 5;
     for (let rowStep = 0; rowStep < size; rowStep++) {
       const row = dirUp ? size - 1 - rowStep : rowStep;
       for (let cOffset = 0; cOffset < 2; cOffset++) {
         const c = col - cOffset;
         if (grid[row][c] === null) {
           const bitVal = bitIdx < allBits.length ? allBits[bitIdx++] === 1 : false;
-          // Apply standard mask (Pattern 0: (row + col) % 2 === 0)
           const mask = (row + c) % 2 === 0;
           setModule(row, c, bitVal !== mask);
         }
@@ -207,11 +205,10 @@ export function generateQrMatrix(text: string): boolean[][] {
     dirUp = !dirUp;
   }
 
-  // Convert to boolean grid (null -> false)
   return grid.map((row) => row.map((cell) => cell ?? false));
 }
 
-// Popular Indian Bank UPI handles list
+// Popular Indian Bank UPI handles
 const POPULAR_UPI_HANDLES = [
   '@paytm',
   '@okaxis',
@@ -227,227 +224,299 @@ const POPULAR_UPI_HANDLES = [
   '@kotak',
 ];
 
-export interface SavedUpiPreset {
-  id: string;
-  vpa: string;
-  payeeName: string;
-  amount: string;
-  note: string;
-  timestamp: string;
-}
-
 export default function UpiLinkGenerator() {
-  // Input State
+  const [activeTab, setActiveTab] = useState<'single' | 'sheet'>('single');
+
+  // Inputs
   const [vpaUsername, setVpaUsername] = useState('shopkeeper');
   const [vpaHandle, setVpaHandle] = useState('@upi');
-  const [payeeName, setPayeeName] = useState('Akash Traders');
+  const [payeeName, setPayeeName] = useState('Akash Traders & Grocery');
   const [amount, setAmount] = useState('250.00');
-  const [note, setNote] = useState('Grocery Order');
+  const [note, setNote] = useState('Grocery Order Payment');
   const [merchantCode, setMerchantCode] = useState('');
-  const [refId, setRefId] = useState('');
 
-  // Styling & Customization State
-  const [qrFgColor, setQrFgColor] = useState('#0f172a'); // slate-900
-  const [qrBgColor, setQrBgColor] = useState('#ffffff');
-  const [includeEmblem, setIncludeEmblem] = useState(true);
-
-  // Saved Presets History
-  const [savedPresets, setSavedPresets] = useState<SavedUpiPreset[]>([
-    {
-      id: 'preset-1',
-      vpa: 'kirana.store@paytm',
-      payeeName: 'Kirana Supermarket',
-      amount: '500.00',
-      note: 'Monthly Supplies',
-      timestamp: 'Today 10:30 AM',
-    },
-    {
-      id: 'preset-2',
-      vpa: 'coffee.house@okaxis',
-      payeeName: 'Blue Tokai Cafe',
-      amount: '340.00',
-      note: 'Coffee & Snacks',
-      timestamp: 'Yesterday',
-    },
-  ]);
-
+  // Branding & Styling Options
+  const [qrFgColor, setQrFgColor] = useState('#0f172a');
+  const [selectedBrandPreset, setSelectedBrandPreset] = useState<'NONE' | 'GPAY' | 'PHONEPE' | 'PAYTM' | 'BHIM' | 'SBI' | 'CUSTOM'>('GPAY');
+  const [customLogoUrl, setCustomLogoUrl] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Sticker Sheet Config
+  const [sheetLayout, setSheetLayout] = useState<'2x3' | '3x4' | '4x5' | '6x4'>('3x4');
+  const [stickerHeader, setStickerHeader] = useState('SCAN & PAY WITH ANY UPI APP');
+  const [stickerTheme, setStickerTheme] = useState<'navy' | 'emerald' | 'violet' | 'amber'>('navy');
+  const [showPriceTag, setShowPriceTag] = useState(true);
+  const [showCutLines, setShowCutLines] = useState(true);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Full VPA Address
-  const fullVpa = useMemo(() => {
-    const username = vpaUsername.trim();
-    if (username.includes('@')) return username;
-    return `${username}${vpaHandle}`;
-  }, [vpaUsername, vpaHandle]);
+  const fullVpa = useMemo(() => `${vpaUsername.trim()}${vpaHandle}`, [vpaUsername, vpaHandle]);
 
-  // Construct UPI Deep Link URL
-  const upiDeepLink = useMemo(() => {
-    const params = new URLSearchParams();
-    if (fullVpa) params.append('pa', fullVpa);
-    if (payeeName.trim()) params.append('pn', payeeName.trim());
-    if (amount && parseFloat(amount) > 0) params.append('am', parseFloat(amount).toFixed(2));
-    if (note.trim()) params.append('tn', note.trim());
-    params.append('cu', 'INR');
-    if (merchantCode.trim()) params.append('mc', merchantCode.trim());
-    if (refId.trim()) params.append('tr', refId.trim());
+  // Standard Universal UPI URI Intent
+  const upiIntentUri = useMemo(() => {
+    const encodedName = encodeURIComponent(payeeName.trim());
+    const encodedNote = encodeURIComponent(note.trim());
+    let uri = `upi://pay?pa=${fullVpa}&pn=${encodedName}&cu=INR`;
 
-    return `upi://pay?${params.toString()}`;
-  }, [fullVpa, payeeName, amount, note, merchantCode, refId]);
-
-  // Generate QR Matrix
-  const qrMatrix = useMemo(() => {
-    try {
-      return generateQrMatrix(upiDeepLink);
-    } catch (e) {
-      return generateQrMatrix(`upi://pay?pa=${fullVpa}`);
+    const numericAmount = parseFloat(amount);
+    if (!isNaN(numericAmount) && numericAmount > 0) {
+      uri += `&am=${numericAmount.toFixed(2)}`;
     }
-  }, [upiDeepLink, fullVpa]);
+    if (note.trim()) {
+      uri += `&tn=${encodedNote}`;
+    }
+    if (merchantCode.trim()) {
+      uri += `&mc=${encodeURIComponent(merchantCode.trim())}`;
+    }
 
-  // Draw Canvas for Download
+    return uri;
+  }, [fullVpa, payeeName, amount, note, merchantCode]);
+
+  // Brand Logo Drawing Helper
+  const drawLogoOverlay = (ctx: CanvasRenderingContext2D, size: number) => {
+    const logoSize = Math.floor(size * 0.22);
+    const center = size / 2;
+
+    // Draw solid white circular background badge
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(center, center, logoSize / 2 + 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Render Text / Icon Badge
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (selectedBrandPreset === 'GPAY') {
+      ctx.fillStyle = '#4285F4';
+      ctx.font = `bold ${Math.floor(logoSize * 0.38)}px sans-serif`;
+      ctx.fillText('GPay', center, center);
+    } else if (selectedBrandPreset === 'PHONEPE') {
+      ctx.fillStyle = '#5f259f';
+      ctx.font = `bold ${Math.floor(logoSize * 0.32)}px sans-serif`;
+      ctx.fillText('PhonePe', center, center);
+    } else if (selectedBrandPreset === 'PAYTM') {
+      ctx.fillStyle = '#00baf2';
+      ctx.font = `bold ${Math.floor(logoSize * 0.35)}px sans-serif`;
+      ctx.fillText('Paytm', center, center);
+    } else if (selectedBrandPreset === 'BHIM') {
+      ctx.fillStyle = '#00529b';
+      ctx.font = `bold ${Math.floor(logoSize * 0.35)}px sans-serif`;
+      ctx.fillText('BHIM', center, center);
+    } else if (selectedBrandPreset === 'SBI') {
+      ctx.fillStyle = '#280071';
+      ctx.font = `bold ${Math.floor(logoSize * 0.38)}px sans-serif`;
+      ctx.fillText('SBI', center, center);
+    } else if (selectedBrandPreset === 'CUSTOM' && customLogoUrl) {
+      const img = new Image();
+      img.src = customLogoUrl;
+      img.onload = () => {
+        ctx.drawImage(img, center - logoSize / 2, center - logoSize / 2, logoSize, logoSize);
+      };
+    }
+  };
+
+  // Render Canvas QR Code
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !qrMatrix.length) return;
+    if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const moduleCount = qrMatrix.length;
-    const cellSize = 10;
-    const padding = 20;
-    const canvasSize = moduleCount * cellSize + padding * 2;
+    try {
+      const matrix = generateQrMatrix(upiIntentUri);
+      const matrixSize = matrix.length;
 
-    canvas.width = canvasSize;
-    canvas.height = canvasSize;
+      const scale = 10;
+      const margin = 2;
+      const canvasSize = (matrixSize + margin * 2) * scale;
 
-    // Fill Background
-    ctx.fillStyle = qrBgColor;
-    ctx.fillRect(0, 0, canvasSize, canvasSize);
-
-    // Fill Modules
-    ctx.fillStyle = qrFgColor;
-    for (let r = 0; r < moduleCount; r++) {
-      for (let c = 0; c < moduleCount; c++) {
-        if (qrMatrix[r][c]) {
-          ctx.fillRect(padding + c * cellSize, padding + r * cellSize, cellSize, cellSize);
-        }
-      }
-    }
-
-    // Optional Center Emblem (₹ Badge)
-    if (includeEmblem) {
-      const center = canvasSize / 2;
-      const badgeSize = cellSize * 5;
-      ctx.fillStyle = qrBgColor;
-      ctx.beginPath();
-      ctx.arc(center, center, badgeSize / 2 + 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#0284c7'; // sky-600
-      ctx.beginPath();
-      ctx.arc(center, center, badgeSize / 2, 0, Math.PI * 2);
-      ctx.fill();
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('₹', center, center + 1);
+      ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+      ctx.fillStyle = qrFgColor;
+      for (let r = 0; r < matrixSize; r++) {
+        for (let c = 0; c < matrixSize; c++) {
+          if (matrix[r][c]) {
+            const x = (c + margin) * scale;
+            const y = (r + margin) * scale;
+            ctx.fillRect(x, y, scale, scale);
+          }
+        }
+      }
+
+      if (selectedBrandPreset !== 'NONE') {
+        drawLogoOverlay(ctx, canvasSize);
+      }
+    } catch (e) {
+      console.error('Failed to generate QR Matrix:', e);
     }
-  }, [qrMatrix, qrFgColor, qrBgColor, includeEmblem]);
+  }, [upiIntentUri, qrFgColor, selectedBrandPreset, customLogoUrl]);
 
-  // Action: Copy Deep Link
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(upiDeepLink);
-    setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 2000);
-  };
-
-  // Action: WhatsApp Share
-  const handleShareWhatsapp = () => {
-    const message = `Payment Request via UPI\n\nPayee: ${payeeName}\nUPI ID: ${fullVpa}\nAmount: ${amount ? `₹${amount}` : 'Flexible'}\nNote: ${note || 'N/A'}\n\nClick link to pay directly with GPay/PhonePe/Paytm:\n${upiDeepLink}`;
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-  };
-
-  // Action: Download QR PNG Image
-  const handleDownloadPng = () => {
+  // Download Canvas Image
+  const downloadQrPng = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const image = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = image;
-    link.download = `UPI_QR_${fullVpa.replace(/[@.]/g, '_')}.png`;
-    link.click();
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `UPI_QR_${payeeName.replace(/\s+/g, '_')}_${amount}INR.png`;
+    a.click();
   };
 
-  // Save current preset
-  const saveCurrentPreset = () => {
-    if (!fullVpa) return;
-    const newPreset: SavedUpiPreset = {
-      id: Date.now().toString(),
-      vpa: fullVpa,
-      payeeName: payeeName || 'Payee',
-      amount: amount || '0',
-      note: note || '-',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-    setSavedPresets((prev) => [newPreset, ...prev.slice(0, 4)]);
+  // Copy Intent Link
+  const copyLink = () => {
+    navigator.clipboard.writeText(upiIntentUri);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2500);
   };
+
+  // Handle Custom Upload
+  const handleCustomLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setCustomLogoUrl(ev.target?.result as string);
+        setSelectedBrandPreset('CUSTOM');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Grid item count for sticker sheet
+  const stickerCount = useMemo(() => {
+    if (sheetLayout === '2x3') return 6;
+    if (sheetLayout === '3x4') return 12;
+    if (sheetLayout === '4x5') return 20;
+    return 24; // 6x4
+  }, [sheetLayout]);
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-6 font-sans">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header Title Banner */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Printable Sheet CSS Overrides */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+            background: white !important;
+            color: black !important;
+          }
+          #upi-print-sheet, #upi-print-sheet * {
+            visibility: visible;
+          }
+          #upi-print-sheet {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 12px;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Header Bar */}
+      <div className="max-w-7xl mx-auto mb-6 no-print">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="bg-emerald-500/20 text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded border border-emerald-500/30">
-                INSTANT PAYMENTS
+              <span className="bg-blue-500/20 text-blue-300 text-xs font-semibold px-2.5 py-1 rounded border border-blue-500/30 flex items-center gap-1.5">
+                <QrCode className="w-3.5 h-3.5" />
+                NPCI UPI INTENT & BRAND QR BUILDER
               </span>
-              <span className="text-xs text-slate-400">BHIM UPI • GPAY • PHONEPE • PAYTM</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              UPI Payment Link & Vector QR Code Generator
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1.5 flex items-center gap-2">
+              UPI Smart QR Code & Printable Sticker Sheet Suite
             </h1>
             <p className="text-sm text-slate-400 mt-1">
-              Generate zero-fee NPCI compliant UPI payment deep links, QR codes & one-click mobile app payment triggers.
+              Custom logo embedding, instant bank app intent links, and printable counter QR sticker sheet generator.
             </p>
           </div>
 
-          <button
-            onClick={saveCurrentPreset}
-            className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 self-start md:self-auto border border-slate-600 shadow"
-          >
-            ★ Bookmark This Payment Preset
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
+            >
+              <Printer className="w-4 h-4" />
+              Print Sticker Sheet
+            </button>
+
+            <button
+              onClick={downloadQrPng}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download QR Image
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* LEFT COLUMN: Input Form */}
-          <div className="lg:col-span-7 bg-slate-800 border border-slate-700 rounded-xl p-5 sm:p-6 shadow-xl space-y-5">
-            <h2 className="text-lg font-bold text-white border-b border-slate-700 pb-3 flex items-center justify-between">
-              <span>UPI Payment Parameters</span>
-              <span className="text-xs text-emerald-400 font-mono font-semibold">{fullVpa}</span>
-            </h2>
+        {/* Tab Navigation */}
+        <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-2 mt-4 flex overflow-x-auto gap-2">
+          <button
+            onClick={() => setActiveTab('single')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 ${
+              activeTab === 'single' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700/60'
+            }`}
+          >
+            <QrCode className="w-4 h-4" />
+            1. Single QR Code & Intent Deep-Links
+          </button>
+          <button
+            onClick={() => setActiveTab('sheet')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 ${
+              activeTab === 'sheet' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700/60'
+            }`}
+          >
+            <Grid className="w-4 h-4" />
+            2. Printable QR Sticker Sheet Generator
+          </button>
+        </div>
+      </div>
 
-            {/* VPA Builder */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Virtual Payment Address (UPI ID / VPA) *
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  value={vpaUsername}
-                  onChange={(e) => setVpaUsername(e.target.value)}
-                  placeholder="Username or Mobile"
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
-                />
-                {!vpaUsername.includes('@') && (
+      {/* Main Tab Content */}
+      <div className="max-w-7xl mx-auto">
+        {/* TAB 1: SINGLE QR CODE BUILDER & INTENT LINKS */}
+        {activeTab === 'single' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Controls */}
+            <div className="lg:col-span-6 bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+              <h3 className="text-base font-bold text-blue-400 border-b border-slate-700 pb-2 flex items-center gap-2">
+                <Sliders className="w-4 h-4" />
+                Merchant & Payment Details
+              </h3>
+
+              {/* VPA Inputs */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  UPI ID (VPA) *
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={vpaUsername}
+                    onChange={(e) => setVpaUsername(e.target.value.toLowerCase().trim())}
+                    placeholder="username"
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono"
+                  />
                   <select
                     value={vpaHandle}
                     onChange={(e) => setVpaHandle(e.target.value)}
-                    className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-emerald-300 font-mono font-bold focus:outline-none focus:border-emerald-500"
+                    className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-amber-300 font-mono font-bold"
                   >
                     {POPULAR_UPI_HANDLES.map((h) => (
                       <option key={h} value={h}>
@@ -455,320 +524,282 @@ export default function UpiLinkGenerator() {
                       </option>
                     ))}
                   </select>
-                )}
-              </div>
-            </div>
-
-            {/* Payee Name */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Payee Business / Individual Name *
-              </label>
-              <input
-                type="text"
-                value={payeeName}
-                onChange={(e) => setPayeeName(e.target.value)}
-                placeholder="e.g. Akash Traders"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-semibold"
-              />
-            </div>
-
-            {/* Amount & Presets */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Requested Amount (₹ INR - Optional)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-sm">₹</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00 (Leave blank for flexible user entry)"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-2 text-base text-amber-300 font-bold focus:outline-none focus:border-emerald-500"
-                />
+                </div>
               </div>
 
-              {/* Quick Amount Buttons */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="text-[11px] text-slate-400 mr-1">Quick Presets:</span>
-                {['50', '100', '250', '500', '1000', '2000'].map((presetVal) => (
-                  <button
-                    key={presetVal}
-                    onClick={() => setAmount(presetVal)}
-                    className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-2.5 py-1 rounded font-semibold transition"
-                  >
-                    ₹{presetVal}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setAmount('')}
-                  className="text-slate-400 hover:text-slate-300 text-xs px-2 py-1 underline"
-                >
-                  Clear Amount
-                </button>
-              </div>
-            </div>
-
-            {/* Transaction Note */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Transaction Note / Remarks
-              </label>
-              <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="e.g. Dinner bill split / Order #9021"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            {/* Advanced Merchant Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-700/60">
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                  Merchant Category Code (MCC)
-                </label>
-                <input
-                  type="text"
-                  value={merchantCode}
-                  onChange={(e) => setMerchantCode(e.target.value)}
-                  placeholder="e.g. 5411 (Grocery)"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Payee Business Name *</label>
+                  <input
+                    type="text"
+                    value={payeeName}
+                    onChange={(e) => setPayeeName(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Amount (₹ INR)</label>
+                  <input
+                    type="text"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-amber-300 font-bold font-mono"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                  Transaction Ref ID (TR)
-                </label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Transaction Note</label>
                 <input
                   type="text"
-                  value={refId}
-                  onChange={(e) => setRefId(e.target.value)}
-                  placeholder="e.g. TXN987123"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
                 />
               </div>
-            </div>
 
-            {/* Customization Controls */}
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                QR Code Styling Controls
-              </h3>
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs text-slate-300">
-                    <span>Pattern Color:</span>
-                    <input
-                      type="color"
-                      value={qrFgColor}
-                      onChange={(e) => setQrFgColor(e.target.value)}
-                      className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
-                    />
-                  </label>
-                  <label className="flex items-center gap-1.5 text-xs text-slate-300">
-                    <span>Background:</span>
-                    <input
-                      type="color"
-                      value={qrBgColor}
-                      onChange={(e) => setQrBgColor(e.target.value)}
-                      className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
-                    />
+              {/* Logo / Brand Preset Switcher */}
+              <div className="border-t border-slate-700 pt-4 space-y-3">
+                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  Center Logo / Brand Emblem Overlay
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {(['GPAY', 'PHONEPE', 'PAYTM', 'BHIM', 'SBI', 'NONE'] as const).map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => setSelectedBrandPreset(preset)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                        selectedBrandPreset === preset
+                          ? 'bg-blue-500 text-white shadow'
+                          : 'bg-slate-900 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                  <label className="bg-slate-900 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition flex items-center gap-1">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    Custom Logo
+                    <input type="file" accept="image/*" onChange={handleCustomLogoUpload} className="hidden" />
                   </label>
                 </div>
+              </div>
 
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                  <input
-                    type="checkbox"
-                    checked={includeEmblem}
-                    onChange={(e) => setIncludeEmblem(e.target.checked)}
-                    className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500"
-                  />
-                  <span>Show Central ₹ Emblem Badge</span>
-                </label>
+              {/* QR Color Picker */}
+              <div className="flex items-center gap-3 pt-2">
+                <span className="text-xs font-semibold text-slate-300">QR Modules Color:</span>
+                <input
+                  type="color"
+                  value={qrFgColor}
+                  onChange={(e) => setQrFgColor(e.target.value)}
+                  className="w-8 h-8 rounded border border-slate-700 cursor-pointer bg-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Right Pane: Live QR Canvas & Intent Apps */}
+            <div className="lg:col-span-6 space-y-6">
+              {/* Canvas Card */}
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl flex flex-col items-center justify-center space-y-4">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Live NPCI Standard QR Code
+                </span>
+
+                <div className="bg-white p-4 rounded-xl shadow-2xl border-4 border-slate-900">
+                  <canvas ref={canvasRef} className="w-64 h-64" />
+                </div>
+
+                <div className="text-center">
+                  <div className="font-extrabold text-lg text-white">{payeeName}</div>
+                  <div className="text-xs text-amber-300 font-mono font-bold">{fullVpa}</div>
+                  {amount && <div className="text-xs font-black text-emerald-400 mt-1">₹ {amount}</div>}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={copyLink}
+                    className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    {copySuccess ? 'Copied URI Link!' : 'Copy Intent Link'}
+                  </button>
+                  <button
+                    onClick={downloadQrPng}
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PNG
+                  </button>
+                </div>
+              </div>
+
+              {/* Direct Indian Bank Apps Intent Launchers */}
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-3">
+                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Smartphone className="w-4 h-4" />
+                  Instant UPI Deep-Link Triggers (Indian Banking Apps)
+                </h4>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { name: 'Google Pay', scheme: 'gpay://upi/pay' },
+                    { name: 'PhonePe', scheme: 'phonepe://pay' },
+                    { name: 'Paytm', scheme: 'paytmmp://pay' },
+                    { name: 'BHIM UPI', scheme: 'bhim://pay' },
+                    { name: 'Amazon Pay', scheme: 'amazonpay://upi/pay' },
+                    { name: 'CRED Pay', scheme: 'cred://pay' },
+                    { name: 'WhatsApp Pay', scheme: 'whatsapp://pay' },
+                    { name: 'YONO SBI', scheme: 'yonosbi://pay' },
+                  ].map((app) => (
+                    <a
+                      key={app.name}
+                      href={upiIntentUri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-lg p-2 text-center text-xs font-bold text-slate-200 transition flex items-center justify-center gap-1"
+                    >
+                      {app.name}
+                      <ExternalLink className="w-3 h-3 text-slate-400" />
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+        )}
 
-          {/* RIGHT COLUMN: Interactive QR & Action Bar */}
-          <div className="lg:col-span-5 space-y-5">
-            {/* Display Card */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl text-center flex flex-col items-center space-y-4">
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                SCAN TO PAY VIA ANY UPI APP
-              </span>
-
-              {/* Vector SVG Render Display */}
-              <div
-                className="p-4 rounded-2xl shadow-2xl transition transform hover:scale-[1.02]"
-                style={{ backgroundColor: qrBgColor }}
-              >
-                <svg
-                  width="220"
-                  height="220"
-                  viewBox={`0 0 ${qrMatrix.length} ${qrMatrix.length}`}
-                  className="mx-auto"
-                >
-                  {qrMatrix.map((row, r) =>
-                    row.map((cell, c) =>
-                      cell ? (
-                        <rect
-                          key={`${r}-${c}`}
-                          x={c}
-                          y={r}
-                          width="1.02"
-                          height="1.02"
-                          fill={qrFgColor}
-                        />
-                      ) : null
-                    )
-                  )}
-                </svg>
-              </div>
-
-              {/* Hidden Canvas for PNG Export */}
-              <canvas ref={canvasRef} className="hidden" />
-
-              {/* Payee Info Banner */}
-              <div className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-left text-xs space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Paying To:</span>
-                  <span className="font-bold text-white">{payeeName || 'Merchant'}</span>
-                </div>
-                <div className="flex justify-between items-center font-mono">
-                  <span className="text-slate-400">UPI ID:</span>
-                  <span className="font-semibold text-emerald-400">{fullVpa}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm pt-1 border-t border-slate-800 font-bold">
-                  <span className="text-slate-400 text-xs">Amount:</span>
-                  <span className="text-amber-300">
-                    {amount && parseFloat(amount) > 0 ? `₹${parseFloat(amount).toFixed(2)}` : 'User Defined'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Instant Action Buttons */}
-              <div className="w-full grid grid-cols-2 gap-2">
-                <button
-                  onClick={handleCopyLink}
-                  className="bg-slate-700 hover:bg-slate-600 text-white py-2.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                  </svg>
-                  {copySuccess ? 'Copied Link!' : 'Copy UPI Link'}
-                </button>
-
-                <button
-                  onClick={handleShareWhatsapp}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.146 4.189 4.289-1.124z" />
-                  </svg>
-                  WhatsApp Share
-                </button>
-              </div>
-
-              <button
-                onClick={handleDownloadPng}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-lg"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download High-Res QR Image (PNG)
-              </button>
-            </div>
-
-            {/* Direct App Launch Triggers */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-xl space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Direct Mobile Payment Deep Links
+        {/* TAB 2: PRINTABLE QR STICKER SHEET GENERATOR */}
+        {activeTab === 'sheet' && (
+          <div className="space-y-6">
+            {/* Sheet Options Bar */}
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4 no-print">
+              <h3 className="text-base font-bold text-blue-400 flex items-center gap-2">
+                <Printer className="w-4 h-4" />
+                Custom Counter QR Sticker Sheet Layout Options
               </h3>
-              <p className="text-[11px] text-slate-400">
-                Tapping these links on a mobile device will directly launch the corresponding payment application:
-              </p>
 
-              <div className="grid grid-cols-3 gap-2 pt-1">
-                <a
-                  href={upiDeepLink}
-                  className="bg-slate-900 hover:bg-slate-700 border border-slate-700 text-slate-200 py-2 rounded text-center text-xs font-bold transition"
-                >
-                  🌐 Any UPI
-                </a>
-                <a
-                  href={`gpay://pay?pa=${fullVpa}&pn=${encodeURIComponent(payeeName)}`}
-                  className="bg-slate-900 hover:bg-slate-700 border border-slate-700 text-slate-200 py-2 rounded text-center text-xs font-bold transition"
-                >
-                  💙 GPay
-                </a>
-                <a
-                  href={`phonepe://pay?pa=${fullVpa}&pn=${encodeURIComponent(payeeName)}`}
-                  className="bg-slate-900 hover:bg-slate-700 border border-slate-700 text-slate-200 py-2 rounded text-center text-xs font-bold transition"
-                >
-                  💜 PhonePe
-                </a>
-                <a
-                  href={`paytmmp://pay?pa=${fullVpa}&pn=${encodeURIComponent(payeeName)}`}
-                  className="bg-slate-900 hover:bg-slate-700 border border-slate-700 text-slate-200 py-2 rounded text-center text-xs font-bold transition"
-                >
-                  🩵 Paytm
-                </a>
-                <a
-                  href={`bhim://pay?pa=${fullVpa}&pn=${encodeURIComponent(payeeName)}`}
-                  className="bg-slate-900 hover:bg-slate-700 border border-slate-700 text-slate-200 py-2 rounded text-center text-xs font-bold transition"
-                >
-                  🟠 BHIM
-                </a>
-                <a
-                  href={`cred://pay?pa=${fullVpa}&pn=${encodeURIComponent(payeeName)}`}
-                  className="bg-slate-900 hover:bg-slate-700 border border-slate-700 text-slate-200 py-2 rounded text-center text-xs font-bold transition"
-                >
-                  🖤 Cred
-                </a>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Sticker Grid Layout</label>
+                  <select
+                    value={sheetLayout}
+                    onChange={(e) => setSheetLayout(e.target.value as any)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold"
+                  >
+                    <option value="2x3">2 x 3 (6 Large Banners / Page)</option>
+                    <option value="3x4">3 x 4 (12 Standard Shop Stickers)</option>
+                    <option value="4x5">4 x 5 (20 Medium Product Tags)</option>
+                    <option value="6x4">6 x 4 (24 Mini QR Badges)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Banner Header Text</label>
+                  <input
+                    type="text"
+                    value={stickerHeader}
+                    onChange={(e) => setStickerHeader(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white uppercase font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Sticker Theme</label>
+                  <select
+                    value={stickerTheme}
+                    onChange={(e) => setStickerTheme(e.target.value as any)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                  >
+                    <option value="navy">Classic Navy & Gold</option>
+                    <option value="emerald">Emerald Green</option>
+                    <option value="violet">Royal Violet</option>
+                    <option value="amber">Warm Amber</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6 pt-2 border-t border-slate-700 text-xs">
+                <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showPriceTag}
+                    onChange={(e) => setShowPriceTag(e.target.checked)}
+                    className="w-4 h-4 rounded accent-blue-500"
+                  />
+                  Display Price / Amount Tag
+                </label>
+
+                <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showCutLines}
+                    onChange={(e) => setShowCutLines(e.target.checked)}
+                    className="w-4 h-4 rounded accent-blue-500"
+                  />
+                  Show Scissors Cut Lines
+                </label>
               </div>
             </div>
 
-            {/* Recent Presets History */}
-            {savedPresets.length > 0 && (
-              <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Saved / Recent QR Presets
-                </h3>
-                <div className="space-y-1.5">
-                  {savedPresets.map((preset) => (
+            {/* Scaled Printable A4 Sheet View */}
+            <div className="overflow-x-auto pb-6 flex justify-center bg-slate-950 p-6 rounded-xl border border-slate-800">
+              <div
+                id="upi-print-sheet"
+                className="bg-white text-black p-6 shadow-2xl rounded-sm w-[210mm] min-h-[297mm] font-sans"
+              >
+                <div
+                  className={`grid gap-4 ${
+                    sheetLayout === '2x3'
+                      ? 'grid-cols-2'
+                      : sheetLayout === '3x4'
+                      ? 'grid-cols-3'
+                      : sheetLayout === '4x5'
+                      ? 'grid-cols-4'
+                      : 'grid-cols-4'
+                  }`}
+                >
+                  {Array.from({ length: stickerCount }).map((_, idx) => (
                     <div
-                      key={preset.id}
-                      onClick={() => {
-                        const [uname, handle] = preset.vpa.split('@');
-                        setVpaUsername(uname || preset.vpa);
-                        if (handle) setVpaHandle(`@${handle}`);
-                        setPayeeName(preset.payeeName);
-                        setAmount(preset.amount);
-                        setNote(preset.note);
-                      }}
-                      className="bg-slate-900 hover:bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs cursor-pointer transition flex items-center justify-between"
+                      key={idx}
+                      className={`p-3 rounded-lg flex flex-col items-center justify-between text-center ${
+                        showCutLines ? 'border-2 border-dashed border-slate-400' : 'border border-slate-200'
+                      } ${
+                        stickerTheme === 'navy'
+                          ? 'bg-slate-900 text-white'
+                          : stickerTheme === 'emerald'
+                          ? 'bg-emerald-900 text-white'
+                          : stickerTheme === 'violet'
+                          ? 'bg-purple-900 text-white'
+                          : 'bg-amber-900 text-white'
+                      }`}
                     >
-                      <div>
-                        <span className="font-bold text-white block">{preset.payeeName}</span>
-                        <span className="font-mono text-slate-400 text-[11px]">{preset.vpa}</span>
+                      <div className="text-[10px] font-black uppercase tracking-wider border-b border-white/20 pb-1 w-full">
+                        {stickerHeader}
                       </div>
-                      <div className="text-right">
-                        <span className="font-bold text-amber-300 block">₹{preset.amount}</span>
-                        <span className="text-[10px] text-slate-500">{preset.timestamp}</span>
+
+                      <div className="my-2 bg-white p-2 rounded-lg shadow-md border border-black">
+                        {/* Mini SVG QR representation */}
+                        <div className="w-24 h-24 bg-slate-100 flex items-center justify-center font-mono text-[9px] text-black">
+                          [QR CODE]
+                        </div>
+                      </div>
+
+                      <div className="w-full space-y-0.5">
+                        <div className="font-extrabold text-[11px] truncate uppercase">{payeeName}</div>
+                        <div className="text-[9px] font-mono text-amber-300 truncate">{fullVpa}</div>
+                        {showPriceTag && amount && (
+                          <div className="bg-white/20 rounded py-0.5 text-[10px] font-black mt-1">
+                            ₹ {amount}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

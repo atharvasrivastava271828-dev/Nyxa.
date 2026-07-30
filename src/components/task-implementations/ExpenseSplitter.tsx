@@ -16,13 +16,22 @@ import {
   Sparkles,
   Search,
   Filter,
-  Check
+  Check,
+  Download,
+  Upload,
+  Repeat,
+  FileSpreadsheet,
+  Zap,
+  RefreshCw,
+  FileText,
+  ChevronRight
 } from 'lucide-react';
 
 interface Participant {
   id: string;
   name: string;
   upiId?: string;
+  avatarColor?: string;
 }
 
 type CategoryType =
@@ -43,9 +52,21 @@ interface Expense {
   date: string;
   category: CategoryType;
   splitType: 'EQUAL' | 'CUSTOM';
-  // Array of participant IDs included in equal split, or mapping of id -> amount
-  splitParticipants: string[]; // for equal split
-  customSplit?: Record<string, number>; // for custom split
+  splitParticipants: string[]; // participant IDs in split
+  customSplit?: Record<string, number>;
+  notes?: string;
+}
+
+interface RecurringExpense {
+  id: string;
+  title: string;
+  amount: number;
+  paidBy: string;
+  category: CategoryType;
+  frequency: 'Monthly' | 'Weekly';
+  dueDateDay: number; // e.g. 1st or 5th of month
+  splitParticipants: string[];
+  active: boolean;
 }
 
 const CATEGORY_COLORS: Record<CategoryType, { bg: string; text: string; border: string }> = {
@@ -70,14 +91,30 @@ const CATEGORY_EMOJIS: Record<CategoryType, string> = {
   Others: '📦',
 };
 
-// Initial preset datasets
-const GOA_TRIP_PRESET = {
+const AVATAR_COLORS = [
+  'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+  'bg-sky-500/20 text-sky-400 border-sky-500/40',
+  'bg-amber-500/20 text-amber-400 border-amber-500/40',
+  'bg-purple-500/20 text-purple-400 border-purple-500/40',
+  'bg-rose-500/20 text-rose-400 border-rose-500/40',
+  'bg-indigo-500/20 text-indigo-400 border-indigo-500/40',
+];
+
+interface GroupPreset {
+  groupName: string;
+  participants: Participant[];
+  expenses: Expense[];
+  recurring: RecurringExpense[];
+}
+
+// Presets
+const GOA_TRIP_PRESET: GroupPreset = {
   groupName: '🏖️ Goa Beach Trip 2026',
   participants: [
-    { id: '1', name: 'Rahul Sharma', upiId: 'rahul@okicici' },
-    { id: '2', name: 'Priya Patel', upiId: 'priya@okhdfc' },
-    { id: '3', name: 'Amit Verma', upiId: 'amit@paytm' },
-    { id: '4', name: 'Sneha Rao', upiId: 'sneha@ybl' },
+    { id: '1', name: 'Rahul Sharma', upiId: 'rahul@okicici', avatarColor: AVATAR_COLORS[0] },
+    { id: '2', name: 'Priya Patel', upiId: 'priya@okhdfc', avatarColor: AVATAR_COLORS[1] },
+    { id: '3', name: 'Amit Verma', upiId: 'amit@paytm', avatarColor: AVATAR_COLORS[2] },
+    { id: '4', name: 'Sneha Rao', upiId: 'sneha@ybl', avatarColor: AVATAR_COLORS[3] },
   ],
   expenses: [
     {
@@ -121,14 +158,27 @@ const GOA_TRIP_PRESET = {
       splitParticipants: ['1', '2', '3', '4'],
     },
   ],
+  recurring: [
+    {
+      id: 'r1',
+      title: 'Goa Scooter Daily Rental',
+      amount: 1200,
+      paidBy: '3',
+      category: 'Travel & Fuel' as CategoryType,
+      frequency: 'Weekly',
+      dueDateDay: 1,
+      splitParticipants: ['1', '2', '3', '4'],
+      active: true,
+    },
+  ],
 };
 
-const BANGALORE_FLAT_PRESET = {
+const BANGALORE_FLAT_PRESET: GroupPreset = {
   groupName: '🏢 Indiranagar Flat 302',
   participants: [
-    { id: '1', name: 'Rohan (Room 1)', upiId: 'rohan@upi' },
-    { id: '2', name: 'Karan (Room 2)', upiId: 'karan@sbi' },
-    { id: '3', name: 'Vikram (Room 3)', upiId: 'vikram@axis' },
+    { id: '1', name: 'Rohan (Room 1)', upiId: 'rohan@upi', avatarColor: AVATAR_COLORS[0] },
+    { id: '2', name: 'Karan (Room 2)', upiId: 'karan@sbi', avatarColor: AVATAR_COLORS[1] },
+    { id: '3', name: 'Vikram (Room 3)', upiId: 'vikram@axis', avatarColor: AVATAR_COLORS[2] },
   ],
   expenses: [
     {
@@ -172,12 +222,108 @@ const BANGALORE_FLAT_PRESET = {
       splitParticipants: ['1', '2', '3'],
     },
   ],
+  recurring: [
+    {
+      id: 'rf1',
+      title: 'Flat Maid Salary',
+      amount: 9000,
+      paidBy: '2',
+      category: 'Maid & House Help' as CategoryType,
+      frequency: 'Monthly',
+      dueDateDay: 1,
+      splitParticipants: ['1', '2', '3'],
+      active: true,
+    },
+    {
+      id: 'rf2',
+      title: 'WiFi Broadband',
+      amount: 1200,
+      paidBy: '1',
+      category: 'Bills & Utilities' as CategoryType,
+      frequency: 'Monthly',
+      dueDateDay: 10,
+      splitParticipants: ['1', '2', '3'],
+      active: true,
+    },
+  ],
 };
+
+// OCR Sample Receipt Templates
+const RECEIPT_SAMPLES = [
+  {
+    name: 'Swiggy Gourmet Order',
+    text: `SWIGGY FOOD DELIVERY
+Order #8839210
+Date: 2026-07-28
+----------------------------
+1x Butter Chicken Handi     ₹480
+2x Garlic Butter Naan       ₹160
+1x Dal Makhani Special      ₹320
+1x Gulab Jamun (2 pcs)      ₹140
+----------------------------
+Item Total:                 ₹1100
+Packaging & Taxes:           ₹140
+Delivery Partner Tip:        ₹50
+============================
+TOTAL AMOUNT:               ₹1290
+Paid via UPI by Rahul`,
+    parsed: {
+      title: 'Swiggy Dinner Order',
+      amount: 1290,
+      category: 'Dining & Swiggy' as CategoryType,
+    },
+  },
+  {
+    name: 'DMart Supermarket Grocery',
+    text: `D-MART HYPERMARKET (INDIRANAGAR)
+Bill No: DM/2026/09941
+Date: 2026-07-25
+----------------------------
+Fortune Sunflower Oil 5L    ₹720
+Aashirvaad Atta 10kg        ₹440
+Amul Butter 500g            ₹275
+Surf Excel Detergent 2kg    ₹390
+Surf Liquid Wash 1L         ₹215
+----------------------------
+Sub Total:                  ₹2040
+CGST @ 2.5%:                 ₹51
+SGST @ 2.5%:                 ₹51
+============================
+GRAND TOTAL:                ₹2142
+Thank You For Shopping!`,
+    parsed: {
+      title: 'D-Mart Monthly Grocery',
+      amount: 2142,
+      category: 'Groceries' as CategoryType,
+    },
+  },
+  {
+    name: 'Shell Petrol Pump Fuel',
+    text: `SHELL INDIA PETROLEUM
+Outlet #4029 - MG Road
+Date: 2026-07-27
+Fuel Type: V-Power Gasoline
+Volume: 28.50 Litres
+Rate: ₹106.50 / L
+----------------------------
+Total Amount:               ₹3035.25
+GST Tax:                    INCLUDED
+============================
+PAYMENT RECEIVED:           ₹3035
+Transaction ID: SHL8839210`,
+    parsed: {
+      title: 'Shell Petrol Pump Fuel',
+      amount: 3035,
+      category: 'Travel & Fuel' as CategoryType,
+    },
+  },
+];
 
 export default function ExpenseSplitter() {
   const [groupName, setGroupName] = useState('🏖️ Goa Beach Trip 2026');
   const [participants, setParticipants] = useState<Participant[]>(GOA_TRIP_PRESET.participants);
   const [expenses, setExpenses] = useState<Expense[]>(GOA_TRIP_PRESET.expenses);
+  const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>(GOA_TRIP_PRESET.recurring);
 
   // Form states for adding participant
   const [newPersonName, setNewPersonName] = useState('');
@@ -194,11 +340,23 @@ export default function ExpenseSplitter() {
   const [selectedSplitIds, setSelectedSplitIds] = useState<string[]>([]);
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
 
+  // Recurring form states
+  const [recTitle, setRecTitle] = useState('');
+  const [recAmount, setRecAmount] = useState('');
+  const [recPaidBy, setRecPaidBy] = useState('');
+  const [recCategory, setRecCategory] = useState<CategoryType>('Bills & Utilities');
+  const [recFrequency, setRecFrequency] = useState<'Monthly' | 'Weekly'>('Monthly');
+
+  // OCR Parser states
+  const [ocrText, setOcrText] = useState(RECEIPT_SAMPLES[0].text);
+  const [ocrResult, setOcrResult] = useState<{ title: string; amount: number; category: CategoryType } | null>(null);
+
   // Filter & tab states
-  const [activeTab, setActiveTab] = useState<'expenses' | 'settlement' | 'breakdown' | 'whatsapp'>('settlement');
+  const [activeTab, setActiveTab] = useState<'settlement' | 'graph' | 'expenses' | 'recurring' | 'ocr' | 'breakdown' | 'whatsapp'>('settlement');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [hoveredParticipantId, setHoveredParticipantId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -232,6 +390,7 @@ export default function ExpenseSplitter() {
       id: Date.now().toString(),
       name: newPersonName.trim(),
       upiId: newPersonUpi.trim() || undefined,
+      avatarColor: AVATAR_COLORS[participants.length % AVATAR_COLORS.length],
     };
     setParticipants([...participants, newP]);
     setNewPersonName('');
@@ -285,7 +444,6 @@ export default function ExpenseSplitter() {
       };
       setExpenses([newExp, ...expenses]);
     } else {
-      // Custom split validation
       let sumCustom = 0;
       const parsedCustom: Record<string, number> = {};
       const splitParts: string[] = [];
@@ -327,11 +485,106 @@ export default function ExpenseSplitter() {
     showToast('Expense deleted');
   };
 
+  // Add Recurring Expense
+  const handleAddRecurring = (e: React.FormEvent) => {
+    e.preventDefault();
+    const numAmt = parseFloat(recAmount);
+    if (!recTitle.trim() || isNaN(numAmt) || numAmt <= 0 || !recPaidBy) {
+      alert('Please fill out all recurring expense fields correctly.');
+      return;
+    }
+    const newRec: RecurringExpense = {
+      id: 'rec_' + Date.now(),
+      title: recTitle.trim(),
+      amount: numAmt,
+      paidBy: recPaidBy,
+      category: recCategory,
+      frequency: recFrequency,
+      dueDateDay: 1,
+      splitParticipants: participants.map((p) => p.id),
+      active: true,
+    };
+    setRecurringExpenses([...recurringExpenses, newRec]);
+    setRecTitle('');
+    setRecAmount('');
+    showToast(`Scheduled recurring expense "${newRec.title}"`);
+  };
+
+  // Post Due Recurring Expense to active expenses list
+  const handlePostRecurringToExpenses = (rec: RecurringExpense) => {
+    const newExp: Expense = {
+      id: 'exp_' + Date.now(),
+      title: `${rec.title} (${rec.frequency})`,
+      amount: rec.amount,
+      paidBy: rec.paidBy,
+      date: new Date().toISOString().split('T')[0],
+      category: rec.category,
+      splitType: 'EQUAL',
+      splitParticipants: rec.splitParticipants.length > 0 ? rec.splitParticipants : participants.map((p) => p.id),
+    };
+    setExpenses([newExp, ...expenses]);
+    showToast(`Posted "${rec.title}" into active expenses!`);
+  };
+
+  // Simulated OCR Text Parser
+  const handleParseOCRText = () => {
+    if (!ocrText.trim()) return;
+
+    let detectedTitle = 'Parsed Bill Expense';
+    let detectedAmount = 0;
+    let detectedCat: CategoryType = 'Dining & Swiggy';
+
+    // Regex extraction strategies for title and total amount
+    const totalMatch = ocrText.match(/(?:TOTAL|GRAND TOTAL|TOTAL AMOUNT|AMOUNT|PAYMENT RECEIVED)[\s:=]*[₹Rs\.]*\s*([\d,]+\.?\d*)/i);
+    if (totalMatch && totalMatch[1]) {
+      detectedAmount = parseFloat(totalMatch[1].replace(/,/g, ''));
+    }
+
+    const lines = ocrText.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (lines.length > 0) {
+      detectedTitle = lines[0].substring(0, 32);
+    }
+
+    // Category detection based on keywords
+    const lower = ocrText.toLowerCase();
+    if (lower.includes('swiggy') || lower.includes('zomato') || lower.includes('food') || lower.includes('restaurant')) {
+      detectedCat = 'Dining & Swiggy';
+    } else if (lower.includes('mart') || lower.includes('grocery') || lower.includes('supermarket') || lower.includes('bazaar')) {
+      detectedCat = 'Groceries';
+    } else if (lower.includes('petrol') || lower.includes('fuel') || lower.includes('uber') || lower.includes('ola') || lower.includes('shell')) {
+      detectedCat = 'Travel & Fuel';
+    } else if (lower.includes('rent') || lower.includes('flat') || lower.includes('villa')) {
+      detectedCat = 'Rent';
+    } else if (lower.includes('bescom') || lower.includes('electricity') || lower.includes('wifi') || lower.includes('bill')) {
+      detectedCat = 'Bills & Utilities';
+    }
+
+    setOcrResult({
+      title: detectedTitle,
+      amount: detectedAmount > 0 ? detectedAmount : 500,
+      category: detectedCat,
+    });
+    showToast('Receipt parsed successfully!');
+  };
+
+  const handleApplyOCRToModal = () => {
+    if (!ocrResult) return;
+    setExpTitle(ocrResult.title);
+    setExpAmount(ocrResult.amount.toString());
+    setExpCategory(ocrResult.category);
+    setExpPaidBy(participants[0]?.id || '');
+    setExpDate(new Date().toISOString().split('T')[0]);
+    setExpSplitType('EQUAL');
+    setSelectedSplitIds(participants.map((p) => p.id));
+    setShowAddModal(true);
+  };
+
   // Load Preset
-  const handleLoadPreset = (preset: typeof GOA_TRIP_PRESET) => {
+  const handleLoadPreset = (preset: PresetGroup) => {
     setGroupName(preset.groupName);
     setParticipants(preset.participants);
     setExpenses(preset.expenses);
+    setRecurringExpenses(preset.recurring || []);
     showToast(`Loaded "${preset.groupName}" preset!`);
   };
 
@@ -340,6 +593,7 @@ export default function ExpenseSplitter() {
       setGroupName('New Expense Group');
       setParticipants([]);
       setExpenses([]);
+      setRecurringExpenses([]);
       showToast('Cleared all data.');
     }
   };
@@ -356,12 +610,10 @@ export default function ExpenseSplitter() {
     });
 
     expenses.forEach((e) => {
-      // Add paid amount
       if (map[e.paidBy]) {
         map[e.paidBy].paid += e.amount;
       }
 
-      // Add owes amount
       if (e.splitType === 'EQUAL' && e.splitParticipants.length > 0) {
         const share = e.amount / e.splitParticipants.length;
         e.splitParticipants.forEach((pId) => {
@@ -378,7 +630,6 @@ export default function ExpenseSplitter() {
       }
     });
 
-    // Compute net balance: paid - owes
     Object.keys(map).forEach((pId) => {
       map[pId].net = map[pId].paid - map[pId].owes;
     });
@@ -388,7 +639,6 @@ export default function ExpenseSplitter() {
 
   // Debt Simplification Algorithm (Greedy Settlement Plan)
   const settlementPlan = useMemo(() => {
-    // Collect creditors (net > 0) and debtors (net < 0)
     const debtors: { id: string; name: string; amount: number }[] = [];
     const creditors: { id: string; name: string; amount: number }[] = [];
 
@@ -401,7 +651,6 @@ export default function ExpenseSplitter() {
       }
     });
 
-    // Sort to optimize matching
     debtors.sort((a, b) => b.amount - a.amount);
     creditors.sort((a, b) => b.amount - a.amount);
 
@@ -483,7 +732,35 @@ export default function ExpenseSplitter() {
     }).format(amount);
   };
 
-  // Generate formatted WhatsApp text export
+  // CSV Export Engine
+  const handleExportCSV = () => {
+    let csvContent = 'data:text/csv;charset=utf-8,';
+    csvContent += `GROUP SUMMARY: ${groupName.replace(/,/g, ' ')}\n`;
+    csvContent += `Total Spend,${totalGroupSpend}\n`;
+    csvContent += `Total Participants,${participants.length}\n\n`;
+
+    csvContent += `EXPENSES BREAKDOWN\nTitle,Category,Amount,Paid By,Date,Split Type\n`;
+    expenses.forEach((e) => {
+      const payerName = participants.find((p) => p.id === e.paidBy)?.name || 'Unknown';
+      csvContent += `"${e.title}",${e.category},${e.amount},"${payerName}",${e.date},${e.splitType}\n`;
+    });
+
+    csvContent += `\nSETTLEMENT PLAN (MINIMUM TRANSFERS)\nFrom (Debtor),To (Creditor),Amount (INR),UPI ID\n`;
+    settlementPlan.forEach((st) => {
+      csvContent += `"${st.fromName}","${st.toName}",${st.amount},"${st.toUpi || ''}"\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `${groupName.replace(/[^a-zA-Z0-9]/g, '_')}_Summary.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exported CSV file!');
+  };
+
+  // WhatsApp text export
   const whatsappExportText = useMemo(() => {
     let text = `*${groupName.trim() || 'Expense Splitter Summary'}*\n`;
     text += `💰 *Total Group Spend:* ${formatINR(totalGroupSpend)}\n`;
@@ -525,19 +802,9 @@ export default function ExpenseSplitter() {
     return text;
   }, [groupName, totalGroupSpend, participants, categoryStats, participantBalances, settlementPlan]);
 
-  const handleCopyWhatsAppText = () => {
-    navigator.clipboard.writeText(whatsappExportText);
-    showToast('Summary copied to clipboard!');
-  };
-
-  const handleOpenWhatsAppUrl = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(whatsappExportText)}`;
-    window.open(url, '_blank');
-  };
-
   return (
     <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 bg-slate-900 text-slate-100 rounded-2xl shadow-2xl border border-slate-800 space-y-6">
-      {/* Toast Banner */}
+      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-bounce">
           <CheckCircle className="w-5 h-5" />
@@ -552,7 +819,7 @@ export default function ExpenseSplitter() {
             <span className="bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-500/20">
               India Flatmate & Trip Splitter
             </span>
-            <span className="text-xs text-slate-400">Zero Server Cost • Local Calculation</span>
+            <span className="text-xs text-slate-400">Zero Server Cost • Graph Settlement • Receipt OCR</span>
           </div>
           <input
             type="text"
@@ -563,21 +830,28 @@ export default function ExpenseSplitter() {
           />
         </div>
 
-        {/* Quick Presets */}
+        {/* Quick Presets & Export Actions */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => handleLoadPreset(GOA_TRIP_PRESET)}
             className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            Preset: Goa Trip
+            Goa Trip
           </button>
           <button
             onClick={() => handleLoadPreset(BANGALORE_FLAT_PRESET)}
             className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-            Preset: BLR Flat
+            BLR Flat
+          </button>
+          <button
+            onClick={handleExportCSV}
+            className="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-md"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            CSV Export
           </button>
           <button
             onClick={handleClearAll}
@@ -658,16 +932,20 @@ export default function ExpenseSplitter() {
               return (
                 <div
                   key={p.id}
-                  className="bg-slate-800 border border-slate-700/80 rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-sm text-xs"
+                  onMouseEnter={() => setHoveredParticipantId(p.id)}
+                  onMouseLeave={() => setHoveredParticipantId(null)}
+                  className={`bg-slate-800 border rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-sm text-xs transition ${
+                    hoveredParticipantId === p.id ? 'border-emerald-400 ring-2 ring-emerald-500/20' : 'border-slate-700/80'
+                  }`}
                 >
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-[10px]">
+                  <div className={`w-6 h-6 rounded-full font-bold flex items-center justify-center text-[10px] border ${p.avatarColor || AVATAR_COLORS[0]}`}>
                     {p.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <p className="font-semibold text-slate-100">{p.name}</p>
                     {p.upiId && <p className="text-[10px] text-slate-400">{p.upiId}</p>}
                   </div>
-                  <div className="ml-1 text-[11px] font-bold">
+                  <div className="ml-1 text-[11px] font-bold font-mono">
                     {isCreditor && <span className="text-emerald-400">+{formatINR(net)}</span>}
                     {isDebtor && <span className="text-rose-400">-{formatINR(Math.abs(net))}</span>}
                     {!isCreditor && !isDebtor && <span className="text-slate-400">Settled</span>}
@@ -688,53 +966,75 @@ export default function ExpenseSplitter() {
 
       {/* Main Tabs Navigation & Add Expense Button */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-800 pb-3">
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
           <button
             onClick={() => setActiveTab('settlement')}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 whitespace-nowrap ${
-              activeTab === 'settlement'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'settlement' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
             <ArrowRightLeft className="w-3.5 h-3.5" />
-            Balances & Settlement ({settlementPlan.length})
+            Settlement ({settlementPlan.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('graph')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'graph' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            Settlement Graph
           </button>
 
           <button
             onClick={() => setActiveTab('expenses')}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 whitespace-nowrap ${
-              activeTab === 'expenses'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'expenses' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
             <Receipt className="w-3.5 h-3.5" />
-            All Expenses ({expenses.length})
+            Expenses ({expenses.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('recurring')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'recurring' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Repeat className="w-3.5 h-3.5 text-sky-400" />
+            Recurring ({recurringExpenses.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('ocr')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'ocr' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 text-rose-400" />
+            Receipt OCR Parser
           </button>
 
           <button
             onClick={() => setActiveTab('breakdown')}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 whitespace-nowrap ${
-              activeTab === 'breakdown'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'breakdown' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
             <PieChart className="w-3.5 h-3.5" />
-            Category Breakdown
+            Breakdown
           </button>
 
           <button
             onClick={() => setActiveTab('whatsapp')}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 whitespace-nowrap ${
-              activeTab === 'whatsapp'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'whatsapp' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Share2 className="w-3.5 h-3.5" />
-            WhatsApp Export
+            <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+            Export & Share
           </button>
         </div>
 
@@ -743,7 +1043,7 @@ export default function ExpenseSplitter() {
           className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition shadow-lg flex items-center justify-center gap-1.5"
         >
           <Plus className="w-4 h-4" />
-          Add New Expense
+          Add Expense
         </button>
       </div>
 
@@ -773,7 +1073,7 @@ export default function ExpenseSplitter() {
                     return (
                       <tr key={p.id} className="hover:bg-slate-800/40">
                         <td className="px-4 py-3 font-semibold text-white flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] text-emerald-300 font-bold">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${p.avatarColor || AVATAR_COLORS[0]}`}>
                             {p.name.charAt(0)}
                           </div>
                           {p.name}
@@ -781,8 +1081,8 @@ export default function ExpenseSplitter() {
                         <td className="px-4 py-3 text-emerald-400 font-mono">{formatINR(stats.paid)}</td>
                         <td className="px-4 py-3 text-rose-400 font-mono">{formatINR(stats.owes)}</td>
                         <td className="px-4 py-3 font-bold font-mono">
-                          {stats.net > 0.5 && <span className="text-emerald-400">Gets back {formatINR(stats.net)}</span>}
-                          {stats.net < -0.5 && <span className="text-rose-400">Owes {formatINR(Math.abs(stats.net))}</span>}
+                          {stats.net > 0.5 && <span className="text-emerald-400">Gets back +{formatINR(stats.net)}</span>}
+                          {stats.net < -0.5 && <span className="text-rose-400">Owes -{formatINR(Math.abs(stats.net))}</span>}
                           {Math.abs(stats.net) <= 0.5 && <span className="text-slate-500">Settled (₹0)</span>}
                         </td>
                       </tr>
@@ -799,55 +1099,65 @@ export default function ExpenseSplitter() {
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <ArrowRightLeft className="w-5 h-5 text-emerald-400" />
-                  Optimized Settlement Plan (Minimum Transfers)
+                  Optimized Settlement Plan (Minimum Money Transfers)
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Greedy algorithm reduces complex group debts down to the fewest direct payments.
+                  Greedy debt simplification reduces N(N-1) potential transfers to a minimal path.
                 </p>
               </div>
             </div>
 
             {settlementPlan.length === 0 ? (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-xl text-center space-y-2">
-                <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
-                <p className="text-emerald-300 font-bold text-sm">Everyone is all settled up!</p>
-                <p className="text-xs text-slate-400">There are no pending balances between group members.</p>
+              <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-800">
+                <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto mb-2 opacity-80" />
+                <p className="text-sm font-semibold text-slate-200">Everyone is completely settled!</p>
+                <p className="text-xs text-slate-500 mt-1">No money transfers are required across group members.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {settlementPlan.map((st, i) => (
+                {settlementPlan.map((st, idx) => (
                   <div
-                    key={i}
-                    className="bg-slate-900 p-4 rounded-xl border border-slate-700/80 flex items-center justify-between shadow-sm hover:border-slate-600 transition"
+                    key={idx}
+                    className="bg-slate-900 p-4 rounded-xl border border-slate-700/80 flex flex-col justify-between space-y-3 hover:border-emerald-500/50 transition"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="font-bold text-rose-400">{st.fromName}</span>
-                        <span className="text-slate-500">pays</span>
-                        <span className="font-bold text-emerald-400">{st.toName}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 font-bold flex items-center justify-center text-xs border border-rose-500/30">
+                          {st.fromName.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white">{st.fromName}</p>
+                          <p className="text-[10px] text-rose-400 font-medium">Debtor (Pays)</p>
+                        </div>
                       </div>
-                      <p className="text-xl font-extrabold text-white font-mono">{formatINR(st.amount)}</p>
-                      {st.toUpi && (
-                        <p className="text-[11px] text-slate-400 flex items-center gap-1 font-mono">
-                          <span>UPI:</span>
-                          <span className="text-sky-300">{st.toUpi}</span>
-                        </p>
-                      )}
+
+                      <div className="text-center px-2">
+                        <ChevronRight className="w-5 h-5 text-emerald-400 mx-auto" />
+                        <span className="text-[10px] font-bold text-emerald-400 font-mono">{formatINR(st.amount)}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-right">
+                        <div>
+                          <p className="text-xs font-bold text-white">{st.toName}</p>
+                          <p className="text-[10px] text-emerald-400 font-medium">Creditor (Receives)</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30">
+                          {st.toName.charAt(0)}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <button
-                        onClick={() => {
-                          const text = `${st.fromName} pays ${st.toName} ${formatINR(st.amount)}${st.toUpi ? ` via UPI ${st.toUpi}` : ''}`;
-                          navigator.clipboard.writeText(text);
-                          showToast('Transfer detail copied!');
-                        }}
-                        className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition"
-                        title="Copy transfer detail"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {st.toUpi && (
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                        <span className="text-slate-400 font-mono">UPI ID: {st.toUpi}</span>
+                        <a
+                          href={`upi://pay?pa=${st.toUpi}&pn=${encodeURIComponent(st.toName)}&am=${st.amount}&cu=INR`}
+                          className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-md font-semibold transition border border-emerald-500/30 flex items-center gap-1"
+                        >
+                          Pay via UPI
+                        </a>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -856,24 +1166,166 @@ export default function ExpenseSplitter() {
         </div>
       )}
 
-      {/* TAB 2: All Expenses */}
+      {/* TAB 2: Visual Settlement Graph */}
+      {activeTab === 'graph' && (
+        <div className="bg-slate-800/60 p-6 rounded-2xl border border-slate-700/80 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-700/60 pb-3">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-400" />
+                Interactive Directed Settlement Graph
+              </h3>
+              <p className="text-xs text-slate-400">
+                Visual circular graph mapping money flows from debtors (red nodes) to creditors (green nodes).
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1 text-rose-400 font-medium">
+                <span className="w-3 h-3 rounded-full bg-rose-500/40 border border-rose-500"></span> Debtor (Owes)
+              </span>
+              <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                <span className="w-3 h-3 rounded-full bg-emerald-500/40 border border-emerald-500"></span> Creditor (Gets back)
+              </span>
+            </div>
+          </div>
+
+          {participants.length === 0 ? (
+            <p className="text-xs text-slate-500 text-center py-10">Add participants and expenses to generate settlement graph.</p>
+          ) : (
+            <div className="relative w-full h-[400px] bg-slate-900/90 rounded-2xl border border-slate-800 flex items-center justify-center overflow-hidden p-4">
+              <svg className="w-full h-full absolute inset-0 pointer-events-none">
+                <defs>
+                  <marker
+                    id="arrowhead"
+                    markerWidth="10"
+                    markerHeight="7"
+                    refX="28"
+                    refY="3.5"
+                    orient="auto"
+                  >
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#10B981" />
+                  </marker>
+                </defs>
+
+                {/* Draw SVG directed edges for settlements */}
+                {settlementPlan.map((st, idx) => {
+                  const debtorIdx = participants.findIndex((p) => p.id === st.fromId);
+                  const creditorIdx = participants.findIndex((p) => p.id === st.toId);
+                  if (debtorIdx === -1 || creditorIdx === -1) return null;
+
+                  const totalP = participants.length;
+                  const centerX = 250;
+                  const centerY = 200;
+                  const radius = 140;
+
+                  const angleD = (debtorIdx / totalP) * 2 * Math.PI - Math.PI / 2;
+                  const angleC = (creditorIdx / totalP) * 2 * Math.PI - Math.PI / 2;
+
+                  const xD = centerX + radius * Math.cos(angleD);
+                  const yD = centerY + radius * Math.sin(angleD);
+                  const xC = centerX + radius * Math.cos(angleC);
+                  const yC = centerY + radius * Math.sin(angleC);
+
+                  const midX = (xD + xC) / 2;
+                  const midY = (yD + yC) / 2;
+
+                  return (
+                    <g key={idx}>
+                      <line
+                        x1={xD}
+                        y1={yD}
+                        x2={xC}
+                        y2={yC}
+                        stroke="#10B981"
+                        strokeWidth="2.5"
+                        strokeDasharray="4 2"
+                        markerEnd="url(#arrowhead)"
+                      />
+                      <rect
+                        x={midX - 35}
+                        y={midY - 12}
+                        width="70"
+                        height="24"
+                        rx="12"
+                        fill="#0F172A"
+                        stroke="#10B981"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x={midX}
+                        y={midY + 4}
+                        fill="#10B981"
+                        fontSize="10"
+                        fontWeight="bold"
+                        textAnchor="middle"
+                      >
+                        ₹{st.amount}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {/* Render Participant Nodes in Circle */}
+              <div className="relative w-[500px] h-[400px] flex items-center justify-center">
+                {participants.map((p, idx) => {
+                  const totalP = participants.length;
+                  const radius = 140;
+                  const angle = (idx / totalP) * 2 * Math.PI - Math.PI / 2;
+                  const x = 250 + radius * Math.cos(angle) - 45; // 90px node width center offset
+                  const y = 200 + radius * Math.sin(angle) - 40; // 80px node height center offset
+                  const net = participantBalances[p.id]?.net || 0;
+                  const isCreditor = net > 0.5;
+                  const isDebtor = net < -0.5;
+
+                  return (
+                    <div
+                      key={p.id}
+                      style={{ left: `${x}px`, top: `${y}px` }}
+                      className={`absolute w-[90px] h-[80px] rounded-2xl border-2 flex flex-col items-center justify-center p-2 text-center shadow-xl transition transform hover:scale-105 z-10 cursor-pointer ${
+                        isCreditor
+                          ? 'bg-emerald-950/90 border-emerald-500 text-emerald-100'
+                          : isDebtor
+                          ? 'bg-rose-950/90 border-rose-500 text-rose-100'
+                          : 'bg-slate-800 border-slate-600 text-slate-300'
+                      }`}
+                    >
+                      <div className="w-6 h-6 rounded-full bg-slate-900 border border-white/20 font-bold flex items-center justify-center text-[10px]">
+                        {p.name.charAt(0)}
+                      </div>
+                      <p className="text-[11px] font-bold truncate max-w-[80px] mt-0.5">{p.name.split(' ')[0]}</p>
+                      <p className="text-[10px] font-mono font-bold mt-0.5">
+                        {isCreditor && `+₹${Math.round(net)}`}
+                        {isDebtor && `-₹${Math.round(Math.abs(net))}`}
+                        {!isCreditor && !isDebtor && '₹0'}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: Expenses List */}
       {activeTab === 'expenses' && (
         <div className="space-y-4">
-          {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-800/60 p-3 rounded-xl border border-slate-700">
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
-                placeholder="Search expense or person..."
+                placeholder="Search expenses by title or payer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="w-4 h-4 text-slate-400" />
+            <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+              <Filter className="w-3.5 h-3.5 text-slate-400" />
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
@@ -882,74 +1334,58 @@ export default function ExpenseSplitter() {
                 <option value="ALL">All Categories</option>
                 {Object.keys(CATEGORY_COLORS).map((cat) => (
                   <option key={cat} value={cat}>
-                    {cat}
+                    {CATEGORY_EMOJIS[cat as CategoryType]} {cat}
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Expense Cards List */}
+          {/* Expense Cards */}
           {filteredExpenses.length === 0 ? (
-            <div className="bg-slate-800/30 border border-slate-800 p-8 rounded-xl text-center space-y-2">
-              <Receipt className="w-8 h-8 text-slate-600 mx-auto" />
-              <p className="text-slate-400 text-xs font-medium">No expenses found matching your filter.</p>
+            <div className="p-8 text-center bg-slate-800/40 rounded-xl border border-slate-800">
+              <p className="text-xs text-slate-400">No expenses found matching filter criteria.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {filteredExpenses.map((exp) => {
                 const payer = participants.find((p) => p.id === exp.paidBy);
-                const catStyle = CATEGORY_COLORS[exp.category] || CATEGORY_COLORS.Others;
+                const catStyle = CATEGORY_COLORS[exp.category];
 
                 return (
                   <div
                     key={exp.id}
-                    className="bg-slate-800/70 p-4 rounded-xl border border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm hover:border-slate-600 transition"
+                    className="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between gap-4 transition shadow-sm"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2.5 rounded-xl text-lg ${catStyle.bg} ${catStyle.border} border`}>
+                    <div className="flex items-center gap-3.5">
+                      <div className="text-2xl p-2 bg-slate-900 rounded-xl border border-slate-700/80">
                         {CATEGORY_EMOJIS[exp.category]}
                       </div>
-                      <div className="space-y-1">
+                      <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-white text-sm">{exp.title}</h4>
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-md font-medium border ${catStyle.bg} ${catStyle.text} ${catStyle.border}`}
-                          >
+                          <h4 className="font-bold text-sm text-white">{exp.title}</h4>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${catStyle.bg} ${catStyle.text} ${catStyle.border}`}>
                             {exp.category}
                           </span>
                         </div>
-
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-slate-500" />
-                            {exp.date}
-                          </span>
-                          <span>
-                            Paid by <strong className="text-emerald-400 font-semibold">{payer?.name || 'Unknown'}</strong>
-                          </span>
-                          <span>•</span>
-                          <span>
-                            Split: <strong className="text-slate-300">{exp.splitParticipants.length} people</strong>
-                          </span>
-                        </div>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Paid by <strong className="text-slate-200">{payer?.name || 'Unknown'}</strong> on {exp.date} • Split among {exp.splitParticipants.length} people ({exp.splitType})
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-700/50">
+                    <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-lg font-extrabold text-white font-mono">{formatINR(exp.amount)}</p>
-                        <p className="text-[10px] text-slate-400">
-                          {exp.splitType === 'EQUAL'
-                            ? `~${formatINR(exp.amount / (exp.splitParticipants.length || 1))}/person`
-                            : 'Custom Split'}
+                        <p className="text-base font-extrabold font-mono text-emerald-400">{formatINR(exp.amount)}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          ({formatINR(exp.amount / (exp.splitParticipants.length || 1))}/person)
                         </p>
                       </div>
 
                       <button
                         onClick={() => handleDeleteExpense(exp.id)}
-                        className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
-                        title="Delete expense"
+                        className="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-700/50 transition"
+                        title="Delete Expense"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -962,49 +1398,206 @@ export default function ExpenseSplitter() {
         </div>
       )}
 
-      {/* TAB 3: Category Breakdown */}
-      {activeTab === 'breakdown' && (
+      {/* TAB 4: Recurring Expense Scheduler */}
+      {activeTab === 'recurring' && (
         <div className="space-y-6">
-          <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/70 space-y-4">
+          <div className="bg-slate-800/60 p-5 rounded-2xl border border-slate-700/80 space-y-4">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-emerald-400" />
-              Category Expenses Distribution
+              <Repeat className="w-4 h-4 text-sky-400" />
+              Schedule Recurring Flatmate & Household Expenses
             </h3>
 
-            <div className="space-y-4">
-              {categoryStats.map((c) => {
-                return (
-                  <div key={c.category} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-200 flex items-center gap-2">
-                        <span>{CATEGORY_EMOJIS[c.category]}</span>
-                        {c.category}
-                      </span>
-                      <div className="flex items-center gap-2 font-mono">
-                        <span className="font-bold text-white">{formatINR(c.total)}</span>
-                        <span className="text-slate-400 text-[11px]">({c.percentage.toFixed(1)}%)</span>
-                      </div>
+            <form onSubmit={handleAddRecurring} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+              <input
+                type="text"
+                placeholder="Title (e.g. Monthly Rent)"
+                value={recTitle}
+                onChange={(e) => setRecTitle(e.target.value)}
+                className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500"
+              />
+              <input
+                type="number"
+                placeholder="Amount (₹)"
+                value={recAmount}
+                onChange={(e) => setRecAmount(e.target.value)}
+                className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+              />
+              <select
+                value={recPaidBy}
+                onChange={(e) => setRecPaidBy(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-sky-500"
+              >
+                <option value="">Paid By...</option>
+                {participants.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={recCategory}
+                onChange={(e) => setRecCategory(e.target.value as CategoryType)}
+                className="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-sky-500"
+              >
+                {Object.keys(CATEGORY_COLORS).map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                className="bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs px-4 py-1.5 rounded-lg transition flex items-center justify-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Schedule
+              </button>
+            </form>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {recurringExpenses.map((rec) => {
+              const payer = participants.find((p) => p.id === rec.paidBy);
+              return (
+                <div
+                  key={rec.id}
+                  className="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-700/80 text-xl">
+                      {CATEGORY_EMOJIS[rec.category]}
                     </div>
-                    <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                    <div>
+                      <h4 className="text-xs font-bold text-white">{rec.title}</h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {rec.frequency} • Paid by {payer?.name || 'Unknown'}
+                      </p>
+                      <p className="text-[10px] font-mono text-emerald-400 font-bold mt-1">{formatINR(rec.amount)}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handlePostRecurringToExpenses(rec)}
+                    className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-500/30 transition flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Post Due
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: Receipt OCR Parser */}
+      {activeTab === 'ocr' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 bg-slate-800/60 p-5 rounded-2xl border border-slate-700/80 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <FileText className="w-4 h-4 text-rose-400" />
+                Paste Bill / Receipt Text
+              </h3>
+              <div className="flex gap-1.5">
+                {RECEIPT_SAMPLES.map((s, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setOcrText(s.text)}
+                    className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700 transition"
+                  >
+                    Sample {idx + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <textarea
+              rows={12}
+              value={ocrText}
+              onChange={(e) => setOcrText(e.target.value)}
+              placeholder="Paste raw bill text or receipt snippet here..."
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-rose-500"
+            ></textarea>
+
+            <button
+              onClick={handleParseOCRText}
+              className="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs py-2 rounded-xl transition shadow-md flex items-center justify-center gap-2"
+            >
+              <Zap className="w-4 h-4 text-amber-300" />
+              Simulate Receipt OCR Parsing
+            </button>
+          </div>
+
+          <div className="lg:col-span-6 bg-slate-800/60 p-5 rounded-2xl border border-slate-700/80 space-y-4 flex flex-col justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-700/60 pb-3">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                Parsed Bill Results
+              </h3>
+
+              {!ocrResult ? (
+                <div className="p-8 text-center text-slate-500 text-xs italic">
+                  Click &quot;Simulate Receipt OCR Parsing&quot; to extract merchant, total amount, and category automatically.
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 space-y-3 mt-4">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400">Extracted Merchant Title:</span>
+                    <span className="font-bold text-white">{ocrResult.title}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400">Detected Category:</span>
+                    <span className="font-semibold text-emerald-400">{ocrResult.category}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-slate-800 pt-2 text-sm font-bold">
+                    <span className="text-slate-300">Total Amount Extracted:</span>
+                    <span className="font-mono text-xl text-emerald-400">{formatINR(ocrResult.amount)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {ocrResult && (
+              <button
+                onClick={handleApplyOCRToModal}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Import into New Expense Modal
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 6: Category Breakdown */}
+      {activeTab === 'breakdown' && (
+        <div className="space-y-6">
+          <div className="bg-slate-800/60 rounded-2xl p-5 border border-slate-700/70 space-y-4">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <PieChart className="w-4 h-4 text-emerald-400" />
+              Category Spend Breakdown
+            </h3>
+
+            <div className="space-y-3">
+              {categoryStats.map((c) => {
+                const catStyle = CATEGORY_COLORS[c.category];
+                return (
+                  <div key={c.category} className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="flex items-center gap-2 font-semibold text-slate-200">
+                        <span>{CATEGORY_EMOJIS[c.category]}</span>
+                        <span>{c.category}</span>
+                      </span>
+                      <span className="font-mono text-slate-300">
+                        {formatINR(c.total)} ({c.percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                    <div className="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          c.category === 'Rent'
-                            ? 'bg-rose-500'
-                            : c.category === 'Bills & Utilities'
-                            ? 'bg-amber-500'
-                            : c.category === 'Groceries'
-                            ? 'bg-emerald-500'
-                            : c.category === 'Dining & Swiggy'
-                            ? 'bg-orange-500'
-                            : c.category === 'Travel & Fuel'
-                            ? 'bg-sky-500'
-                            : c.category === 'Maid & House Help'
-                            ? 'bg-purple-500'
-                            : c.category === 'Entertainment'
-                            ? 'bg-indigo-500'
-                            : 'bg-slate-500'
-                        }`}
-                        style={{ width: `${Math.min(100, Math.max(0, c.percentage))}%` }}
+                        style={{ width: `${c.percentage}%` }}
+                        className={`h-full transition-all duration-500 ${catStyle.bg.replace('/10', '')}`}
                       ></div>
                     </div>
                   </div>
@@ -1015,97 +1608,93 @@ export default function ExpenseSplitter() {
         </div>
       )}
 
-      {/* TAB 4: WhatsApp Shareable Text Export */}
+      {/* TAB 7: WhatsApp & Export */}
       {activeTab === 'whatsapp' && (
-        <div className="space-y-4">
-          <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/70 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Share2 className="w-4 h-4 text-emerald-400" />
-                  Formatted WhatsApp Summary Export
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Copy or share this text directly to your flatmate / trip WhatsApp group.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCopyWhatsAppText}
-                  className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  Copy Text
-                </button>
-
-                <button
-                  onClick={handleOpenWhatsAppUrl}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-md"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  Open WhatsApp
-                </button>
-              </div>
+        <div className="bg-slate-800/60 rounded-2xl p-5 border border-slate-700/70 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Share2 className="w-4 h-4 text-emerald-400" />
+                Formatted WhatsApp & Text Summary
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Copy and paste directly into your WhatsApp flatmate or trip group.
+              </p>
             </div>
 
-            <textarea
-              readOnly
-              rows={12}
-              value={whatsappExportText}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-xs font-mono text-emerald-300 focus:outline-none focus:border-emerald-500 leading-relaxed shadow-inner"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(whatsappExportText);
+                  showToast('Copied summary to clipboard!');
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-md"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy Summary
+              </button>
+              <button
+                onClick={() => {
+                  const url = `https://wa.me/?text=${encodeURIComponent(whatsappExportText)}`;
+                  window.open(url, '_blank');
+                }}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs px-3.5 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1.5"
+              >
+                <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+                Open WhatsApp
+              </button>
+            </div>
           </div>
+
+          <pre className="bg-slate-900 p-4 rounded-xl border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+            {whatsappExportText}
+          </pre>
         </div>
       )}
 
-      {/* ADD EXPENSE MODAL */}
+      {/* MODAL: Add New Expense */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Plus className="w-4 h-4 text-emerald-400" />
-                Add New Shared Expense
+                <Receipt className="w-5 h-5 text-emerald-400" />
+                Add New Group Expense
               </h3>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 rounded-md hover:bg-slate-800"
-              >
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white">
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleSaveExpense} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Expense Description</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Expense Title</label>
                 <input
                   type="text"
-                  required
-                  placeholder="e.g. Swiggy Lunch / Electricity Bill / House Rent"
+                  placeholder="e.g. Swiggy Dinner / BESCOM Bill"
                   value={expTitle}
                   onChange={(e) => setExpTitle(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  required
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Amount (₹)</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Amount (₹)</label>
                   <input
                     type="number"
-                    required
-                    min="1"
-                    step="any"
-                    placeholder="e.g. 2400"
+                    step="0.01"
+                    placeholder="0.00"
                     value={expAmount}
                     onChange={(e) => setExpAmount(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Category</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Category</label>
                   <select
                     value={expCategory}
                     onChange={(e) => setExpCategory(e.target.value as CategoryType)}
@@ -1120,13 +1709,14 @@ export default function ExpenseSplitter() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Paid By</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Paid By</label>
                   <select
                     value={expPaidBy}
                     onChange={(e) => setExpPaidBy(e.target.value)}
                     className="w-full bg-slate-800 border border-slate-700 text-xs text-white rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
+                    required
                   >
                     {participants.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -1137,7 +1727,7 @@ export default function ExpenseSplitter() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Date</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
                   <input
                     type="date"
                     value={expDate}
@@ -1147,80 +1737,65 @@ export default function ExpenseSplitter() {
                 </div>
               </div>
 
-              {/* Split Mode Selector */}
-              <div className="space-y-2 border-t border-slate-800 pt-3">
-                <label className="block text-xs font-semibold text-slate-200">Split Method</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setExpSplitType('EQUAL')}
-                    className={`py-1.5 text-xs font-medium rounded-lg border transition ${
-                      expSplitType === 'EQUAL'
-                        ? 'bg-emerald-600 text-white border-emerald-500'
-                        : 'bg-slate-800 text-slate-400 border-slate-700'
-                    }`}
-                  >
-                    Split Equally
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setExpSplitType('CUSTOM')}
-                    className={`py-1.5 text-xs font-medium rounded-lg border transition ${
-                      expSplitType === 'CUSTOM'
-                        ? 'bg-emerald-600 text-white border-emerald-500'
-                        : 'bg-slate-800 text-slate-400 border-slate-700'
-                    }`}
-                  >
-                    Custom / Unequal
-                  </button>
+              <div className="pt-2 border-t border-slate-800">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-semibold text-slate-300">Split Method</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpSplitType('EQUAL')}
+                      className={`text-xs px-2.5 py-1 rounded-md font-semibold transition ${
+                        expSplitType === 'EQUAL' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      Equal Split
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExpSplitType('CUSTOM')}
+                      className={`text-xs px-2.5 py-1 rounded-md font-semibold transition ${
+                        expSplitType === 'CUSTOM' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      Custom Split
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Equal split checkboxes */}
-              {expSplitType === 'EQUAL' && (
-                <div className="space-y-2">
-                  <p className="text-xs text-slate-400">Select people who share this expense:</p>
-                  <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1">
+                {expSplitType === 'EQUAL' ? (
+                  <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
                     {participants.map((p) => {
                       const isSelected = selectedSplitIds.includes(p.id);
                       return (
-                        <button
+                        <label
                           key={p.id}
-                          type="button"
-                          onClick={() => {
-                            if (isSelected) {
-                              setSelectedSplitIds(selectedSplitIds.filter((id) => id !== p.id));
-                            } else {
-                              setSelectedSplitIds([...selectedSplitIds, p.id]);
-                            }
-                          }}
-                          className={`p-2 rounded-lg text-xs font-medium border flex items-center justify-between transition ${
-                            isSelected
-                              ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                              : 'bg-slate-800 border-slate-700 text-slate-400'
-                          }`}
+                          className="flex items-center justify-between p-2 bg-slate-800/60 rounded-lg border border-slate-700/50 text-xs cursor-pointer"
                         >
-                          <span>{p.name}</span>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                        </button>
+                          <span className="font-medium text-slate-200">{p.name}</span>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedSplitIds([...selectedSplitIds, p.id]);
+                              } else {
+                                setSelectedSplitIds(selectedSplitIds.filter((id) => id !== p.id));
+                              }
+                            }}
+                            className="accent-emerald-500 w-4 h-4 rounded"
+                          />
+                        </label>
                       );
                     })}
                   </div>
-                </div>
-              )}
-
-              {/* Custom split inputs */}
-              {expSplitType === 'CUSTOM' && (
-                <div className="space-y-2">
-                  <p className="text-xs text-slate-400">Enter exact share per person (Sum must equal ₹{expAmount || '0'}):</p>
-                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                ) : (
+                  <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
                     {participants.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-slate-300">{p.name}</span>
+                      <div key={p.id} className="flex items-center justify-between p-2 bg-slate-800/60 rounded-lg text-xs">
+                        <span className="font-medium text-slate-200">{p.name}</span>
                         <input
                           type="number"
-                          placeholder="₹ 0"
+                          placeholder="Amount ₹"
                           value={customAmounts[p.id] || ''}
                           onChange={(e) =>
                             setCustomAmounts({
@@ -1228,25 +1803,25 @@ export default function ExpenseSplitter() {
                               [p.id]: e.target.value,
                             })
                           }
-                          className="w-28 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                          className="w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono"
                         />
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
-              <div className="flex items-center justify-end gap-2 border-t border-slate-800 pt-3">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition"
+                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-semibold hover:bg-slate-700 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs transition shadow-md"
+                  className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs transition shadow-lg"
                 >
                   Save Expense
                 </button>

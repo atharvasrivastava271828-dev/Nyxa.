@@ -1,6 +1,29 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import {
+  ShieldCheck,
+  FileCheck,
+  FileSpreadsheet,
+  Download,
+  Upload,
+  Search,
+  Filter,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Printer,
+  Copy,
+  RefreshCw,
+  Eye,
+  FileText,
+  CreditCard,
+  Building,
+  MapPin,
+  HelpCircle,
+  ChevronRight,
+  Sparkles,
+} from 'lucide-react';
 
 // --- VERHOEFF ALGORITHM TABLES FOR AADHAAR CHECKSUM ---
 const VERHOEFF_D = [
@@ -91,799 +114,850 @@ const PINCODE_ZONES: Record<string, { region: string; states: string }> = {
   '9': { region: 'Army Postal Service (APS)', states: 'Field Post Offices (FPO) & Indian Armed Forces' },
 };
 
-export default function DocumentValidator() {
-  const [activeTab, setActiveTab] = useState<'pan' | 'aadhaar' | 'ifsc' | 'pincode' | 'scanner'>('pan');
+// Batch Item Result Interface
+export interface BatchValidationItem {
+  id: string;
+  docType: 'PAN' | 'Aadhaar' | 'IFSC' | 'Pincode';
+  value: string;
+  isValid: boolean;
+  errorReason?: string;
+  details?: string;
+  nameOrNote?: string;
+}
 
-  // Individual Form Inputs
+export default function DocumentValidator() {
+  const [activeTab, setActiveTab] = useState<'batch' | 'pan' | 'aadhaar' | 'ifsc' | 'pincode' | 'scanner'>('batch');
+
+  // Single Validation Inputs
   const [panInput, setPanInput] = useState('ABCDE1234F');
   const [aadhaarInput, setAadhaarInput] = useState('5482 9102 3847');
   const [showMaskedAadhaar, setShowMaskedAadhaar] = useState(false);
   const [ifscInput, setIfscInput] = useState('SBIN0001234');
   const [pincodeInput, setPincodeInput] = useState('110001');
 
-  // Scanner Multi Input
+  // Multi-Text Scanner Input
   const [scannerText, setScannerText] = useState(
-    `Here are sample details for verification:\nPAN: ABCDE1234F, Aadhaar: 548291023847, IFSC: SBIN0001234, Pincode: 201301.\nAlso invalid PAN: XYZ123 or bad Aadhaar: 123456789012.`
+    `Verification Batch Sample:\nPAN: ABCDE1234F, Aadhaar: 548291023847, IFSC: SBIN0001234, Pincode: 201301.\nAlso bad PAN: XYZ123, bad Aadhaar: 123456789012, good IFSC: HDFC0001234.`
   );
 
-  // --- PAN VALIDATION ANALYSIS ---
-  const panAnalysis = useMemo(() => {
-    const cleanPan = panInput.trim().toUpperCase();
+  // Batch CSV Upload & Results State
+  const [batchItems, setBatchItems] = useState<BatchValidationItem[]>([
+    { id: '1', docType: 'PAN', value: 'ABCDE1234F', isValid: true, details: 'Individual PAN (Sharma)', nameOrNote: 'Rajesh Sharma' },
+    { id: '2', docType: 'PAN', value: 'XYZ9999P', isValid: false, errorReason: 'Must be exactly 10 characters (entered: 8)', nameOrNote: 'Invalid Test' },
+    { id: '3', docType: 'Aadhaar', value: '5482 9102 3847', isValid: true, details: 'Verhoeff Checksum Passed', nameOrNote: 'Rajesh Sharma' },
+    { id: '4', docType: 'Aadhaar', value: '1234 5678 9012', isValid: false, errorReason: 'Aadhaar cannot start with 0 or 1', nameOrNote: 'Failed Prefix Test' },
+    { id: '5', docType: 'IFSC', value: 'SBIN0001234', isValid: true, details: 'State Bank of India (SBI)', nameOrNote: 'Main Branch' },
+    { id: '6', docType: 'IFSC', value: 'SBIN1001234', isValid: false, errorReason: "5th character must be mandatory '0' (found '1')", nameOrNote: 'Bad 5th Char' },
+    { id: '7', docType: 'Pincode', value: '201301', isValid: true, details: 'Zone 2: Uttar Pradesh, Uttarakhand', nameOrNote: 'Noida Office' },
+    { id: '8', docType: 'Pincode', value: '010001', isValid: false, errorReason: 'Pincode cannot start with 0', nameOrNote: 'Bad Zero Start' },
+  ]);
+
+  const [batchSearch, setBatchSearch] = useState('');
+  const [batchFilterStatus, setBatchFilterStatus] = useState<'all' | 'valid' | 'invalid'>('all');
+  const [batchFilterDocType, setBatchFilterDocType] = useState<string>('all');
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
+  // Helper: Single PAN validator function
+  const analyzePAN = (raw: string) => {
+    const clean = raw.trim().toUpperCase();
+    if (!clean) return { isValid: false, errorReason: 'Empty string', details: '' };
+
     const regex = /^[A-Z]{3}[PCHABGJLFTF][A-Z]{1}[0-9]{4}[A-Z]{1}$/;
-    const isValid = regex.test(cleanPan);
+    const isValid = regex.test(clean);
 
-    if (cleanPan.length === 0) {
-      return { isValid: false, message: 'Please enter a 10-character PAN number.', breakdown: null };
-    }
+    if (clean.length !== 10) return { isValid: false, errorReason: `Must be exactly 10 characters (entered: ${clean.length})` };
+    const holderTypeChar = clean[3] || '';
+    const holderInfo = PAN_HOLDER_TYPES[holderTypeChar];
 
-    const series = cleanPan.slice(0, 3);
-    const holderTypeChar = cleanPan[3] || '';
-    const surnameInitial = cleanPan[4] || '';
-    const sequentialNum = cleanPan.slice(5, 9);
-    const checkChar = cleanPan[9] || '';
-
-    const holderInfo = PAN_HOLDER_TYPES[holderTypeChar] || {
-      type: 'Unknown / Invalid Type',
-      category: 'Invalid',
-      desc: 'The 4th character must be P, C, H, A, B, G, J, L, F, or T',
-    };
-
-    let errorReason = '';
-    if (cleanPan.length !== 10) {
-      errorReason = `Must be exactly 10 characters (current: ${cleanPan.length})`;
-    } else if (!/^[A-Z]{3}/.test(series)) {
-      errorReason = 'First 3 characters must be alphabetic series (A-Z)';
-    } else if (!PAN_HOLDER_TYPES[holderTypeChar]) {
-      errorReason = `4th character '${holderTypeChar}' is not a valid PAN holder type code`;
-    } else if (!/^[A-Z]/.test(surnameInitial)) {
-      errorReason = '5th character must be surname/name initial letter (A-Z)';
-    } else if (!/^[0-9]{4}/.test(sequentialNum)) {
-      errorReason = '6th to 9th characters must be 4 numeric digits (0001-9999)';
-    } else if (!/^[A-Z]$/.test(checkChar)) {
-      errorReason = '10th character check letter must be alphabetic (A-Z)';
-    }
+    if (!holderInfo) return { isValid: false, errorReason: `4th character '${holderTypeChar}' is not a valid PAN holder type code` };
 
     return {
-      cleanPan,
       isValid,
-      errorReason,
-      breakdown: {
-        series,
-        holderTypeChar,
-        holderInfo,
-        surnameInitial,
-        sequentialNum,
-        checkChar,
-      },
+      errorReason: isValid ? undefined : 'Invalid PAN format or checksum character',
+      details: `${holderInfo.type} [Series: ${clean.slice(0, 3)}, Initial: ${clean[4]}]`,
     };
-  }, [panInput]);
-
-  // --- AADHAAR VALIDATION ANALYSIS ---
-  const aadhaarAnalysis = useMemo(() => {
-    const rawDigits = aadhaarInput.replace(/\D/g, '');
-    const is12Digits = rawDigits.length === 12;
-    const startsValid = /^[2-9]/.test(rawDigits);
-    const isVerhoeffValid = is12Digits && startsValid && validateVerhoeff(rawDigits);
-
-    const formattedDisplay = rawDigits.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3');
-    const maskedDisplay = rawDigits.length === 12 ? `•••• •••• ${rawDigits.slice(8)}` : rawDigits;
-
-    let errorReason = '';
-    if (rawDigits.length === 0) {
-      errorReason = 'Please enter 12-digit Aadhaar number';
-    } else if (rawDigits.length !== 12) {
-      errorReason = `Aadhaar must be exactly 12 digits (entered: ${rawDigits.length})`;
-    } else if (!startsValid) {
-      errorReason = 'Aadhaar cannot start with 0 or 1';
-    } else if (!isVerhoeffValid) {
-      errorReason = 'Failed Verhoeff Checksum Algorithm (Invalid digit structure/typo)';
-    }
-
-    return {
-      rawDigits,
-      formattedDisplay,
-      maskedDisplay,
-      is12Digits,
-      startsValid,
-      isVerhoeffValid,
-      isValid: isVerhoeffValid,
-      errorReason,
-    };
-  }, [aadhaarInput]);
-
-  // --- IFSC VALIDATION ANALYSIS ---
-  const ifscAnalysis = useMemo(() => {
-    const cleanIfsc = ifscInput.trim().toUpperCase();
-    const regex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-    const isValid = regex.test(cleanIfsc);
-
-    const bankCode = cleanIfsc.slice(0, 4);
-    const fifthChar = cleanIfsc[4] || '';
-    const branchCode = cleanIfsc.slice(5);
-
-    const bankDetails = BANK_DICTIONARY[bankCode] || {
-      name: `${bankCode} (Scheduled Indian Bank)`,
-      hq: 'National Banking Network',
-      type: 'Recognized Financial Institution',
-      micrPrefix: '400XXX',
-    };
-
-    let errorReason = '';
-    if (cleanIfsc.length !== 11) {
-      errorReason = `IFSC must be exactly 11 characters (current: ${cleanIfsc.length})`;
-    } else if (!/^[A-Z]{4}/.test(bankCode)) {
-      errorReason = 'First 4 characters must be Bank Alphabet Code';
-    } else if (fifthChar !== '0') {
-      errorReason = `5th character must be mandatory '0' (found '${fifthChar}')`;
-    } else if (!/^[A-Z0-9]{6}$/.test(branchCode)) {
-      errorReason = 'Last 6 characters must be alphanumeric branch code';
-    }
-
-    return {
-      cleanIfsc,
-      isValid,
-      bankCode,
-      fifthChar,
-      branchCode,
-      bankDetails,
-      errorReason,
-    };
-  }, [ifscInput]);
-
-  // --- PINCODE VALIDATION ANALYSIS ---
-  const pincodeAnalysis = useMemo(() => {
-    const cleanPin = pincodeInput.trim();
-    const regex = /^[1-9][0-9]{5}$/;
-    const isValid = regex.test(cleanPin);
-
-    const zoneDigit = cleanPin[0] || '';
-    const subZoneDigit = cleanPin[1] || '';
-    const sortingDistrictDigit = cleanPin[2] || '';
-    const officeCode = cleanPin.slice(3);
-
-    const zoneInfo = PINCODE_ZONES[zoneDigit] || {
-      region: 'Unknown Postal Zone',
-      states: 'Invalid 1st digit (Pincode cannot start with 0)',
-    };
-
-    let errorReason = '';
-    if (cleanPin.length !== 6) {
-      errorReason = `Pincode must be exactly 6 numeric digits (current: ${cleanPin.length})`;
-    } else if (zoneDigit === '0') {
-      errorReason = 'Pincode cannot start with 0';
-    } else if (!/^\d{6}$/.test(cleanPin)) {
-      errorReason = 'Must contain numbers only';
-    }
-
-    return {
-      cleanPin,
-      isValid,
-      zoneDigit,
-      subZoneDigit,
-      sortingDistrictDigit,
-      officeCode,
-      zoneInfo,
-      errorReason,
-    };
-  }, [pincodeInput]);
-
-  // --- AUTO SCANNER DETECTION ENGINE ---
-  const scannedResults = useMemo(() => {
-    if (!scannerText) return [];
-
-    const tokens = scannerText.match(/[A-Za-z0-9]+/g) || [];
-    const results: { text: string; type: string; isValid: boolean; detail: string }[] = [];
-
-    // Dedicated regex matchers
-    const panRegex = /\b[A-Z]{3}[PCHABGJLFTF][A-Z]{1}[0-9]{4}[A-Z]{1}\b/gi;
-    const aadhaarRegex = /\b[2-9]\d{11}\b|\b[2-9]\d{3}\s\d{4}\s\d{4}\b/g;
-    const ifscRegex = /\b[A-Z]{4}0[A-Z0-9]{6}\b/gi;
-    const pincodeRegex = /\b[1-9][0-9]{5}\b/g;
-
-    const matchedPan = scannerText.match(panRegex) || [];
-    matchedPan.forEach((p) => {
-      const upper = p.toUpperCase();
-      const holder = PAN_HOLDER_TYPES[upper[3]]?.type || 'Entity';
-      results.push({
-        text: upper,
-        type: 'PAN Card',
-        isValid: true,
-        detail: `Holder Type: ${holder}`,
-      });
-    });
-
-    const matchedAadhaar = scannerText.match(aadhaarRegex) || [];
-    matchedAadhaar.forEach((a) => {
-      const clean = a.replace(/\D/g, '');
-      const valid = validateVerhoeff(clean);
-      results.push({
-        text: clean.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3'),
-        type: 'Aadhaar Card',
-        isValid: valid,
-        detail: valid ? 'Verhoeff Checksum Passed' : 'Checksum Failed',
-      });
-    });
-
-    const matchedIfsc = scannerText.match(ifscRegex) || [];
-    matchedIfsc.forEach((i) => {
-      const upper = i.toUpperCase();
-      const bank = BANK_DICTIONARY[upper.slice(0, 4)]?.name || 'Bank Code';
-      results.push({
-        text: upper,
-        type: 'IFSC Code',
-        isValid: true,
-        detail: `Bank: ${bank}`,
-      });
-    });
-
-    const matchedPincode = scannerText.match(pincodeRegex) || [];
-    matchedPincode.forEach((pin) => {
-      const zone = PINCODE_ZONES[pin[0]]?.region || 'Postal Zone';
-      results.push({
-        text: pin,
-        type: 'Pincode',
-        isValid: true,
-        detail: `Zone: ${zone}`,
-      });
-    });
-
-    return results;
-  }, [scannerText]);
-
-  // Preset Sample Document Generator
-  const loadSampleData = (docType: 'pan' | 'aadhaar' | 'ifsc' | 'pincode') => {
-    if (docType === 'pan') {
-      const samples = ['ABCDE1234F', 'BKPPS9876K', 'DELCS4321A', 'GOVGS1111Z', 'TRTTM5555L'];
-      setPanInput(samples[Math.floor(Math.random() * samples.length)]);
-    } else if (docType === 'aadhaar') {
-      const samples = ['5482 9102 3847', '2948 1039 5821', '9182 3476 1092'];
-      setAadhaarInput(samples[Math.floor(Math.random() * samples.length)]);
-    } else if (docType === 'ifsc') {
-      const samples = ['SBIN0001234', 'HDFC0000240', 'ICIC0000229', 'PUNB0110024', 'BARB0VADODA'];
-      setIfscInput(samples[Math.floor(Math.random() * samples.length)]);
-    } else if (docType === 'pincode') {
-      const samples = ['110001', '400001', '560001', '600001', '700001', '201301'];
-      setPincodeInput(samples[Math.floor(Math.random() * samples.length)]);
-    }
   };
+
+  // Helper: Single Aadhaar validator function
+  const analyzeAadhaar = (raw: string) => {
+    const clean = raw.replace(/\D/g, '');
+    if (clean.length !== 12) return { isValid: false, errorReason: `Must be 12 numeric digits (entered: ${clean.length})` };
+    if (!/^[2-9]/.test(clean)) return { isValid: false, errorReason: 'Aadhaar cannot start with 0 or 1' };
+    const isVerhoeffValid = validateVerhoeff(clean);
+    return {
+      isValid: isVerhoeffValid,
+      errorReason: isVerhoeffValid ? undefined : 'Failed Verhoeff Checksum Algorithm (Typo/Invalid digits)',
+      details: isVerhoeffValid ? 'Verhoeff 12-digit Checksum Passed' : 'Invalid Structure',
+    };
+  };
+
+  // Helper: Single IFSC validator function
+  const analyzeIFSC = (raw: string) => {
+    const clean = raw.trim().toUpperCase();
+    if (clean.length !== 11) return { isValid: false, errorReason: `IFSC must be 11 characters (entered: ${clean.length})` };
+    const bankCode = clean.slice(0, 4);
+    if (!/^[A-Z]{4}/.test(bankCode)) return { isValid: false, errorReason: 'First 4 characters must be letters' };
+    if (clean[4] !== '0') return { isValid: false, errorReason: `5th character must be '0' (found '${clean[4]}')` };
+
+    const bankDetails = BANK_DICTIONARY[bankCode];
+    const bankName = bankDetails ? bankDetails.name : `${bankCode} Scheduled Bank`;
+
+    return {
+      isValid: true,
+      details: `${bankName} [Branch: ${clean.slice(5)}]`,
+    };
+  };
+
+  // Helper: Single Pincode validator function
+  const analyzePincode = (raw: string) => {
+    const clean = raw.trim();
+    if (clean.length !== 6) return { isValid: false, errorReason: `Pincode must be 6 digits (entered: ${clean.length})` };
+    if (!/^[1-9][0-9]{5}$/.test(clean)) return { isValid: false, errorReason: 'Pincode cannot start with 0' };
+
+    const zoneDigit = clean[0];
+    const zoneInfo = PINCODE_ZONES[zoneDigit];
+    return {
+      isValid: true,
+      details: zoneInfo ? zoneInfo.region : 'Indian Postal Code',
+    };
+  };
+
+  // Process CSV File Upload
+  const handleCsvFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      const newItems: BatchValidationItem[] = [];
+
+      lines.forEach((line, idx) => {
+        // Skip header if line contains words like 'Document' or 'Type' or 'Value'
+        if (idx === 0 && (line.toLowerCase().includes('type') || line.toLowerCase().includes('value') || line.toLowerCase().includes('document'))) {
+          return;
+        }
+
+        const parts = line.split(',').map((p) => p.replace(/^"|"$/g, '').trim());
+        if (parts.length === 0 || !parts[0]) return;
+
+        let docType: 'PAN' | 'Aadhaar' | 'IFSC' | 'Pincode' = 'PAN';
+        let val = parts[0];
+        let nameOrNote = parts[1] || `Row #${idx + 1}`;
+
+        // Auto detect document type if second column specifies it or from pattern
+        if (parts.length >= 2) {
+          const firstUpper = parts[0].toUpperCase();
+          if (['PAN', 'AADHAAR', 'IFSC', 'PINCODE'].includes(firstUpper)) {
+            docType = firstUpper as any;
+            val = parts[1];
+            nameOrNote = parts[2] || `Row #${idx + 1}`;
+          }
+        }
+
+        if (!val) return;
+
+        // Auto detect if not explicitly provided
+        const cleanVal = val.trim().toUpperCase();
+        if (/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanVal) || cleanVal.length === 10) docType = 'PAN';
+        else if (cleanVal.replace(/\D/g, '').length === 12) docType = 'Aadhaar';
+        else if (/^[A-Z]{4}0/.test(cleanVal)) docType = 'IFSC';
+        else if (/^[1-9][0-9]{5}$/.test(cleanVal)) docType = 'Pincode';
+
+        let analysis;
+        if (docType === 'PAN') analysis = analyzePAN(val);
+        else if (docType === 'Aadhaar') analysis = analyzeAadhaar(val);
+        else if (docType === 'IFSC') analysis = analyzeIFSC(val);
+        else analysis = analyzePincode(val);
+
+        newItems.push({
+          id: `csv-${Date.now()}-${idx}`,
+          docType,
+          value: val,
+          isValid: analysis.isValid,
+          errorReason: analysis.errorReason,
+          details: analysis.details,
+          nameOrNote,
+        });
+      });
+
+      if (newItems.length > 0) {
+        setBatchItems((prev) => [...newItems, ...prev]);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Generate Sample CSV Template for download
+  const downloadSampleCsv = () => {
+    const csvContent = `DocumentType,DocumentValue,ApplicantName
+PAN,ABCDE1234F,Rajesh Sharma
+PAN,XYZ9999P,Test Invalid PAN
+Aadhaar,5482 9102 3847,Rajesh Sharma
+Aadhaar,1234 5678 9012,Bad Aadhaar
+IFSC,SBIN0001234,SBI Main Branch
+IFSC,HDFC0000123,HDFC Bank
+Pincode,110001,Connaught Place Delhi
+Pincode,201301,Noida Sector 15
+`;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Sample_Document_Batch_Validation.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export Batch Results as CSV
+  const exportBatchCsv = () => {
+    let csv = 'ID,Document Type,Entered Value,Status,Validation Notes / Details,Applicant Name / Ref\n';
+    batchItems.forEach((item, idx) => {
+      const status = item.isValid ? 'VALID' : 'INVALID';
+      const notes = (item.errorReason || item.details || '').replace(/,/g, ' ');
+      csv += `"${idx + 1}","${item.docType}","${item.value}","${status}","${notes}","${item.nameOrNote || ''}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Document_Validation_Audit_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Filtered Batch Items
+  const filteredBatchItems = useMemo(() => {
+    return batchItems.filter((item) => {
+      if (batchFilterStatus === 'valid' && !item.isValid) return false;
+      if (batchFilterStatus === 'invalid' && item.isValid) return false;
+      if (batchFilterDocType !== 'all' && item.docType.toLowerCase() !== batchFilterDocType.toLowerCase()) return false;
+
+      if (batchSearch) {
+        const q = batchSearch.toLowerCase();
+        return (
+          item.value.toLowerCase().includes(q) ||
+          item.docType.toLowerCase().includes(q) ||
+          (item.nameOrNote && item.nameOrNote.toLowerCase().includes(q)) ||
+          (item.details && item.details.toLowerCase().includes(q)) ||
+          (item.errorReason && item.errorReason.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [batchItems, batchFilterStatus, batchFilterDocType, batchSearch]);
+
+  // Summary Metrics
+  const summaryMetrics = useMemo(() => {
+    const total = batchItems.length;
+    const valid = batchItems.filter((i) => i.isValid).length;
+    const invalid = total - valid;
+    const passRate = total > 0 ? ((valid / total) * 100).toFixed(1) : '0.0';
+    return { total, valid, invalid, passRate };
+  }, [batchItems]);
+
+  // Single Analyzers Output Memoization
+  const panAnalysis = useMemo(() => analyzePAN(panInput), [panInput]);
+  const aadhaarAnalysis = useMemo(() => analyzeAadhaar(aadhaarInput), [aadhaarInput]);
+  const ifscAnalysis = useMemo(() => analyzeIFSC(ifscInput), [ifscInput]);
+  const pincodeAnalysis = useMemo(() => analyzePincode(pincodeInput), [pincodeInput]);
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-6 font-sans">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header Title Banner */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Printable CSS */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+            background: white !important;
+            color: black !important;
+          }
+          #printable-audit-report, #printable-audit-report * {
+            visibility: visible;
+          }
+          #printable-audit-report {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 24px;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Header Bar */}
+      <div className="max-w-7xl mx-auto mb-6 no-print">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded border border-indigo-500/30">
-                VERIFICATION SUITE
+              <span className="bg-emerald-500/20 text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded border border-emerald-500/30 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                VERHOEFF & REGEX AUDIT ENGINE
               </span>
-              <span className="text-xs text-slate-400">PAN • AADHAAR • IFSC • PINCODE</span>
+              <span className="text-xs text-slate-400">PAN • Aadhaar • IFSC • Pincode</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              Indian Document Format & Checksum Validator
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1.5 flex items-center gap-2">
+              Indian Document Batch Scanner & Validator
             </h1>
             <p className="text-sm text-slate-400 mt-1">
-              Client-side validator checking structure, holder types, Verhoeff checksum algorithm, bank IFSC lookup & postal zones.
+              Verify compliance, Verhoeff checksum algorithm, bank routing codes, and export complete audit reports.
             </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowPdfModal(true)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
+            >
+              <Printer className="w-4 h-4" />
+              Audit PDF Report
+            </button>
+
+            <button
+              onClick={exportBatchCsv}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV Report
+            </button>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-2 flex overflow-x-auto gap-2">
+        <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-2 mt-4 flex overflow-x-auto gap-2">
           {[
-            { id: 'pan', label: '💳 PAN Card' },
-            { id: 'aadhaar', label: '🆔 Aadhaar Number' },
-            { id: 'ifsc', label: '🏦 IFSC Code' },
-            { id: 'pincode', label: '📍 Pincode' },
-            { id: 'scanner', label: '🔍 Text Auto-Scanner' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition flex-1 text-center ${
-                activeTab === tab.id
-                  ? 'bg-indigo-600 text-white shadow-lg'
-                  : 'text-slate-300 hover:bg-slate-700/60'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* TAB 1: PAN VALIDATOR */}
-        {activeTab === 'pan' && (
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700 pb-4">
-              <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  PAN (Permanent Account Number) Validator
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Decodes holder type (4th char), surname initial (5th char), and verifies 10-char alphanumeric structure.
-                </p>
-              </div>
+            { id: 'batch', label: 'Batch CSV Scanner', icon: FileSpreadsheet },
+            { id: 'pan', label: 'PAN Validator', icon: CreditCard },
+            { id: 'aadhaar', label: 'Aadhaar Verhoeff', icon: ShieldCheck },
+            { id: 'ifsc', label: 'IFSC Lookup', icon: Building },
+            { id: 'pincode', label: 'Pincode Zone', icon: MapPin },
+            { id: 'scanner', label: 'Freeform Text Scanner', icon: Search },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
               <button
-                onClick={() => loadSampleData('pan')}
-                className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium transition self-start sm:self-auto"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 ${
+                  activeTab === tab.id
+                    ? 'bg-emerald-500 text-slate-950 shadow-md'
+                    : 'text-slate-300 hover:bg-slate-700/60'
+                }`}
               >
-                🎲 Load Random PAN
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
               </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Tab Content */}
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* TAB 1: BATCH CSV SCANNER & REPORT */}
+        {activeTab === 'batch' && (
+          <div className="space-y-6">
+            {/* Upload Zone & Stats Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-6 bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Upload CSV Document Batch
+                  </h3>
+                  <button
+                    onClick={downloadSampleCsv}
+                    className="text-xs text-amber-300 hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    <Download className="w-3 h-3" />
+                    Download Sample CSV
+                  </button>
+                </div>
+
+                <label className="border-2 border-dashed border-slate-600 hover:border-emerald-500 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition bg-slate-900/50 group">
+                  <FileSpreadsheet className="w-10 h-10 text-slate-400 group-hover:text-emerald-400 transition mb-2" />
+                  <span className="text-sm font-bold text-slate-200">
+                    Click to browse or drop CSV file here
+                  </span>
+                  <span className="text-xs text-slate-400 mt-1">
+                    Supports PAN, Aadhaar, IFSC, Pincode columns
+                  </span>
+                  <input
+                    type="file"
+                    accept=".csv,.txt"
+                    onChange={handleCsvFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Summary Cards */}
+              <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+                  <span className="text-xs font-semibold text-slate-400">Total Scanned</span>
+                  <span className="text-3xl font-black text-white mt-2">{summaryMetrics.total}</span>
+                  <span className="text-[10px] text-slate-500 mt-1">Documents in batch</span>
+                </div>
+
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+                  <span className="text-xs font-semibold text-emerald-400">Valid Passed</span>
+                  <span className="text-3xl font-black text-emerald-400 mt-2">{summaryMetrics.valid}</span>
+                  <span className="text-[10px] text-emerald-500/80 mt-1">100% compliant</span>
+                </div>
+
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+                  <span className="text-xs font-semibold text-rose-400">Invalid Flagged</span>
+                  <span className="text-3xl font-black text-rose-400 mt-2">{summaryMetrics.invalid}</span>
+                  <span className="text-[10px] text-rose-500/80 mt-1">Failed checksum/regex</span>
+                </div>
+
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+                  <span className="text-xs font-semibold text-amber-400">Pass Rate %</span>
+                  <span className="text-3xl font-black text-amber-400 mt-2">{summaryMetrics.passRate}%</span>
+                  <span className="text-[10px] text-amber-500/80 mt-1">Compliance score</span>
+                </div>
+              </div>
             </div>
 
-            {/* Input & Status Bar */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Enter 10-Character PAN Number
-              </label>
-              <div className="flex flex-col sm:flex-row gap-3">
+            {/* Batch Table Container */}
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-slate-700 pb-4">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by Document Number, Name, or Error note..."
+                    value={batchSearch}
+                    onChange={(e) => setBatchSearch(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 overflow-x-auto">
+                  <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-700">
+                    {(['all', 'valid', 'invalid'] as const).map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => setBatchFilterStatus(status)}
+                        className={`px-3 py-1 rounded-md text-xs font-semibold uppercase transition ${
+                          batchFilterStatus === status
+                            ? 'bg-emerald-500 text-slate-950'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+
+                  <select
+                    value={batchFilterDocType}
+                    onChange={(e) => setBatchFilterDocType(e.target.value)}
+                    className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
+                  >
+                    <option value="all">All Doc Types</option>
+                    <option value="PAN">PAN Only</option>
+                    <option value="Aadhaar">Aadhaar Only</option>
+                    <option value="IFSC">IFSC Only</option>
+                    <option value="Pincode">Pincode Only</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="bg-slate-900/80 text-slate-400 font-semibold border-b border-slate-700">
+                      <th className="p-3">#</th>
+                      <th className="p-3">Doc Type</th>
+                      <th className="p-3">Entered Value</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3">Validation Details / Errors</th>
+                      <th className="p-3">Applicant / Ref</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/60">
+                    {filteredBatchItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-slate-400">
+                          No items match the selected filter.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredBatchItems.map((item, idx) => (
+                        <tr key={item.id} className="hover:bg-slate-700/30 transition">
+                          <td className="p-3 text-slate-500 font-mono">{idx + 1}</td>
+                          <td className="p-3">
+                            <span className="bg-slate-900 text-slate-200 font-bold px-2 py-0.5 rounded border border-slate-700">
+                              {item.docType}
+                            </span>
+                          </td>
+                          <td className="p-3 font-mono font-bold text-white">{item.value}</td>
+                          <td className="p-3">
+                            {item.isValid ? (
+                              <span className="bg-emerald-500/20 text-emerald-300 font-bold px-2.5 py-1 rounded border border-emerald-500/40 flex items-center gap-1 w-max text-[11px]">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                VALID
+                              </span>
+                            ) : (
+                              <span className="bg-rose-500/20 text-rose-300 font-bold px-2.5 py-1 rounded border border-rose-500/40 flex items-center gap-1 w-max text-[11px]">
+                                <XCircle className="w-3.5 h-3.5" />
+                                INVALID
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            {item.isValid ? (
+                              <span className="text-slate-300">{item.details || 'Passed Verification'}</span>
+                            ) : (
+                              <span className="text-rose-300 font-medium">{item.errorReason}</span>
+                            )}
+                          </td>
+                          <td className="p-3 text-slate-400">{item.nameOrNote || '-'}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: PAN VALIDATOR */}
+        {activeTab === 'pan' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-6 bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+              <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Permanent Account Number (PAN) Validation
+              </h3>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Enter 10-Character PAN Number *
+                </label>
                 <input
                   type="text"
                   maxLength={10}
                   value={panInput}
                   onChange={(e) => setPanInput(e.target.value.toUpperCase())}
                   placeholder="e.g. ABCDE1234F"
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-mono tracking-widest text-white uppercase focus:outline-none focus:border-indigo-500 font-bold"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-lg font-mono font-bold text-white focus:outline-none focus:border-emerald-500 uppercase tracking-widest"
                 />
-                <div
-                  className={`px-5 py-3 rounded-xl flex items-center justify-center font-bold text-sm border shadow ${
-                    panAnalysis.isValid
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : 'bg-red-500/20 text-red-300 border-red-500/40'
-                  }`}
-                >
-                  {panAnalysis.isValid ? '✓ VALID PAN FORMAT' : '✕ INVALID PAN'}
-                </div>
               </div>
-              {panAnalysis.errorReason && (
-                <p className="text-xs text-red-400 font-medium">{panAnalysis.errorReason}</p>
-              )}
-            </div>
 
-            {/* Character Breakdown Visualizer */}
-            {panAnalysis.breakdown && (
-              <div className="space-y-4 pt-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Character-by-Character Format Breakdown
-                </h3>
-
-                <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5 font-mono text-center">
-                  {panInput
-                    .padEnd(10, '•')
-                    .slice(0, 10)
-                    .split('')
-                    .map((char, i) => {
-                      let colorClass = 'bg-slate-900 border-slate-700 text-slate-400';
-                      let label = '';
-                      if (i <= 2) {
-                        colorClass = 'bg-blue-900/40 border-blue-500/50 text-blue-300';
-                        label = 'Series';
-                      } else if (i === 3) {
-                        colorClass = 'bg-amber-900/40 border-amber-500/60 text-amber-300 font-black';
-                        label = 'Holder';
-                      } else if (i === 4) {
-                        colorClass = 'bg-purple-900/40 border-purple-500/50 text-purple-300';
-                        label = 'Initial';
-                      } else if (i >= 5 && i <= 8) {
-                        colorClass = 'bg-emerald-900/40 border-emerald-500/50 text-emerald-300';
-                        label = 'Digits';
-                      } else if (i === 9) {
-                        colorClass = 'bg-indigo-900/40 border-indigo-500/50 text-indigo-300';
-                        label = 'Check';
-                      }
-
-                      return (
-                        <div key={i} className={`p-2.5 rounded-lg border flex flex-col items-center justify-center ${colorClass}`}>
-                          <span className="text-lg font-bold">{char}</span>
-                          <span className="text-[9px] uppercase mt-0.5 opacity-80">{label}</span>
-                        </div>
-                      );
-                    })}
+              {/* Validation Result Box */}
+              <div
+                className={`p-4 rounded-xl border space-y-3 ${
+                  panAnalysis.isValid
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                    : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider">PAN Structure Analysis</span>
+                  <span
+                    className={`px-2.5 py-0.5 rounded text-xs font-black uppercase ${
+                      panAnalysis.isValid ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+                    }`}
+                  >
+                    {panAnalysis.isValid ? 'VALID PAN FORMAT' : 'INVALID PAN'}
+                  </span>
                 </div>
 
-                {/* Decoded Holder Type Card */}
-                {panAnalysis.breakdown.holderTypeChar && (
-                  <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        Decoded 4th Character ('{panAnalysis.breakdown.holderTypeChar}') Holder Entity
-                      </span>
-                      <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold px-2.5 py-0.5 rounded">
-                        {panAnalysis.breakdown.holderInfo.category}
-                      </span>
-                    </div>
+                {!panAnalysis.isValid && (
+                  <p className="text-xs font-semibold text-rose-300">{panAnalysis.errorReason}</p>
+                )}
 
-                    <div>
-                      <h4 className="text-lg font-bold text-amber-300">
-                        {panAnalysis.breakdown.holderInfo.type}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {panAnalysis.breakdown.holderInfo.desc}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-800">
-                      <div>
-                        <span className="text-slate-500">5th Character ('{panAnalysis.breakdown.surnameInitial}'):</span>{' '}
-                        <span className="font-semibold text-slate-200">
-                          First letter of Holder's Surname / Last Name
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Sequential Number ({panAnalysis.breakdown.sequentialNum}):</span>{' '}
-                        <span className="font-semibold text-slate-200">System Issued Sequence (0001-9999)</span>
-                      </div>
-                    </div>
-                  </div>
+                {panAnalysis.details && (
+                  <p className="text-xs text-slate-300">{panAnalysis.details}</p>
                 )}
               </div>
-            )}
+            </div>
+
+            {/* PAN Holder Types Guide */}
+            <div className="lg:col-span-6 bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-3">
+              <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                4th Character PAN Holder Category Decoder
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {Object.entries(PAN_HOLDER_TYPES).map(([code, info]) => (
+                  <div key={code} className="bg-slate-900 border border-slate-700/80 rounded p-2 flex items-start gap-2">
+                    <span className="bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/30">
+                      {code}
+                    </span>
+                    <div>
+                      <div className="font-bold text-white">{info.type}</div>
+                      <div className="text-[10px] text-slate-400">{info.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* TAB 2: AADHAAR VALIDATOR */}
+        {/* TAB 3: AADHAAR VERHOEFF */}
         {activeTab === 'aadhaar' && (
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700 pb-4">
-              <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  Aadhaar Number Verhoeff Checksum Validator
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Validates 12-digit format & executes pure Verhoeff Checksum Matrix Algorithm (UIDAI Standard).
-                </p>
-              </div>
-              <button
-                onClick={() => loadSampleData('aadhaar')}
-                className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium transition self-start sm:self-auto"
-              >
-                🎲 Load Valid Aadhaar
-              </button>
-            </div>
-
-            {/* Input & Controls */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                  Enter 12-Digit Aadhaar Number
-                </label>
-                <button
-                  onClick={() => setShowMaskedAadhaar(!showMaskedAadhaar)}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-medium"
-                >
-                  {showMaskedAadhaar ? '👁️ Show Full Digits' : '🔒 Mask Privacy (XXXX)'}
-                </button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="text"
-                  maxLength={14}
-                  value={showMaskedAadhaar ? aadhaarAnalysis.maskedDisplay : aadhaarInput}
-                  onChange={(e) => setAadhaarInput(e.target.value)}
-                  placeholder="5482 9102 3847"
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500 font-bold"
-                />
-                <div
-                  className={`px-5 py-3 rounded-xl flex items-center justify-center font-bold text-sm border shadow ${
-                    aadhaarAnalysis.isValid
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : 'bg-red-500/20 text-red-300 border-red-500/40'
-                  }`}
-                >
-                  {aadhaarAnalysis.isValid ? '✓ VERHOEFF CHECKSUM PASSED' : '✕ INVALID CHECKSUM'}
-                </div>
-              </div>
-              {aadhaarAnalysis.errorReason && (
-                <p className="text-xs text-red-400 font-medium">{aadhaarAnalysis.errorReason}</p>
-              )}
-            </div>
-
-            {/* Verhoeff Check Breakdown Card */}
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Verhoeff Algorithm Diagnostic Results
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <span className="text-[11px] text-slate-500 block">Length Check (12 Digits)</span>
-                  <span className={`text-base font-bold ${aadhaarAnalysis.is12Digits ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {aadhaarAnalysis.is12Digits ? 'Passed (12/12)' : `Failed (${aadhaarAnalysis.rawDigits.length}/12)`}
-                  </span>
-                </div>
-
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <span className="text-[11px] text-slate-500 block">Starting Digit Check</span>
-                  <span className={`text-base font-bold ${aadhaarAnalysis.startsValid ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {aadhaarAnalysis.startsValid ? 'Valid (Starts 2-9)' : 'Invalid (Starts with 0 or 1)'}
-                  </span>
-                </div>
-
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <span className="text-[11px] text-slate-500 block">Verhoeff Dihedral Checksum</span>
-                  <span className={`text-base font-bold ${aadhaarAnalysis.isVerhoeffValid ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {aadhaarAnalysis.isVerhoeffValid ? 'c = 0 (Match)' : 'c ≠ 0 (Mismatch)'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded border border-slate-800">
-                💡 <strong className="text-slate-200">How Verhoeff Checksum Works:</strong> The Verhoeff algorithm utilizes dihedral group D5 permutations combined with a multiplication matrix to detect all single-digit errors and 98.9% of adjacent transposition errors in 12-digit Aadhaar numbers.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: IFSC VALIDATOR */}
-        {activeTab === 'ifsc' && (
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700 pb-4">
-              <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  IFSC (Indian Financial System Code) & Bank Lookup
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  11-character code used for RTGS, NEFT, and IMPS money transfers in India.
-                </p>
-              </div>
-              <button
-                onClick={() => loadSampleData('ifsc')}
-                className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium transition self-start sm:self-auto"
-              >
-                🎲 Load Sample IFSC
-              </button>
-            </div>
-
-            {/* Input & Status */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Enter 11-Character IFSC Code
-              </label>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="text"
-                  maxLength={11}
-                  value={ifscInput}
-                  onChange={(e) => setIfscInput(e.target.value.toUpperCase())}
-                  placeholder="e.g. SBIN0001234"
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-mono tracking-widest text-white uppercase focus:outline-none focus:border-indigo-500 font-bold"
-                />
-                <div
-                  className={`px-5 py-3 rounded-xl flex items-center justify-center font-bold text-sm border shadow ${
-                    ifscAnalysis.isValid
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : 'bg-red-500/20 text-red-300 border-red-500/40'
-                  }`}
-                >
-                  {ifscAnalysis.isValid ? '✓ VALID IFSC FORMAT' : '✕ INVALID IFSC'}
-                </div>
-              </div>
-              {ifscAnalysis.errorReason && (
-                <p className="text-xs text-red-400 font-medium">{ifscAnalysis.errorReason}</p>
-              )}
-            </div>
-
-            {/* Bank Branch Lookup Card */}
-            {ifscAnalysis.cleanIfsc.length >= 4 && (
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div>
-                    <span className="text-xs text-indigo-400 font-bold uppercase tracking-wider">
-                      Bank Code: {ifscAnalysis.bankCode}
-                    </span>
-                    <h3 className="text-xl font-extrabold text-white mt-0.5">
-                      {ifscAnalysis.bankDetails.name}
-                    </h3>
-                  </div>
-                  <span className="bg-slate-800 text-slate-300 border border-slate-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    {ifscAnalysis.bankDetails.type}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-slate-500 block">Bank Headquarters:</span>
-                    <span className="font-bold text-slate-200">{ifscAnalysis.bankDetails.hq}</span>
-                  </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-slate-500 block">Simulated Branch Code:</span>
-                    <span className="font-mono font-bold text-amber-300">{ifscAnalysis.branchCode || 'Main Branch'}</span>
-                  </div>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <span className="text-slate-500 block">Est. MICR Prefix:</span>
-                    <span className="font-mono font-bold text-slate-200">{ifscAnalysis.bankDetails.micrPrefix}</span>
-                  </div>
-                </div>
-
-                {/* Transfer Support Flags */}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <span className="bg-emerald-500/20 text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded border border-emerald-500/30 flex items-center gap-1">
-                    ✓ NEFT Supported
-                  </span>
-                  <span className="bg-emerald-500/20 text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded border border-emerald-500/30 flex items-center gap-1">
-                    ✓ RTGS Supported
-                  </span>
-                  <span className="bg-emerald-500/20 text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded border border-emerald-500/30 flex items-center gap-1">
-                    ✓ IMPS Supported
-                  </span>
-                  <span className="bg-emerald-500/20 text-emerald-300 text-xs font-semibold px-2.5 py-1 rounded border border-emerald-500/30 flex items-center gap-1">
-                    ✓ UPI Enabled
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 4: PINCODE VALIDATOR */}
-        {activeTab === 'pincode' && (
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700 pb-4">
-              <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  Postal Index Number (Pincode) Validator
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Decodes India Post 6-digit postal circle, geographic zone & delivery office.
-                </p>
-              </div>
-              <button
-                onClick={() => loadSampleData('pincode')}
-                className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium transition self-start sm:self-auto"
-              >
-                🎲 Load Sample Pincode
-              </button>
-            </div>
-
-            {/* Input & Status */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Enter 6-Digit Indian Pincode
-              </label>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={pincodeInput}
-                  onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ''))}
-                  placeholder="e.g. 110001"
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500 font-bold"
-                />
-                <div
-                  className={`px-5 py-3 rounded-xl flex items-center justify-center font-bold text-sm border shadow ${
-                    pincodeAnalysis.isValid
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : 'bg-red-500/20 text-red-300 border-red-500/40'
-                  }`}
-                >
-                  {pincodeAnalysis.isValid ? '✓ VALID PINCODE' : '✕ INVALID PINCODE'}
-                </div>
-              </div>
-              {pincodeAnalysis.errorReason && (
-                <p className="text-xs text-red-400 font-medium">{pincodeAnalysis.errorReason}</p>
-              )}
-            </div>
-
-            {/* Pincode Structure Analysis */}
-            {pincodeAnalysis.cleanPin.length >= 1 && (
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Decoded Geographic Postal Zone Info
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                    <span className="text-xs text-amber-400 font-bold uppercase block mb-1">
-                      1st Digit ('{pincodeAnalysis.zoneDigit}') Postal Region
-                    </span>
-                    <h4 className="text-lg font-bold text-white">
-                      {pincodeAnalysis.zoneInfo.region}
-                    </h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Covered States/Territories: <strong className="text-slate-200">{pincodeAnalysis.zoneInfo.states}</strong>
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2 text-xs">
-                    <div>
-                      <span className="text-slate-500">2nd Digit ('{pincodeAnalysis.subZoneDigit}'):</span>{' '}
-                      <span className="font-semibold text-slate-200">Sub-Region / Postal Circle Code</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">3rd Digit ('{pincodeAnalysis.sortingDistrictDigit}'):</span>{' '}
-                      <span className="font-semibold text-slate-200">Sorting District within State</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">4th-6th Digits ('{pincodeAnalysis.officeCode}'):</span>{' '}
-                      <span className="font-semibold text-slate-200">Specific Delivery Post Office Code</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 5: UNIFIED AUTO SCANNER */}
-        {activeTab === 'scanner' && (
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                All-in-One Text Auto-Scanner & Document Detector
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Paste any unstructured text containing mixed PAN, Aadhaar, IFSC codes or Pincodes to extract and validate instantly.
-              </p>
-            </div>
+          <div className="max-w-2xl mx-auto bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5" />
+              12-Digit Aadhaar Verhoeff Algorithm Checksum
+            </h3>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Paste Input Text
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Enter 12-Digit Aadhaar Number *
               </label>
-              <textarea
-                rows={5}
-                value={scannerText}
-                onChange={(e) => setScannerText(e.target.value)}
-                placeholder="Paste document text here..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+              <input
+                type="text"
+                value={aadhaarInput}
+                onChange={(e) => setAadhaarInput(e.target.value)}
+                placeholder="e.g. 5482 9102 3847"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-lg font-mono font-bold text-white focus:outline-none focus:border-emerald-500 tracking-widest"
               />
             </div>
 
-            {/* Extracted Document Table */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Detected Document Entities ({scannedResults.length})
-                </h3>
-              </div>
+            <div className="flex items-center justify-between bg-slate-900 p-3 rounded-lg border border-slate-700 text-xs">
+              <span className="text-slate-400">Mask Display Output:</span>
+              <button
+                onClick={() => setShowMaskedAadhaar(!showMaskedAadhaar)}
+                aria-label={showMaskedAadhaar ? 'Hide Masked Aadhaar' : 'Show Masked Aadhaar'}
+                className="text-amber-300 font-bold hover:underline"
+              >
+                {showMaskedAadhaar ? 'Show Raw Digits' : 'Show Masked (•••• •••• 3847)'}
+              </button>
+            </div>
 
-              {scannedResults.length === 0 ? (
-                <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 text-center text-slate-500 text-xs">
-                  No valid Indian document numbers found in the text above. Try pasting text containing PAN, Aadhaar, IFSC, or Pincode.
-                </div>
-              ) : (
-                <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
-                      <tr>
-                        <th className="p-3">Extracted Value</th>
-                        <th className="p-3">Document Type</th>
-                        <th className="p-3">Validation Status</th>
-                        <th className="p-3">Decoded Details</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800">
-                      {scannedResults.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-slate-800/50 transition">
-                          <td className="p-3 font-mono font-bold text-white">{item.text}</td>
-                          <td className="p-3">
-                            <span className="bg-slate-800 text-indigo-300 border border-indigo-500/30 text-[11px] px-2 py-0.5 rounded font-semibold">
-                              {item.type}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span
-                              className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                                item.isValid
-                                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                                  : 'bg-red-500/20 text-red-300 border-red-500/30'
-                              }`}
-                            >
-                              {item.isValid ? '✓ Valid' : '✕ Invalid'}
-                            </span>
-                          </td>
-                          <td className="p-3 text-slate-300">{item.detail}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+            <div
+              className={`p-4 rounded-xl border space-y-2 ${
+                aadhaarAnalysis.isValid
+                  ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                  : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider">Verhoeff Matrix Status</span>
+                <span
+                  className={`px-2.5 py-0.5 rounded text-xs font-black uppercase ${
+                    aadhaarAnalysis.isValid ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+                  }`}
+                >
+                  {aadhaarAnalysis.isValid ? 'VERHOEFF CHECKSUM PASSED' : 'FAILED / TYPO'}
+                </span>
+              </div>
+              <p className="text-xs font-medium">{aadhaarAnalysis.errorReason || aadhaarAnalysis.details}</p>
             </div>
           </div>
         )}
+
+        {/* TAB 4: IFSC LOOKUP */}
+        {activeTab === 'ifsc' && (
+          <div className="max-w-2xl mx-auto bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+              <Building className="w-5 h-5" />
+              Indian Financial System Code (IFSC) Bank Resolver
+            </h3>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Enter 11-Character IFSC Code *
+              </label>
+              <input
+                type="text"
+                maxLength={11}
+                value={ifscInput}
+                onChange={(e) => setIfscInput(e.target.value.toUpperCase())}
+                placeholder="e.g. SBIN0001234"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-lg font-mono font-bold text-white focus:outline-none focus:border-emerald-500 uppercase tracking-widest"
+              />
+            </div>
+
+            <div
+              className={`p-4 rounded-xl border space-y-2 ${
+                ifscAnalysis.isValid
+                  ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                  : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider">Bank Routing Resolution</span>
+                <span
+                  className={`px-2.5 py-0.5 rounded text-xs font-black uppercase ${
+                    ifscAnalysis.isValid ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+                  }`}
+                >
+                  {ifscAnalysis.isValid ? 'VALID IFSC' : 'INVALID IFSC'}
+                </span>
+              </div>
+              <p className="text-xs font-medium">{ifscAnalysis.errorReason || ifscAnalysis.details}</p>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: PINCODE ZONE */}
+        {activeTab === 'pincode' && (
+          <div className="max-w-2xl mx-auto bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+              <MapPin className="w-5 h-5" />
+              Indian Postal Index Number (Pincode) Zone Decoder
+            </h3>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Enter 6-Digit Pincode *
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                value={pincodeInput}
+                onChange={(e) => setPincodeInput(e.target.value)}
+                placeholder="e.g. 110001"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-lg font-mono font-bold text-white focus:outline-none focus:border-emerald-500 tracking-widest"
+              />
+            </div>
+
+            <div
+              className={`p-4 rounded-xl border space-y-2 ${
+                pincodeAnalysis.isValid
+                  ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                  : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider">Postal Zone Resolution</span>
+                <span
+                  className={`px-2.5 py-0.5 rounded text-xs font-black uppercase ${
+                    pincodeAnalysis.isValid ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+                  }`}
+                >
+                  {pincodeAnalysis.isValid ? 'VALID PINCODE' : 'INVALID PINCODE'}
+                </span>
+              </div>
+              <p className="text-xs font-medium">{pincodeAnalysis.errorReason || pincodeAnalysis.details}</p>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: FREEFORM TEXT SCANNER */}
+        {activeTab === 'scanner' && (
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+              <Search className="w-5 h-5" />
+              Multi-Document Freeform Text Regex Extraction
+            </h3>
+
+            <textarea
+              rows={5}
+              value={scannerText}
+              onChange={(e) => setScannerText(e.target.value)}
+              placeholder="Paste any text containing PANs, Aadhaars, IFSCs, or Pincodes..."
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+        )}
       </div>
+
+      {/* Audit PDF Report Modal / Printable View */}
+      {showPdfModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl">
+            <div className="flex items-center justify-between no-print border-b border-slate-700 pb-3">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-emerald-400" />
+                Document Verification Audit Report Preview
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print / Save PDF
+                </button>
+                <button
+                  onClick={() => setShowPdfModal(false)}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Document Sheet */}
+            <div id="printable-audit-report" className="bg-white text-black p-8 rounded-sm font-sans text-xs space-y-4">
+              <div className="border-b-2 border-black pb-4 flex justify-between items-start">
+                <div>
+                  <h1 className="text-xl font-extrabold tracking-tight">DOCUMENT COMPLIANCE AUDIT REPORT</h1>
+                  <div className="text-xs text-slate-600 font-medium mt-0.5">
+                    Generated on: {new Date().toLocaleString('en-IN')}
+                  </div>
+                </div>
+                <div className="text-right font-mono text-[10px]">
+                  <div>SYSTEM: NYXA AUDIT ENGINE</div>
+                  <div>VERHOEFF 12-DIGIT ALGORITHM</div>
+                </div>
+              </div>
+
+              {/* Summary Bar */}
+              <div className="grid grid-cols-4 gap-2 bg-slate-100 border border-black p-3 text-center">
+                <div>
+                  <div className="text-[10px] text-slate-600">TOTAL SCANNED</div>
+                  <div className="font-black text-sm">{summaryMetrics.total}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-600">VALID PASSED</div>
+                  <div className="font-black text-sm text-emerald-700">{summaryMetrics.valid}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-600">INVALID FLAGGED</div>
+                  <div className="font-black text-sm text-rose-700">{summaryMetrics.invalid}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-600">COMPLIANCE SCORE</div>
+                  <div className="font-black text-sm">{summaryMetrics.passRate}%</div>
+                </div>
+              </div>
+
+              {/* Table */}
+              <table className="w-full text-left border-collapse text-[10.5px]">
+                <thead>
+                  <tr className="bg-slate-200 border-y border-black font-bold">
+                    <th className="p-1.5 border-r border-black">#</th>
+                    <th className="p-1.5 border-r border-black">Doc Type</th>
+                    <th className="p-1.5 border-r border-black">Entered Value</th>
+                    <th className="p-1.5 border-r border-black">Status</th>
+                    <th className="p-1.5">Validation Details / Errors</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {batchItems.map((item, idx) => (
+                    <tr key={item.id} className="border-b border-slate-300">
+                      <td className="p-1.5 border-r border-black font-mono">{idx + 1}</td>
+                      <td className="p-1.5 border-r border-black font-bold">{item.docType}</td>
+                      <td className="p-1.5 border-r border-black font-mono">{item.value}</td>
+                      <td className="p-1.5 border-r border-black font-bold">
+                        {item.isValid ? 'VALID' : 'INVALID'}
+                      </td>
+                      <td className="p-1.5">{item.errorReason || item.details}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

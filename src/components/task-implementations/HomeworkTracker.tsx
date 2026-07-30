@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useId } from 'react';
+import { useState, useEffect, useId } from 'react';
 
 export interface ExamItem {
   id: string;
@@ -23,9 +23,12 @@ export interface HomeworkItem {
   priority: 'High' | 'Medium' | 'Low';
   status: 'To Do' | 'In Progress' | 'Completed';
   dueDate: string; // ISO format YYYY-MM-DDTHH:mm
+  estimatedMinutes?: number;
   subtasks: SubTask[];
   notes?: string;
   createdAt: string;
+  completedAt?: string; // YYYY-MM-DD string for streak tracking
+  reminderOffsetMinutes?: number; // e.g., 60 for 1 hour before
 }
 
 const DEFAULT_EXAMS: ExamItem[] = [
@@ -53,12 +56,14 @@ const DEFAULT_HOMEWORK: HomeworkItem[] = [
     priority: 'High',
     status: 'To Do',
     dueDate: new Date(Date.now() + 86400000 * 1.5).toISOString().slice(0, 16),
+    estimatedMinutes: 60,
     subtasks: [
       { id: 'st-1', text: 'Solve questions 1-10', done: true },
       { id: 'st-2', text: 'Solve word problems 11-15', done: false },
     ],
     notes: 'Focus on integration by parts formulas.',
     createdAt: new Date().toISOString(),
+    reminderOffsetMinutes: 60,
   },
   {
     id: 'hw-2',
@@ -67,12 +72,14 @@ const DEFAULT_HOMEWORK: HomeworkItem[] = [
     priority: 'Medium',
     status: 'In Progress',
     dueDate: new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 16),
+    estimatedMinutes: 45,
     subtasks: [
       { id: 'st-3', text: 'Record observation tables', done: true },
       { id: 'st-4', text: 'Draw titration curve chart', done: false },
     ],
     notes: 'Include safety precautions.',
     createdAt: new Date().toISOString(),
+    reminderOffsetMinutes: 1440, // 1 day
   },
   {
     id: 'hw-3',
@@ -81,9 +88,12 @@ const DEFAULT_HOMEWORK: HomeworkItem[] = [
     priority: 'Low',
     status: 'Completed',
     dueDate: new Date(Date.now() - 86400000 * 0.5).toISOString().slice(0, 16),
+    estimatedMinutes: 30,
     subtasks: [{ id: 'st-5', text: 'Make key point notes', done: true }],
     notes: 'Done!',
     createdAt: new Date().toISOString(),
+    completedAt: new Date().toISOString().slice(0, 10),
+    reminderOffsetMinutes: 30,
   },
 ];
 
@@ -107,6 +117,9 @@ export default function HomeworkTracker() {
   const hwSubjectId = useId();
   const hwPriorityId = useId();
   const hwDueDateId = useId();
+  const hwEstMinsId = useId();
+  const hwReminderId = useId();
+  const importFileId = useId();
 
   const [exams, setExams] = useState<ExamItem[]>([]);
   const [homeworks, setHomeworks] = useState<HomeworkItem[]>([]);
@@ -121,13 +134,17 @@ export default function HomeworkTracker() {
   // Modals state
   const [showAddHwModal, setShowAddHwModal] = useState(false);
   const [showAddExamModal, setShowAddExamModal] = useState(false);
-  const [showSchedulePrintModal, setShowSchedulePrintModal] = useState(false);
+  const [showRemindersModal, setShowRemindersModal] = useState(false);
+  const [showStreakModal, setShowStreakModal] = useState(false);
+  const [showImportExportModal, setShowImportExportModal] = useState(false);
 
   // Form State - Homework
   const [newHwTitle, setNewHwTitle] = useState('');
   const [newHwSubject, setNewHwSubject] = useState('Mathematics');
   const [newHwPriority, setNewHwPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
   const [newHwDueDate, setNewHwDueDate] = useState('');
+  const [newHwEstMins, setNewHwEstMins] = useState<number>(45);
+  const [newHwReminder, setNewHwReminder] = useState<number>(60);
   const [newHwNotes, setNewHwNotes] = useState('');
   const [newSubtaskInput, setNewSubtaskInput] = useState('');
   const [tempSubtasks, setTempSubtasks] = useState<string[]>([]);
@@ -137,6 +154,9 @@ export default function HomeworkTracker() {
   const [newExamTitle, setNewExamTitle] = useState('');
   const [newExamDate, setNewExamDate] = useState('');
   const [newExamSyllabus, setNewExamSyllabus] = useState('');
+
+  // Test Notification Simulation Toast state
+  const [testNotificationToast, setTestNotificationToast] = useState<{ title: string; body: string } | null>(null);
 
   // Load from local storage
   useEffect(() => {
@@ -199,9 +219,11 @@ export default function HomeworkTracker() {
       priority: newHwPriority,
       status: 'To Do',
       dueDate: newHwDueDate || new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 16),
+      estimatedMinutes: Number(newHwEstMins) || 30,
       subtasks: tempSubtasks.map((txt, idx) => ({ id: `st-${Date.now()}-${idx}`, text: txt, done: false })),
       notes: newHwNotes,
       createdAt: new Date().toISOString(),
+      reminderOffsetMinutes: newHwReminder,
     };
 
     saveHomeworks([item, ...homeworks]);
@@ -241,7 +263,18 @@ export default function HomeworkTracker() {
 
   // Status Change
   const updateHwStatus = (id: string, status: HomeworkItem['status']) => {
-    saveHomeworks(homeworks.map((h) => (h.id === id ? { ...h, status } : h)));
+    const todayStr = new Date().toISOString().slice(0, 10);
+    saveHomeworks(
+      homeworks.map((h) =>
+        h.id === id
+          ? {
+              ...h,
+              status,
+              completedAt: status === 'Completed' ? (h.completedAt || todayStr) : undefined,
+            }
+          : h
+      )
+    );
   };
 
   // Toggle Subtask
@@ -252,7 +285,6 @@ export default function HomeworkTracker() {
           const updatedSt = h.subtasks.map((st) =>
             st.id === subtaskId ? { ...st, done: !st.done } : st
           );
-          // If all subtasks are done, auto mark completed if desired
           return { ...h, subtasks: updatedSt };
         }
         return h;
@@ -260,7 +292,155 @@ export default function HomeworkTracker() {
     );
   };
 
-  // Calculate remaining time string & badge
+  // STREAK TRACKER ENGINE
+  const calculateStreak = () => {
+    const datesWithCompletions = new Set(
+      homeworks
+        .filter((h) => h.status === 'Completed' && h.completedAt)
+        .map((h) => h.completedAt!)
+    );
+
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+
+    const today = new Date();
+
+    // Check today & past 60 days
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+
+      if (datesWithCompletions.has(dateStr)) {
+        tempStreak++;
+        if (i === 0 || i === 1 || currentStreak > 0) {
+          currentStreak = tempStreak;
+        }
+      } else {
+        if (i > 1 && currentStreak === 0) {
+          // Break current streak if gap is older than yesterday
+        }
+        tempStreak = 0;
+      }
+      if (tempStreak > longestStreak) {
+        longestStreak = tempStreak;
+      }
+    }
+
+    return { currentStreak, longestStreak, datesWithCompletions };
+  };
+
+  const streakData = calculateStreak();
+
+  // BATCH IMPORT & EXPORT HANDLERS
+  const handleExportJSON = () => {
+    const exportData = {
+      homeworks,
+      exams,
+      exportedAt: new Date().toISOString(),
+    };
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Nyxa_Homework_Backup_${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportCSV = () => {
+    let csv = `ID,Title,Subject,Priority,Status,DueDate,EstimatedMinutes,SubtasksCount,CompletedSubtasksCount,Notes\n`;
+    homeworks.forEach((h) => {
+      const compSub = h.subtasks.filter((st) => st.done).length;
+      csv += `"${h.id}","${h.title.replace(/"/g, '""')}","${h.subject}","${h.priority}","${h.status}","${h.dueDate}",${h.estimatedMinutes || 0},${h.subtasks.length},${compSub},"${(h.notes || '').replace(/"/g, '""')}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Nyxa_Assignments_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        if (file.name.endsWith('.json')) {
+          const parsed = JSON.parse(text);
+          if (parsed.homeworks && Array.isArray(parsed.homeworks)) {
+            saveHomeworks([...parsed.homeworks, ...homeworks]);
+          }
+          if (parsed.exams && Array.isArray(parsed.exams)) {
+            saveExams([...parsed.exams, ...exams]);
+          }
+          alert('Batch JSON import successful!');
+        } else if (file.name.endsWith('.csv')) {
+          const lines = text.split('\n').filter((l) => l.trim().length > 0);
+          const imported: HomeworkItem[] = [];
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(',').map((c) => c.replace(/^"|"$/g, '').trim());
+            if (cols.length >= 5) {
+              imported.push({
+                id: `hw-${Date.now()}-${i}`,
+                title: cols[1] || 'Imported Task',
+                subject: cols[2] || 'General',
+                priority: (cols[3] as any) || 'Medium',
+                status: (cols[4] as any) || 'To Do',
+                dueDate: cols[5] || new Date().toISOString().slice(0, 16),
+                estimatedMinutes: Number(cols[6]) || 30,
+                subtasks: [],
+                notes: cols[9] || '',
+                createdAt: new Date().toISOString(),
+              });
+            }
+          }
+          if (imported.length > 0) {
+            saveHomeworks([...imported, ...homeworks]);
+            alert(`Imported ${imported.length} assignments from CSV!`);
+          }
+        }
+      } catch (err) {
+        console.error('Import error', err);
+        alert('Failed to parse file. Please verify JSON/CSV format.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // NOTIFICATION SIMULATION TESTER
+  const triggerSimulatedNotification = (title: string, body: string) => {
+    setTestNotificationToast({ title, body });
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body });
+    }
+    setTimeout(() => setTestNotificationToast(null), 4000);
+  };
+
+  const requestBrowserNotification = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        alert('Browser Notifications Enabled! You will receive system alerts.');
+      } else {
+        alert('Notification permission denied or dismissed.');
+      }
+    } else {
+      alert('Browser does not support desktop notifications.');
+    }
+  };
+
+  // Helper formatting for remaining time
   const getRemainingTimeBadge = (dueDateStr: string, status: string) => {
     if (status === 'Completed') {
       return <span className="text-xs font-semibold text-emerald-600 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30">Completed</span>;
@@ -302,7 +482,7 @@ export default function HomeworkTracker() {
     );
   };
 
-  // Exam Countdown formatter
+  // Exam Countdown calculation
   const getExamCountdown = (examDateStr: string) => {
     const target = new Date(examDateStr).getTime();
     const diffMs = target - now.getTime();
@@ -320,7 +500,6 @@ export default function HomeworkTracker() {
     return { days, hours, mins, secs, isPast: false };
   };
 
-  // Nearest upcoming exam
   const sortedExams = [...exams].sort(
     (a, b) => new Date(a.examDate).getTime() - new Date(b.examDate).getTime()
   );
@@ -341,17 +520,32 @@ export default function HomeworkTracker() {
     return true;
   });
 
-  // Unique subjects for filter
   const subjectsList = Array.from(new Set(homeworks.map((h) => h.subject)));
-
-  // Print schedule triggering
-  const handlePrintSchedule = () => {
-    window.print();
-  };
+  const totalPendingEstMins = homeworks
+    .filter((h) => h.status !== 'Completed')
+    .reduce((acc, h) => acc + (h.estimatedMinutes || 30), 0);
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
+    <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-6 relative">
+      {/* Test Notification Toast Popup */}
+      {testNotificationToast && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-2xl max-w-sm animate-bounce">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider">
+                <span>🔔 Assignment Reminder Alert</span>
+              </div>
+              <h4 className="font-extrabold text-sm mt-1">{testNotificationToast.title}</h4>
+              <p className="text-xs text-amber-100 mt-0.5">{testNotificationToast.body}</p>
+            </div>
+            <button onClick={() => setTestNotificationToast(null)} className="text-white hover:text-amber-200">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -361,46 +555,53 @@ export default function HomeworkTracker() {
               </svg>
             </span>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--foreground)]">
-              Homework & Assignment Tracker
+              Homework & Study Tracker
             </h1>
           </div>
           <p className="text-sm text-[var(--muted)] mt-1">
-            Track pending assignments, upcoming exam countdowns, priorities, and study schedules.
+            Batch CSV/JSON sync, study streak tracker, custom notifications preview, and exam countdowns.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setShowSchedulePrintModal(true)}
+            onClick={() => setShowStreakModal(true)}
             className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            Print Study Schedule
+            🔥 Streak ({streakData.currentStreak}d)
           </button>
+
+          <button
+            onClick={() => setShowRemindersModal(true)}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            🔔 Reminders Preview
+          </button>
+
+          <button
+            onClick={() => setShowImportExportModal(true)}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            📁 Import/Export CSV
+          </button>
+
           <button
             onClick={() => setShowAddExamModal(true)}
             className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
             + Add Exam
           </button>
+
           <button
             onClick={() => setShowAddHwModal(true)}
             className="nyxa-btn nyxa-btn-primary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
             + Add Assignment
           </button>
         </div>
       </div>
 
-      {/* Exam Countdown Banner */}
+      {/* Target Exam Banner */}
       {nextExam && (
         <div className="nyxa-card border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-500/5 via-[var(--card-bg)] to-[var(--card-bg)] p-4 md:p-5 relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -423,7 +624,6 @@ export default function HomeworkTracker() {
               )}
             </div>
 
-            {/* Timer Ticker Box */}
             {(() => {
               const cd = getExamCountdown(nextExam.examDate);
               return (
@@ -461,11 +661,9 @@ export default function HomeworkTracker() {
                   <button
                     onClick={() => deleteExam(nextExam.id)}
                     className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-2"
-                    title="Dismiss or delete exam"
+                    title="Dismiss exam"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    ✕
                   </button>
                 </div>
               );
@@ -474,10 +672,40 @@ export default function HomeworkTracker() {
         </div>
       )}
 
-      {/* Filter and Stats Toolbar */}
+      {/* Quick Summary Dashboard Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="nyxa-card justify-between p-3.5 bg-gradient-to-br from-[var(--secondary-bg)] to-[var(--card-bg)]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Active Streak</span>
+          <div className="my-1 flex items-center gap-2">
+            <span className="text-3xl font-black text-amber-500">🔥 {streakData.currentStreak} Days</span>
+          </div>
+          <span className="text-[11px] text-[var(--muted)]">Longest Streak: {streakData.longestStreak} Days</span>
+        </div>
+
+        <div className="nyxa-card justify-between p-3.5 bg-gradient-to-br from-[var(--secondary-bg)] to-[var(--card-bg)]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Est. Study Workload</span>
+          <div className="my-1">
+            <span className="text-3xl font-black text-[var(--foreground)]">
+              {Math.floor(totalPendingEstMins / 60)}h {totalPendingEstMins % 60}m
+            </span>
+          </div>
+          <span className="text-[11px] text-[var(--muted)]">Across {homeworks.filter(h => h.status !== 'Completed').length} pending assignments</span>
+        </div>
+
+        <div className="nyxa-card justify-between p-3.5 bg-gradient-to-br from-[var(--secondary-bg)] to-[var(--card-bg)]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Completion Rate</span>
+          <div className="my-1">
+            <span className="text-3xl font-black text-emerald-500">
+              {homeworks.length > 0 ? Math.round((homeworks.filter(h => h.status === 'Completed').length / homeworks.length) * 100) : 0}%
+            </span>
+          </div>
+          <span className="text-[11px] text-[var(--muted)]">{homeworks.filter(h => h.status === 'Completed').length} of {homeworks.length} finished</span>
+        </div>
+      </div>
+
+      {/* Filter Toolbar */}
       <div className="nyxa-card space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Search */}
           <div>
             <label htmlFor={searchFilterId} className="nyxa-label">Search</label>
             <input
@@ -490,7 +718,6 @@ export default function HomeworkTracker() {
             />
           </div>
 
-          {/* Subject Filter */}
           <div>
             <label htmlFor={subjectFilterId} className="nyxa-label">Subject Filter</label>
             <select
@@ -508,7 +735,6 @@ export default function HomeworkTracker() {
             </select>
           </div>
 
-          {/* Priority Filter */}
           <div>
             <label htmlFor={priorityFilterId} className="nyxa-label">Priority Filter</label>
             <select
@@ -524,7 +750,6 @@ export default function HomeworkTracker() {
             </select>
           </div>
 
-          {/* Status Filter */}
           <div>
             <label htmlFor={statusFilterId} className="nyxa-label">Status Filter</label>
             <select
@@ -542,22 +767,19 @@ export default function HomeworkTracker() {
         </div>
       </div>
 
-      {/* Assignments List */}
+      {/* Assignments Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--foreground)] border-0 p-0 m-0">
             Assignments ({filteredHomeworks.length})
           </h2>
           <span className="text-xs text-[var(--muted)]">
-            Showing filtered tasks
+            Filtered tasks
           </span>
         </div>
 
         {filteredHomeworks.length === 0 ? (
           <div className="nyxa-card py-12 text-center text-[var(--muted)] space-y-2">
-            <svg className="w-10 h-10 mx-auto opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
             <p className="text-sm font-medium">No homework or assignments match your current filter.</p>
             <button
               onClick={() => setShowAddHwModal(true)}
@@ -582,7 +804,6 @@ export default function HomeworkTracker() {
                   }`}
                 >
                   <div className="space-y-2">
-                    {/* Top Meta Header */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${badgeStyle}`}>
@@ -604,7 +825,6 @@ export default function HomeworkTracker() {
                       {getRemainingTimeBadge(hw.dueDate, hw.status)}
                     </div>
 
-                    {/* Title */}
                     <h3
                       className={`text-base font-bold text-[var(--foreground)] m-0 ${
                         hw.status === 'Completed' ? 'line-through text-[var(--muted)]' : ''
@@ -613,14 +833,19 @@ export default function HomeworkTracker() {
                       {hw.title}
                     </h3>
 
-                    {/* Notes */}
                     {hw.notes && (
                       <p className="text-xs text-[var(--muted)] line-clamp-2 m-0">
                         {hw.notes}
                       </p>
                     )}
 
-                    {/* Subtasks Progress Bar & Checklist */}
+                    <div className="flex items-center gap-3 text-xs text-[var(--muted)] font-mono">
+                      <span>⏱ {hw.estimatedMinutes || 30} mins</span>
+                      {hw.reminderOffsetMinutes && (
+                        <span>🔔 Notify {hw.reminderOffsetMinutes}m before</span>
+                      )}
+                    </div>
+
                     {totalSubtasks > 0 && (
                       <div className="pt-2 space-y-2 border-t border-[var(--border)]">
                         <div className="flex items-center justify-between text-[11px] text-[var(--muted)]">
@@ -659,7 +884,6 @@ export default function HomeworkTracker() {
                     )}
                   </div>
 
-                  {/* Card Bottom Controls */}
                   <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1">
                       {(['To Do', 'In Progress', 'Completed'] as const).map((st) => (
@@ -677,15 +901,27 @@ export default function HomeworkTracker() {
                       ))}
                     </div>
 
-                    <button
-                      onClick={() => deleteHomework(hw.id)}
-                      className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                      title="Delete assignment"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() =>
+                          triggerSimulatedNotification(
+                            `Reminder: ${hw.title}`,
+                            `Subject: ${hw.subject} is due soon!`
+                          )
+                        }
+                        className="p-1 text-amber-500 hover:bg-amber-500/10 rounded text-xs"
+                        title="Test Reminder Trigger"
+                      >
+                        🔔
+                      </button>
+                      <button
+                        onClick={() => deleteHomework(hw.id)}
+                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Delete assignment"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -694,19 +930,170 @@ export default function HomeworkTracker() {
         )}
       </div>
 
+      {/* Streak Tracker Modal */}
+      {showStreakModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="nyxa-card max-w-lg w-full space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 className="text-lg font-bold border-0 p-0 m-0">🔥 Study Streak Tracker</h2>
+              <button onClick={() => setShowStreakModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="p-3 rounded-lg bg-[var(--secondary-bg)] border border-[var(--border)]">
+                <span className="text-xs text-[var(--muted)] uppercase block font-bold">Current Streak</span>
+                <span className="text-3xl font-black text-amber-500">{streakData.currentStreak} Days</span>
+              </div>
+              <div className="p-3 rounded-lg bg-[var(--secondary-bg)] border border-[var(--border)]">
+                <span className="text-xs text-[var(--muted)] uppercase block font-bold">Best Streak</span>
+                <span className="text-3xl font-black text-emerald-500">{streakData.longestStreak} Days</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                Last 30 Days Activity Heatmap
+              </h3>
+              <div className="grid grid-cols-7 gap-1.5">
+                {Array.from({ length: 28 }).map((_, idx) => {
+                  const d = new Date();
+                  d.setDate(d.getDate() - (27 - idx));
+                  const dStr = d.toISOString().slice(0, 10);
+                  const isDone = streakData.datesWithCompletions.has(dStr);
+
+                  return (
+                    <div
+                      key={dStr}
+                      title={`${dStr}: ${isDone ? 'Completed assignments!' : 'No activity'}`}
+                      className={`h-8 rounded flex flex-col items-center justify-center text-[9px] font-mono border ${
+                        isDone
+                          ? 'bg-amber-500/20 text-amber-600 border-amber-500/40 font-bold'
+                          : 'bg-[var(--secondary-bg)] text-[var(--muted)] border-[var(--border)]'
+                      }`}
+                    >
+                      {d.getDate()}
+                      {isDone && <span>🔥</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reminders Preview Modal */}
+      {showRemindersModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="nyxa-card max-w-xl w-full space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 className="text-lg font-bold border-0 p-0 m-0">🔔 Notifications & Alerts Preview</h2>
+              <button onClick={() => setShowRemindersModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3 rounded-lg bg-[var(--secondary-bg)] border border-[var(--border)] flex items-center justify-between text-xs">
+              <div>
+                <span className="font-bold text-[var(--foreground)] block">Browser Desktop Notifications</span>
+                <span className="text-[var(--muted)]">Receive background popups for upcoming deadlines.</span>
+              </div>
+              <button
+                onClick={requestBrowserNotification}
+                className="nyxa-btn nyxa-btn-secondary text-xs shrink-0"
+              >
+                Enable Notifications
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                Scheduled Reminders Queue ({homeworks.filter(h => h.status !== 'Completed').length})
+              </h3>
+
+              {homeworks.filter(h => h.status !== 'Completed').length === 0 ? (
+                <p className="text-xs text-[var(--muted)] text-center py-4">No pending assignments to schedule alerts for.</p>
+              ) : (
+                homeworks.filter(h => h.status !== 'Completed').map((hw) => (
+                  <div
+                    key={hw.id}
+                    className="p-3 rounded-lg border border-[var(--border)] bg-[var(--secondary-bg)] flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div>
+                      <span className="font-bold text-[var(--foreground)] block">{hw.title}</span>
+                      <span className="text-[11px] text-[var(--muted)]">
+                        Due: {new Date(hw.dueDate).toLocaleString()} • Trigger {hw.reminderOffsetMinutes || 60}m prior
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        triggerSimulatedNotification(
+                          `Test Reminder: ${hw.title}`,
+                          `Assignment due at ${hw.dueDate}`
+                        )
+                      }
+                      className="nyxa-btn nyxa-btn-secondary text-[11px]"
+                    >
+                      Test Trigger
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import / Export Modal */}
+      {showImportExportModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="nyxa-card max-w-md w-full space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 className="text-lg font-bold border-0 p-0 m-0">📁 Batch Import & Export</h2>
+              <button onClick={() => setShowImportExportModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--secondary-bg)] space-y-2">
+                <span className="font-bold text-xs text-[var(--foreground)] block">Export Assignments & Exams</span>
+                <div className="flex gap-2">
+                  <button onClick={handleExportCSV} className="nyxa-btn nyxa-btn-secondary text-xs flex-1">
+                    Download .CSV
+                  </button>
+                  <button onClick={handleExportJSON} className="nyxa-btn nyxa-btn-secondary text-xs flex-1">
+                    Download .JSON
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--secondary-bg)] space-y-2">
+                <span className="font-bold text-xs text-[var(--foreground)] block">Import from CSV or JSON</span>
+                <input
+                  id={importFileId}
+                  type="file"
+                  accept=".csv,.json"
+                  onChange={handleFileUpload}
+                  className="nyxa-input text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add Homework Modal */}
       {showAddHwModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="nyxa-card max-w-lg w-full space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h2 className="text-lg font-bold border-0 p-0 m-0">Add Homework / Assignment</h2>
-              <button
-                onClick={() => setShowAddHwModal(false)}
-                className="p-1 text-[var(--muted)] hover:text-[var(--foreground)]"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={() => setShowAddHwModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
               </button>
             </div>
 
@@ -758,18 +1145,46 @@ export default function HomeworkTracker() {
                 </div>
               </div>
 
-              <div>
-                <label htmlFor={hwDueDateId} className="nyxa-label">Due Date & Time</label>
-                <input
-                  id={hwDueDateId}
-                  type="datetime-local"
-                  className="nyxa-input"
-                  value={newHwDueDate}
-                  onChange={(e) => setNewHwDueDate(e.target.value)}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label htmlFor={hwDueDateId} className="nyxa-label">Due Date & Time</label>
+                  <input
+                    id={hwDueDateId}
+                    type="datetime-local"
+                    className="nyxa-input text-xs"
+                    value={newHwDueDate}
+                    onChange={(e) => setNewHwDueDate(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor={hwEstMinsId} className="nyxa-label">Est. Time (Mins)</label>
+                  <input
+                    id={hwEstMinsId}
+                    type="number"
+                    min="5"
+                    step="5"
+                    className="nyxa-input text-xs"
+                    value={newHwEstMins}
+                    onChange={(e) => setNewHwEstMins(Number(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor={hwReminderId} className="nyxa-label">Alert Trigger</label>
+                  <select
+                    id={hwReminderId}
+                    className="nyxa-select text-xs"
+                    value={newHwReminder}
+                    onChange={(e) => setNewHwReminder(Number(e.target.value))}
+                  >
+                    <option value={15}>15 Mins Before</option>
+                    <option value={60}>1 Hour Before</option>
+                    <option value={1440}>1 Day Before</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Subtask input helper */}
               <div>
                 <label className="nyxa-label">Subtasks / Checklist (Optional)</label>
                 <div className="flex gap-2">
@@ -804,23 +1219,20 @@ export default function HomeworkTracker() {
                 </div>
 
                 {tempSubtasks.length > 0 && (
-                  <ul className="mt-2 space-y-1">
+                  <div className="mt-2 space-y-1">
                     {tempSubtasks.map((st, idx) => (
-                      <li
-                        key={idx}
-                        className="flex items-center justify-between text-xs p-1.5 rounded bg-[var(--secondary-bg)] border border-[var(--border)]"
-                      >
+                      <div key={idx} className="flex items-center justify-between text-xs p-1.5 rounded bg-[var(--secondary-bg)] border border-[var(--border)]">
                         <span>{st}</span>
                         <button
                           type="button"
                           onClick={() => setTempSubtasks(tempSubtasks.filter((_, i) => i !== idx))}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500"
                         >
                           ✕
                         </button>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </div>
 
@@ -829,7 +1241,7 @@ export default function HomeworkTracker() {
                 <textarea
                   className="nyxa-textarea text-xs"
                   rows={2}
-                  placeholder="Additional notes or references..."
+                  placeholder="Additional guidance..."
                   value={newHwNotes}
                   onChange={(e) => setNewHwNotes(e.target.value)}
                 />
@@ -858,13 +1270,8 @@ export default function HomeworkTracker() {
           <div className="nyxa-card max-w-md w-full space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h2 className="text-lg font-bold border-0 p-0 m-0">Add Target Exam</h2>
-              <button
-                onClick={() => setShowAddExamModal(false)}
-                className="p-1 text-[var(--muted)] hover:text-[var(--foreground)]"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={() => setShowAddExamModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
               </button>
             </div>
 
@@ -874,41 +1281,48 @@ export default function HomeworkTracker() {
                 <input
                   type="text"
                   required
-                  className="nyxa-input"
-                  placeholder="e.g. Physics Mid-Term Mock"
+                  className="nyxa-input text-xs"
+                  placeholder="e.g. Mid-Term Mock Test"
                   value={newExamTitle}
                   onChange={(e) => setNewExamTitle(e.target.value)}
                 />
               </div>
 
-              <div>
-                <label className="nyxa-label">Subject</label>
-                <input
-                  type="text"
-                  className="nyxa-input"
-                  placeholder="e.g. Physics"
-                  value={newExamSubject}
-                  onChange={(e) => setNewExamSubject(e.target.value)}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="nyxa-label">Subject</label>
+                  <select
+                    className="nyxa-select text-xs"
+                    value={newExamSubject}
+                    onChange={(e) => setNewExamSubject(e.target.value)}
+                  >
+                    {['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science', 'History', 'Economics'].map(
+                      (s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="nyxa-label">Date & Time</label>
+                  <input
+                    type="datetime-local"
+                    className="nyxa-input text-xs"
+                    value={newExamDate}
+                    onChange={(e) => setNewExamDate(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="nyxa-label">Exam Date & Time *</label>
-                <input
-                  type="datetime-local"
-                  required
-                  className="nyxa-input"
-                  value={newExamDate}
-                  onChange={(e) => setNewExamDate(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="nyxa-label">Syllabus / Topics</label>
+                <label className="nyxa-label">Syllabus / Topics Covered</label>
                 <textarea
                   className="nyxa-textarea text-xs"
                   rows={2}
-                  placeholder="e.g. Chapters 1-5, Optics, Waves"
+                  placeholder="Chapters, units, key topics..."
                   value={newExamSyllabus}
                   onChange={(e) => setNewExamSyllabus(e.target.value)}
                 />
@@ -923,116 +1337,10 @@ export default function HomeworkTracker() {
                   Cancel
                 </button>
                 <button type="submit" className="nyxa-btn nyxa-btn-primary text-xs">
-                  Create Exam Timer
+                  Save Exam Countdown
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Printable Study Schedule Modal */}
-      {showSchedulePrintModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="nyxa-card max-w-3xl w-full max-h-[90vh] overflow-y-auto space-y-6 bg-white text-black dark:bg-zinc-950 dark:text-white">
-            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <div>
-                <h2 className="text-xl font-bold border-0 p-0 m-0">Printable Study Schedule</h2>
-                <p className="text-xs text-[var(--muted)] m-0">Organized view of assignments & exams for printing</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handlePrintSchedule}
-                  className="nyxa-btn nyxa-btn-primary text-xs flex items-center gap-1"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                  </svg>
-                  Print / Save PDF
-                </button>
-                <button
-                  onClick={() => setShowSchedulePrintModal(false)}
-                  className="p-1 text-[var(--muted)] hover:text-[var(--foreground)]"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Print Content Area */}
-            <div className="space-y-6">
-              {/* Upcoming Exams Section */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-amber-600 border-b pb-1">
-                  Target Exams & Mock Tests
-                </h3>
-                {exams.length === 0 ? (
-                  <p className="text-xs text-[var(--muted)]">No exams scheduled.</p>
-                ) : (
-                  <table className="nyxa-table w-full text-xs">
-                    <thead>
-                      <tr>
-                        <th>Subject</th>
-                        <th>Exam Title</th>
-                        <th>Date & Time</th>
-                        <th>Syllabus</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {exams.map((ex) => (
-                        <tr key={ex.id}>
-                          <td className="font-bold">{ex.subject}</td>
-                          <td>{ex.title}</td>
-                          <td className="font-mono">
-                            {new Date(ex.examDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                          </td>
-                          <td className="text-[var(--muted)]">{ex.syllabus || '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-
-              {/* Pending Homework Section */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-blue-600 border-b pb-1">
-                  Pending Assignments & Tasks
-                </h3>
-                {homeworks.filter((h) => h.status !== 'Completed').length === 0 ? (
-                  <p className="text-xs text-[var(--muted)]">All assignments completed!</p>
-                ) : (
-                  <table className="nyxa-table w-full text-xs">
-                    <thead>
-                      <tr>
-                        <th>Subject</th>
-                        <th>Assignment</th>
-                        <th>Priority</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {homeworks
-                        .filter((h) => h.status !== 'Completed')
-                        .map((hw) => (
-                          <tr key={hw.id}>
-                            <td className="font-bold">{hw.subject}</td>
-                            <td>{hw.title}</td>
-                            <td className="font-semibold">{hw.priority}</td>
-                            <td className="font-mono">
-                              {new Date(hw.dueDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                            </td>
-                            <td>{hw.status}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       )}

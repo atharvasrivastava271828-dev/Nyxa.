@@ -1,11 +1,37 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  FileText,
+  Printer,
+  Copy,
+  Download,
+  Upload,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ShieldCheck,
+  Award,
+  User,
+  BookOpen,
+  Briefcase,
+  CheckSquare,
+  FileCheck,
+  Sparkles,
+  Camera,
+  RefreshCw,
+  Eye,
+  Sliders,
+  ChevronRight,
+  HelpCircle,
+} from 'lucide-react';
 
 // --- Interfaces & Types ---
 export interface EducationRow {
   id: string;
-  examPassed: string; // 10th / Matric, 12th / Inter, Graduation, Post Graduation, Diploma, Others
+  examPassed: string;
   boardUniversity: string;
   yearOfPassing: string;
   rollNumber: string;
@@ -20,7 +46,7 @@ export interface ExperienceRow {
   id: string;
   organization: string;
   designation: string;
-  serviceType: string; // Permanent / Contractual / Ad-hoc / Govt
+  serviceType: string;
   fromDate: string;
   toDate: string;
   payScale: string;
@@ -34,10 +60,17 @@ export interface LanguageRow {
   speak: boolean;
 }
 
+export interface DocumentChecklistItem {
+  id: string;
+  label: string;
+  required: boolean;
+  condition?: string;
+  checked: boolean;
+}
+
 export interface SarkariResumeData {
-  // Preset Info
   templateType: 'UPSC' | 'SSC' | 'IBPS' | 'RRB' | 'GENERAL';
-  
+
   // Exam Info
   examName: string;
   postAppliedFor: string;
@@ -47,7 +80,7 @@ export interface SarkariResumeData {
   preferredCenter: string;
 
   // Personal Info
-  fullName: string; // Auto uppercase option
+  fullName: string;
   fathersName: string;
   mothersName: string;
   dob: string; // YYYY-MM-DD
@@ -71,7 +104,7 @@ export interface SarkariResumeData {
   email: string;
   idProofType: string;
   idProofNumber: string;
-  
+
   // Correspondence Address
   corrAddressLine1: string;
   corrAddressLine2: string;
@@ -96,14 +129,23 @@ export interface SarkariResumeData {
   computerKnowledge: string;
   otherQualifications: string;
 
+  // Custom Target Exam Age Limits (for age eligibility checker)
+  targetExamMinAge: number;
+  targetExamMaxAgeUR: number;
+
   // Declaration & Footer
   declarationPlace: string;
   declarationDate: string;
   customDeclaration: string;
-  
+
   // Assets
   photoUrl: string;
   signatureUrl: string;
+
+  // Styling Options
+  themeBorder: 'formal' | 'classic' | 'modern';
+  showQrBarcode: boolean;
+  showWatermark: boolean;
 }
 
 // Preset Default Data Generator
@@ -215,6 +257,9 @@ const getPresetData = (type: 'UPSC' | 'SSC' | 'IBPS' | 'RRB' | 'GENERAL'): Sarka
     computerKnowledge: 'CCC Certified (NIELIT), Proficient in MS Office, Data Entry, Python, and SQL.',
     otherQualifications: 'NCC "C" Certificate holder (Grade A). Winner of State Level Essay Competition 2019.',
 
+    targetExamMinAge: 21,
+    targetExamMaxAgeUR: 32,
+
     declarationPlace: 'New Delhi',
     declarationDate: new Date().toISOString().split('T')[0],
     customDeclaration:
@@ -222,36 +267,56 @@ const getPresetData = (type: 'UPSC' | 'SSC' | 'IBPS' | 'RRB' | 'GENERAL'): Sarka
 
     photoUrl: '',
     signatureUrl: '',
+
+    themeBorder: 'formal',
+    showQrBarcode: true,
+    showWatermark: true,
   };
 
   if (type === 'UPSC') {
-    baseData.examName = 'Civil Services Examination (CSE) 2026';
+    baseData.examName = 'Civil Services Examination (UPSC CSE 2026)';
     baseData.postAppliedFor = 'Indian Administrative Service (IAS) / IFS / IPS';
+    baseData.targetExamMinAge = 21;
+    baseData.targetExamMaxAgeUR = 32;
   } else if (type === 'SSC') {
     baseData.examName = 'Combined Graduate Level Examination (SSC CGL 2026)';
     baseData.postAppliedFor = 'Assistant Section Officer (ASO) / Inspector (CGST)';
+    baseData.targetExamMinAge = 18;
+    baseData.targetExamMaxAgeUR = 30;
   } else if (type === 'IBPS') {
-    baseData.examName = 'IBPS Common Recruitment Process (CRP PO/MT-XIV)';
+    baseData.examName = 'IBPS Common Recruitment Process (CRP PO/MT-XIV 2026)';
     baseData.postAppliedFor = 'Probationary Officer / Management Trainee';
+    baseData.targetExamMinAge = 20;
+    baseData.targetExamMaxAgeUR = 30;
   } else if (type === 'RRB') {
     baseData.examName = 'RRB Non-Technical Popular Categories (NTPC CEN 01/2026)';
     baseData.postAppliedFor = 'Station Master / Goods Train Manager';
+    baseData.targetExamMinAge = 18;
+    baseData.targetExamMaxAgeUR = 33;
   } else {
-    baseData.examName = 'Sarkari Job Recruitment / General Biodata';
-    baseData.postAppliedFor = 'General Executive Post';
+    baseData.examName = 'Sarkari Job Recruitment / General Application Biodata';
+    baseData.postAppliedFor = 'Executive Officer / Assistant Specialist';
+    baseData.targetExamMinAge = 18;
+    baseData.targetExamMaxAgeUR = 35;
   }
 
   return baseData;
 };
 
-// Calculate exact age in Years, Months, Days
-const calculateExactAge = (dobString: string, cutoffString: string): string => {
-  if (!dobString) return 'N/A';
+// Calculate exact age in Years, Months, Days & Numeric Total Days
+const calculateExactAgeDetails = (dobString: string, cutoffString: string) => {
+  if (!dobString) {
+    return { years: 0, months: 0, days: 0, totalYearsFloat: 0, formatted: 'N/A', valid: false };
+  }
   const dob = new Date(dobString);
   const cutoff = cutoffString ? new Date(cutoffString) : new Date();
 
-  if (isNaN(dob.getTime()) || isNaN(cutoff.getTime())) return 'Invalid Date';
-  if (dob > cutoff) return '0 Years, 0 Months, 0 Days (DOB in future)';
+  if (isNaN(dob.getTime()) || isNaN(cutoff.getTime())) {
+    return { years: 0, months: 0, days: 0, totalYearsFloat: 0, formatted: 'Invalid Date', valid: false };
+  }
+  if (dob > cutoff) {
+    return { years: 0, months: 0, days: 0, totalYearsFloat: 0, formatted: '0 Y, 0 M, 0 D (DOB in future)', valid: false };
+  }
 
   let years = cutoff.getFullYear() - dob.getFullYear();
   let months = cutoff.getMonth() - dob.getMonth();
@@ -268,14 +333,37 @@ const calculateExactAge = (dobString: string, cutoffString: string): string => {
     months += 12;
   }
 
-  return `${years} Years, ${months} Months, ${days} Days`;
+  const totalYearsFloat = years + months / 12 + days / 365.25;
+
+  return {
+    years,
+    months,
+    days,
+    totalYearsFloat,
+    formatted: `${years} Years, ${months} Months, ${days} Days`,
+    valid: true,
+  };
 };
 
 export default function SarkariResume() {
   const [data, setData] = useState<SarkariResumeData>(() => getPresetData('UPSC'));
   const [viewMode, setViewMode] = useState<'split' | 'editor' | 'preview'>('split');
-  const [activeTab, setActiveTab] = useState<'personal' | 'exam' | 'education' | 'experience' | 'declaration'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'exam' | 'education' | 'experience' | 'checklist' | 'ageChecker'>('personal');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [zoomScale, setZoomScale] = useState<number>(100);
+
+  // Document checklist state
+  const [checklist, setChecklist] = useState<DocumentChecklistItem[]>([
+    { id: '1', label: '10th / Matriculation Certificate (Date of Birth Proof)', required: true, checked: true },
+    { id: '2', label: '12th / Higher Secondary Marksheet & Certificate', required: true, checked: true },
+    { id: '3', label: 'Graduation Degree / Final Semester Consolidated Marksheet', required: true, checked: true },
+    { id: '4', label: 'Government Identity Proof (Aadhaar / Voter ID / Passport)', required: true, checked: true },
+    { id: '5', label: 'Category Certificate (OBC-NCL / SC / ST / EWS) in prescribed format', required: false, condition: 'For Reserved Categories', checked: true },
+    { id: '6', label: 'Disability Certificate (Form V/VI/VII) issued by Medical Board', required: false, condition: 'For PwD candidates (>40%)', checked: false },
+    { id: '7', label: 'Discharge Book & PPO Copy', required: false, condition: 'For Ex-Servicemen', checked: false },
+    { id: '8', label: 'No Objection Certificate (NOC) from current Government employer', required: false, condition: 'For Serving Employees', checked: false },
+    { id: '9', label: 'Passport Size Photographs (Recent, Light Background, 3.5x4.5 cm)', required: true, checked: true },
+  ]);
 
   // Handle Photo & Signature Upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'photoUrl' | 'signatureUrl') => {
@@ -293,6 +381,80 @@ export default function SarkariResume() {
   const handlePresetSelect = (preset: 'UPSC' | 'SSC' | 'IBPS' | 'RRB' | 'GENERAL') => {
     setData(getPresetData(preset));
   };
+
+  // Age Eligibility Calculation based on Relaxation Rules
+  const ageEligibility = useMemo(() => {
+    const ageInfo = calculateExactAgeDetails(data.dob, data.ageCutoffDate);
+    if (!ageInfo.valid) {
+      return {
+        status: 'INVALID',
+        color: 'slate',
+        message: 'Invalid DOB or Cut-off date',
+        relaxationGivenYears: 0,
+        effectiveUpperLimit: data.targetExamMaxAgeUR,
+        minAge: data.targetExamMinAge,
+        candidateYears: 0,
+      };
+    }
+
+    // Determine category relaxation
+    let categoryRelaxation = 0;
+    if (data.category === 'OBC') categoryRelaxation = 3;
+    else if (data.category === 'SC' || data.category === 'ST') categoryRelaxation = 5;
+
+    // Determine PwD relaxation
+    let pwdRelaxation = 0;
+    if (data.isPwd) {
+      if (data.category === 'OBC') pwdRelaxation = 13;
+      else if (data.category === 'SC' || data.category === 'ST') pwdRelaxation = 15;
+      else pwdRelaxation = 10; // General / EWS
+    }
+
+    // Determine Ex-Serviceman relaxation
+    let exServicemanRelaxation = 0;
+    if (data.isExServiceman) {
+      const svcYears = parseInt(data.exServicemanServiceYears || '3', 10);
+      exServicemanRelaxation = (isNaN(svcYears) ? 3 : svcYears) + 3; // Service length + 3 yrs standard
+    }
+
+    // Maximum total relaxation allowed (use highest of category/pwd/ex-service or combine as per standard rules)
+    const totalRelaxation = Math.max(categoryRelaxation, pwdRelaxation, exServicemanRelaxation);
+    const effectiveUpperLimit = data.targetExamMaxAgeUR + totalRelaxation;
+    const minAge = data.targetExamMinAge;
+
+    const candidateYears = ageInfo.years;
+    const isUnderAge = candidateYears < minAge;
+    const isOverAge = candidateYears >= effectiveUpperLimit && (candidateYears > effectiveUpperLimit || ageInfo.months > 0 || ageInfo.days > 0);
+
+    let status: 'ELIGIBLE' | 'OVER_AGE' | 'UNDER_AGE' = 'ELIGIBLE';
+    let color = 'emerald';
+    let message = `Eligible! Age (${ageInfo.years}y ${ageInfo.months}m) is within range (${minAge} - ${effectiveUpperLimit} yrs).`;
+
+    if (isUnderAge) {
+      status = 'UNDER_AGE';
+      color = 'amber';
+      message = `Under-age: Candidate is ${ageInfo.years} yrs old. Minimum required age is ${minAge} yrs on cutoff date.`;
+    } else if (isOverAge) {
+      status = 'OVER_AGE';
+      color = 'rose';
+      message = `Over-age: Candidate is ${ageInfo.years}y ${ageInfo.months}m old. Upper age limit is ${effectiveUpperLimit} yrs (UR ${data.targetExamMaxAgeUR}y + ${totalRelaxation}y relaxation).`;
+    } else if (totalRelaxation > 0) {
+      message = `Eligible via Category Relaxation! Age (${ageInfo.years}y ${ageInfo.months}m) fits relaxed limit of ${effectiveUpperLimit} yrs (+${totalRelaxation} yrs added for ${data.category}${data.isPwd ? ' / PwD' : ''}).`;
+    }
+
+    return {
+      status,
+      color,
+      message,
+      relaxationGivenYears: totalRelaxation,
+      effectiveUpperLimit,
+      minAge,
+      candidateYears: ageInfo.years,
+      candidateMonths: ageInfo.months,
+      candidateDays: ageInfo.days,
+      formattedAge: ageInfo.formatted,
+    };
+  }, [data.dob, data.ageCutoffDate, data.category, data.isPwd, data.isExServiceman, data.exServicemanServiceYears, data.targetExamMinAge, data.targetExamMaxAgeUR]);
 
   // Education Helpers
   const addEducationRow = () => {
@@ -317,7 +479,6 @@ export default function SarkariResume() {
       educationList: prev.educationList.map((row) => {
         if (row.id !== id) return row;
         const updated = { ...row, [field]: value };
-        // Auto calculate percentage if marksObtained & maxMarks are numeric
         if (field === 'marksObtained' || field === 'maxMarks') {
           const obt = parseFloat(field === 'marksObtained' ? value : row.marksObtained);
           const max = parseFloat(field === 'maxMarks' ? value : row.maxMarks);
@@ -366,20 +527,12 @@ export default function SarkariResume() {
     }));
   };
 
-  // Language helpers
-  const toggleLanguageOption = (index: number, field: 'read' | 'write' | 'speak') => {
-    setData((prev) => {
-      const updatedLangs = [...prev.languages];
-      updatedLangs[index] = { ...updatedLangs[index], [field]: !updatedLangs[index][field] };
-      return { ...prev, languages: updatedLangs };
-    });
-  };
-
   // Copy Plain Text Format
   const copyAsPlainText = () => {
+    const ageInfo = calculateExactAgeDetails(data.dob, data.ageCutoffDate);
     const text = `
 ====================================================================
-GOVERNMENT OF INDIA / RECRUITMENT BIODATA & APPLICATION FORMAT
+GOVERNMENT OF INDIA / OFFICIAL APPLICATION & RECRUITMENT BIODATA
 ====================================================================
 EXAMINATION NAME  : ${data.examName}
 POST APPLIED FOR  : ${data.postAppliedFor}
@@ -395,7 +548,7 @@ Full Name         : ${data.fullName}
 Father's Name     : ${data.fathersName}
 Mother's Name     : ${data.mothersName}
 Date of Birth     : ${data.dob}
-Age (as of ${data.ageCutoffDate}) : ${calculateExactAge(data.dob, data.ageCutoffDate)}
+Age (as of ${data.ageCutoffDate}) : ${ageInfo.formatted}
 Gender            : ${data.gender}
 Category          : ${data.category} ${data.isPwd ? `(PwD: ${data.pwdType} - ${data.pwdPercentage}%)` : ''}
 Ex-Serviceman     : ${data.isExServiceman ? `Yes (${data.exServicemanServiceYears} yrs)` : 'No'}
@@ -467,7 +620,6 @@ Signature: [${data.fullName}]
           const importedData = JSON.parse(event.target?.result as string);
           if (importedData && typeof importedData === 'object' && importedData.fullName) {
             setData(importedData);
-            alert('Biodata data imported successfully!');
           } else {
             alert('Invalid JSON format for Sarkari Resume.');
           }
@@ -479,14 +631,13 @@ Signature: [${data.fullName}]
     }
   };
 
-  // Trigger Print
   const handlePrint = () => {
     window.print();
   };
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-6 font-sans">
-      {/* Print Specific CSS Override */}
+      {/* Print CSS Overrides */}
       <style>{`
         @media print {
           body * {
@@ -503,144 +654,213 @@ Signature: [${data.fullName}]
             top: 0;
             width: 100%;
             margin: 0;
-            padding: 20px;
+            padding: 24px;
             box-shadow: none !important;
             border: none !important;
           }
           .no-print {
             display: none !important;
           }
+          .page-break {
+            page-break-before: always;
+          }
         }
       `}</style>
 
-      {/* Header & Controls Bar */}
+      {/* Header & Main Bar */}
       <div className="max-w-7xl mx-auto mb-6 no-print">
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="bg-amber-500/20 text-amber-300 text-xs font-semibold px-2.5 py-1 rounded border border-amber-500/30">
-                OFFICIAL FORMATTER
+              <span className="bg-amber-500/20 text-amber-300 text-xs font-semibold px-2.5 py-1 rounded border border-amber-500/30 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                UPSC / SSC / IBPS / RRB STANDARD FORMATTER
               </span>
-              <span className="text-xs text-slate-400">UPSC • SSC • BANKING • RAILWAYS</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              Sarkari Biodata & Resume Generator
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1.5 flex items-center gap-2">
+              Sarkari Exam Eligibility & Application Resume Suite
             </h1>
             <p className="text-sm text-slate-400 mt-1">
-              Standard Indian Government examination application biodata format with auto-age calculator & print-ready layout.
+              Complete category age eligibility calculator, document verification checklist, and standard Indian Government multi-page print layout.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handlePrint}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition shadow-lg flex items-center gap-2"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
+              <Printer className="w-4 h-4" />
               Print / Save PDF
             </button>
 
             <button
               onClick={copyAsPlainText}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition shadow-lg flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition shadow-lg flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-              {copySuccess ? 'Copied Text!' : 'Copy Text Format'}
+              <Copy className="w-4 h-4" />
+              {copySuccess ? 'Copied Text!' : 'Copy Plain Text'}
             </button>
 
             <button
               onClick={downloadJson}
-              className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5"
-              title="Download Data JSON"
+              className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5 font-medium"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
+              <Download className="w-4 h-4" />
               Export JSON
             </button>
 
-            <label className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm cursor-pointer transition flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
+            <label className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm cursor-pointer transition flex items-center gap-1.5 font-medium">
+              <Upload className="w-4 h-4" />
               Import JSON
               <input type="file" accept=".json" onChange={importJson} className="hidden" />
             </label>
           </div>
         </div>
 
-        {/* Preset Selector & View Switcher Bar */}
+        {/* Presets Bar & View Mode Controls */}
         <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 mt-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
-              Load Preset Exam:
+              Presets:
             </span>
             {(['UPSC', 'SSC', 'IBPS', 'RRB', 'GENERAL'] as const).map((preset) => (
               <button
                 key={preset}
                 onClick={() => handlePresetSelect(preset)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 ${
                   data.templateType === preset
                     ? 'bg-amber-500 text-slate-950 shadow'
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
               >
-                {preset === 'GENERAL' ? 'Standard Biodata' : `${preset} Format`}
+                {preset} Format
               </button>
             ))}
           </div>
 
-          <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700">
-            <button
-              onClick={() => setViewMode('editor')}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition ${
-                viewMode === 'editor' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+          <div className="flex items-center gap-3">
+            {/* Zoom Slider */}
+            <div className="hidden sm:flex items-center gap-2 bg-slate-900/90 border border-slate-700 rounded-lg px-2.5 py-1 text-xs">
+              <span className="text-slate-400">Zoom:</span>
+              <input
+                type="range"
+                min="60"
+                max="130"
+                value={zoomScale}
+                onChange={(e) => setZoomScale(Number(e.target.value))}
+                className="w-20 accent-amber-500 cursor-pointer"
+              />
+              <span className="font-mono text-amber-300 w-9 text-right">{zoomScale}%</span>
+            </div>
+
+            <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700">
+              <button
+                onClick={() => setViewMode('editor')}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition ${
+                  viewMode === 'editor' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Form Editor
+              </button>
+              <button
+                onClick={() => setViewMode('split')}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition hidden md:block ${
+                  viewMode === 'split' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Split View
+              </button>
+              <button
+                onClick={() => setViewMode('preview')}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition ${
+                  viewMode === 'preview' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                A4 Document Preview
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Category Age Eligibility Summary Card */}
+        <div className="mt-4 bg-slate-800/90 border border-slate-700 rounded-xl p-4 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                ageEligibility.status === 'ELIGIBLE'
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  : ageEligibility.status === 'UNDER_AGE'
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
               }`}
             >
-              Form Editor
-            </button>
-            <button
-              onClick={() => setViewMode('split')}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition hidden md:block ${
-                viewMode === 'split' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Split View
-            </button>
-            <button
-              onClick={() => setViewMode('preview')}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition ${
-                viewMode === 'preview' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              A4 Document Preview
-            </button>
+              {ageEligibility.status === 'ELIGIBLE' ? (
+                <CheckCircle2 className="w-6 h-6" />
+              ) : (
+                <AlertCircle className="w-6 h-6" />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Target Exam Eligibility Status:
+                </span>
+                <span
+                  className={`text-xs font-black px-2.5 py-0.5 rounded uppercase tracking-wider ${
+                    ageEligibility.status === 'ELIGIBLE'
+                      ? 'bg-emerald-500 text-slate-950'
+                      : ageEligibility.status === 'UNDER_AGE'
+                      ? 'bg-amber-500 text-slate-950'
+                      : 'bg-rose-500 text-white'
+                  }`}
+                >
+                  {ageEligibility.status.replace('_', ' ')}
+                </span>
+                <span className="text-xs text-slate-400">
+                  (Category: <strong className="text-amber-300">{data.category}</strong>
+                  {data.isPwd ? ' + PwD' : ''})
+                </span>
+              </div>
+              <p className="text-xs font-medium text-slate-300 mt-1">{ageEligibility.message}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs bg-slate-950/70 border border-slate-700/60 rounded-lg px-4 py-2 shrink-0">
+            <div>
+              <div className="text-slate-400">Candidate Age</div>
+              <div className="font-bold text-amber-300">{ageEligibility.formattedAge}</div>
+            </div>
+            <div className="h-6 w-px bg-slate-700" />
+            <div>
+              <div className="text-slate-400">Effective Age Range</div>
+              <div className="font-bold text-white">
+                {ageEligibility.minAge} - {ageEligibility.effectiveUpperLimit} Years
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Container */}
+      {/* Main Grid Content */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* LEFT PANE: Form Editor */}
         {(viewMode === 'editor' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'lg:col-span-12'} no-print space-y-5`}>
-            {/* Form Section Navigation Tabs */}
+            {/* Navigation Tabs */}
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-2 flex overflow-x-auto gap-1">
               {[
-                { id: 'personal', label: '1. Personal Info' },
+                { id: 'personal', label: '1. Personal' },
                 { id: 'exam', label: '2. Exam & Contact' },
                 { id: 'education', label: '3. Education' },
                 { id: 'experience', label: '4. Experience' },
-                { id: 'declaration', label: '5. Declaration & Photo' },
+                { id: 'ageChecker', label: '5. Age Calculator' },
+                { id: 'checklist', label: '6. Checklist' },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition flex-1 text-center ${
+                  className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition flex-1 text-center ${
                     activeTab === tab.id
                       ? 'bg-amber-500 text-slate-950 shadow-md'
                       : 'text-slate-300 hover:bg-slate-700/60'
@@ -654,7 +874,8 @@ Signature: [${data.fullName}]
             {/* TAB 1: Personal Info */}
             {activeTab === 'personal' && (
               <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
-                <h3 className="text-base font-bold text-amber-400 border-b border-slate-700 pb-2">
+                <h3 className="text-base font-bold text-amber-400 border-b border-slate-700 pb-2 flex items-center gap-2">
+                  <User className="w-4 h-4" />
                   Personal Details (As per 10th Matriculation Certificate)
                 </h3>
 
@@ -703,7 +924,7 @@ Signature: [${data.fullName}]
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Cut-off Reference Date</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Age Cut-off Date *</label>
                     <input
                       type="date"
                       value={data.ageCutoffDate}
@@ -714,7 +935,7 @@ Signature: [${data.fullName}]
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">Calculated Age</label>
                     <div className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-amber-300 flex items-center h-[38px]">
-                      {calculateExactAge(data.dob, data.ageCutoffDate)}
+                      {calculateExactAgeDetails(data.dob, data.ageCutoffDate).formatted}
                     </div>
                   </div>
                 </div>
@@ -738,7 +959,7 @@ Signature: [${data.fullName}]
                     <select
                       value={data.category}
                       onChange={(e) => setData({ ...data, category: e.target.value as any })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-semibold"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-bold text-amber-300"
                     >
                       <option value="GENERAL">General / UR</option>
                       <option value="EWS">EWS</option>
@@ -773,87 +994,139 @@ Signature: [${data.fullName}]
                   </div>
                 </div>
 
-                {/* Reservation / Special Category Checks */}
-                <div className="bg-slate-900/80 border border-slate-700/80 rounded-lg p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="isPwd"
-                      checked={data.isPwd}
-                      onChange={(e) => setData({ ...data, isPwd: e.target.checked })}
-                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500"
-                    />
-                    <label htmlFor="isPwd" className="text-xs font-semibold text-slate-200">
+                {/* Reservation Details */}
+                <div className="bg-slate-900/80 border border-slate-700/80 rounded-lg p-3 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={data.isPwd}
+                        onChange={(e) => setData({ ...data, isPwd: e.target.checked })}
+                        className="w-4 h-4 rounded accent-amber-500"
+                      />
                       Person with Benchmark Disability (PwD)
+                    </label>
+
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={data.isExServiceman}
+                        onChange={(e) => setData({ ...data, isExServiceman: e.target.checked })}
+                        className="w-4 h-4 rounded accent-amber-500"
+                      />
+                      Ex-Serviceman (ESM)
                     </label>
                   </div>
 
                   {data.isPwd && (
-                    <div className="flex gap-2 col-span-1 sm:col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800">
                       <input
                         type="text"
                         placeholder="Disability Type (e.g. OH / VI / HI)"
                         value={data.pwdType}
                         onChange={(e) => setData({ ...data, pwdType: e.target.value })}
-                        className="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white"
+                        className="bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs text-white"
                       />
                       <input
                         type="text"
-                        placeholder="Disability % (e.g. 40%)"
+                        placeholder="Disability % (e.g. 40% or 50%)"
                         value={data.pwdPercentage}
                         onChange={(e) => setData({ ...data, pwdPercentage: e.target.value })}
-                        className="w-32 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white"
+                        className="bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs text-white"
                       />
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="isEsm"
-                      checked={data.isExServiceman}
-                      onChange={(e) => setData({ ...data, isExServiceman: e.target.checked })}
-                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500"
-                    />
-                    <label htmlFor="isEsm" className="text-xs font-semibold text-slate-200">
-                      Ex-Serviceman (ESM)
-                    </label>
-                  </div>
-
                   {data.isExServiceman && (
-                    <div className="col-span-1 sm:col-span-2">
+                    <div className="pt-2 border-t border-slate-800">
                       <input
-                        type="text"
-                        placeholder="Total Service Duration (e.g. 15 Years in Indian Army)"
+                        type="number"
+                        placeholder="Total Defence Service Years (e.g. 5)"
                         value={data.exServicemanServiceYears}
                         onChange={(e) => setData({ ...data, exServicemanServiceYears: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white"
+                        className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs text-white"
                       />
                     </div>
                   )}
                 </div>
 
-                {/* Identification Marks */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Visible Identification Mark 1</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                      Identification Mark 1 (Visible)
+                    </label>
                     <input
                       type="text"
                       value={data.identificationMark1}
                       onChange={(e) => setData({ ...data, identificationMark1: e.target.value })}
-                      placeholder="e.g. A mole on the left side of neck"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Visible Identification Mark 2</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                      Identification Mark 2 (Visible)
+                    </label>
                     <input
                       type="text"
                       value={data.identificationMark2}
                       onChange={(e) => setData({ ...data, identificationMark2: e.target.value })}
-                      placeholder="e.g. A scar on right index finger"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                     />
+                  </div>
+                </div>
+
+                {/* Photo & Signature Upload */}
+                <div className="border-t border-slate-700 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                      Passport Photograph (Standard 3.5cm x 4.5cm)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <label className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5" />
+                        Choose Photo Image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, 'photoUrl')}
+                          className="hidden"
+                        />
+                      </label>
+                      {data.photoUrl && (
+                        <button
+                          onClick={() => setData({ ...data, photoUrl: '' })}
+                          className="text-xs text-rose-400 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                      Candidate Signature (Standard 3.5cm x 1.5cm)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <label className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition flex items-center gap-1.5">
+                        <Upload className="w-3.5 h-3.5" />
+                        Choose Signature Image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, 'signatureUrl')}
+                          className="hidden"
+                        />
+                      </label>
+                      {data.signatureUrl && (
+                        <button
+                          onClick={() => setData({ ...data, signatureUrl: '' })}
+                          className="text-xs text-rose-400 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -863,41 +1136,38 @@ Signature: [${data.fullName}]
             {activeTab === 'exam' && (
               <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
                 <h3 className="text-base font-bold text-amber-400 border-b border-slate-700 pb-2">
-                  Exam & Contact Information
+                  Exam & Contact Details
                 </h3>
 
-                {/* Exam Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Examination / Notification Name *</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Examination Name *</label>
                     <input
                       type="text"
                       value={data.examName}
                       onChange={(e) => setData({ ...data, examName: e.target.value })}
-                      placeholder="e.g. UPSC Civil Services Exam 2026"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-semibold"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Post / Cadre Applied For *</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Post Applied For *</label>
                     <input
                       type="text"
                       value={data.postAppliedFor}
                       onChange={(e) => setData({ ...data, postAppliedFor: e.target.value })}
-                      placeholder="e.g. Assistant Section Officer / IAS"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-semibold"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Registration ID / No.</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Registration No.</label>
                     <input
                       type="text"
                       value={data.registrationNo}
                       onChange={(e) => setData({ ...data, registrationNo: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -906,7 +1176,7 @@ Signature: [${data.fullName}]
                       type="text"
                       value={data.rollNo}
                       onChange={(e) => setData({ ...data, rollNo: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -914,85 +1184,98 @@ Signature: [${data.fullName}]
                     <select
                       value={data.examMedium}
                       onChange={(e) => setData({ ...data, examMedium: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
                     >
                       <option value="English">English</option>
                       <option value="Hindi">Hindi</option>
-                      <option value="Regional / Vernacular">Regional / Vernacular</option>
+                      <option value="Regional Language">Regional Language</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Preferred Exam City</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Preferred Center</label>
                     <input
                       type="text"
                       value={data.preferredCenter}
                       onChange={(e) => setData({ ...data, preferredCenter: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
                     />
                   </div>
                 </div>
 
                 {/* Identity Proof & Contact */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-700/60">
+                <div className="border-t border-slate-700 pt-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">ID Proof Type *</label>
+                    <select
+                      value={data.idProofType}
+                      onChange={(e) => setData({ ...data, idProofType: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                    >
+                      <option value="Aadhaar Card">Aadhaar Card</option>
+                      <option value="Voter ID Card">Voter ID Card</option>
+                      <option value="PAN Card">PAN Card</option>
+                      <option value="Passport">Passport</option>
+                      <option value="Driving License">Driving License</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">ID Proof Number *</label>
+                    <input
+                      type="text"
+                      value={data.idProofNumber}
+                      onChange={(e) => setData({ ...data, idProofNumber: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
+                    />
+                  </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">Mobile Number *</label>
                     <input
                       type="text"
                       value={data.mobileNo}
                       onChange={(e) => setData({ ...data, mobileNo: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">Email Address *</label>
                     <input
                       type="email"
                       value={data.email}
                       onChange={(e) => setData({ ...data, email: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Govt ID Type & Number</label>
-                    <div className="flex gap-2">
-                      <select
-                        value={data.idProofType}
-                        onChange={(e) => setData({ ...data, idProofType: e.target.value })}
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white"
-                      >
-                        <option value="Aadhaar Card">Aadhaar</option>
-                        <option value="PAN Card">PAN Card</option>
-                        <option value="Voter ID">Voter ID</option>
-                        <option value="Passport">Passport</option>
-                      </select>
-                      <input
-                        type="text"
-                        value={data.idProofNumber}
-                        onChange={(e) => setData({ ...data, idProofNumber: e.target.value })}
-                        placeholder="ID Number"
-                        className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white"
-                      />
-                    </div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Alternate Mobile Number</label>
+                    <input
+                      type="text"
+                      value={data.alternateMobile}
+                      onChange={(e) => setData({ ...data, alternateMobile: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
+                    />
                   </div>
                 </div>
 
-                {/* Addresses */}
-                <div className="space-y-3 pt-2 border-t border-slate-700/60">
-                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Correspondence Address</h4>
+                {/* Address */}
+                <div className="border-t border-slate-700 pt-3 space-y-3">
+                  <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">Correspondence Address</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
                       type="text"
                       placeholder="Address Line 1"
                       value={data.corrAddressLine1}
                       onChange={(e) => setData({ ...data, corrAddressLine1: e.target.value })}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
                     />
                     <input
                       type="text"
-                      placeholder="Address Line 2"
+                      placeholder="Address Line 2 / Landmark"
                       value={data.corrAddressLine2}
                       onChange={(e) => setData({ ...data, corrAddressLine2: e.target.value })}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-3">
@@ -1001,223 +1284,203 @@ Signature: [${data.fullName}]
                       placeholder="District"
                       value={data.corrDistrict}
                       onChange={(e) => setData({ ...data, corrDistrict: e.target.value })}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
                     />
                     <input
                       type="text"
                       placeholder="State"
                       value={data.corrState}
                       onChange={(e) => setData({ ...data, corrState: e.target.value })}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
                     />
                     <input
                       type="text"
                       placeholder="Pincode"
                       value={data.corrPincode}
                       onChange={(e) => setData({ ...data, corrPincode: e.target.value })}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono"
                     />
                   </div>
-
-                  <div className="flex items-center gap-2 pt-2">
-                    <input
-                      type="checkbox"
-                      id="sameAddress"
-                      checked={data.sameAsCorrespondence}
-                      onChange={(e) =>
-                        setData((prev) => ({
-                          ...prev,
-                          sameAsCorrespondence: e.target.checked,
-                          permAddressLine1: e.target.checked ? prev.corrAddressLine1 : prev.permAddressLine1,
-                          permAddressLine2: e.target.checked ? prev.corrAddressLine2 : prev.permAddressLine2,
-                          permDistrict: e.target.checked ? prev.corrDistrict : prev.permDistrict,
-                          permState: e.target.checked ? prev.corrState : prev.permState,
-                          permPincode: e.target.checked ? prev.corrPincode : prev.permPincode,
-                        }))
-                      }
-                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500"
-                    />
-                    <label htmlFor="sameAddress" className="text-xs font-semibold text-amber-300">
-                      Permanent Address is same as Correspondence Address
-                    </label>
-                  </div>
-
-                  {!data.sameAsCorrespondence && (
-                    <div className="space-y-3 pt-2 bg-slate-950 p-3 rounded-lg border border-slate-700">
-                      <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Permanent Address</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          placeholder="Address Line 1"
-                          value={data.permAddressLine1}
-                          onChange={(e) => setData({ ...data, permAddressLine1: e.target.value })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Address Line 2"
-                          value={data.permAddressLine2}
-                          onChange={(e) => setData({ ...data, permAddressLine2: e.target.value })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <input
-                          type="text"
-                          placeholder="District"
-                          value={data.permDistrict}
-                          onChange={(e) => setData({ ...data, permDistrict: e.target.value })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                        <input
-                          type="text"
-                          placeholder="State"
-                          value={data.permState}
-                          onChange={(e) => setData({ ...data, permState: e.target.value })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Pincode"
-                          value={data.permPincode}
-                          onChange={(e) => setData({ ...data, permPincode: e.target.value })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
 
-            {/* TAB 3: Educational Qualifications */}
+            {/* TAB 3: Education */}
             {activeTab === 'education' && (
               <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-700 pb-2">
-                  <h3 className="text-base font-bold text-amber-400">Educational Qualifications (Chronological Order)</h3>
+                  <h3 className="text-base font-bold text-amber-400 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    Educational Qualifications (Chronological Order)
+                  </h3>
                   <button
                     onClick={addEducationRow}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1 shadow"
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1"
                   >
-                    + Add Qualification
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Qualification
                   </button>
                 </div>
 
                 <div className="space-y-4">
-                  {data.educationList.map((row, index) => (
-                    <div key={row.id} className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3 relative">
+                  {data.educationList.map((edu, idx) => (
+                    <div key={edu.id} className="bg-slate-900 border border-slate-700 rounded-lg p-3 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="bg-slate-800 text-amber-400 border border-amber-500/30 text-xs font-bold px-2.5 py-0.5 rounded">
-                          Level #{index + 1}
-                        </span>
+                        <span className="text-xs font-bold text-amber-300">Degree/Exam #{idx + 1}</span>
                         {data.educationList.length > 1 && (
                           <button
-                            onClick={() => removeEducationRow(row.id)}
-                            className="text-red-400 hover:text-red-300 text-xs font-medium flex items-center gap-1"
+                            onClick={() => removeEducationRow(edu.id)}
+                            className="text-rose-400 hover:text-rose-300 text-xs flex items-center gap-1"
                           >
-                            Remove
+                            <Trash2 className="w-3 h-3" />
+                            Delete
                           </button>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Exam / Degree Passed</label>
+                          <label className="block text-[11px] text-slate-400">Exam / Certificate Name</label>
                           <input
                             type="text"
-                            value={row.examPassed}
-                            onChange={(e) => updateEducationRow(row.id, 'examPassed', e.target.value)}
-                            placeholder="e.g. 10th / B.Tech"
+                            value={edu.examPassed}
+                            onChange={(e) => updateEducationRow(edu.id, 'examPassed', e.target.value)}
+                            placeholder="e.g. 10th / Graduation B.Tech"
                             className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
                           />
                         </div>
-
                         <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Board / University</label>
+                          <label className="block text-[11px] text-slate-400">Board / University / Institute</label>
                           <input
                             type="text"
-                            value={row.boardUniversity}
-                            onChange={(e) => updateEducationRow(row.id, 'boardUniversity', e.target.value)}
-                            placeholder="e.g. CBSE / Delhi Univ"
+                            value={edu.boardUniversity}
+                            onChange={(e) => updateEducationRow(edu.id, 'boardUniversity', e.target.value)}
                             className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
                           />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Passing Year & Roll No.</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={row.yearOfPassing}
-                              onChange={(e) => updateEducationRow(row.id, 'yearOfPassing', e.target.value)}
-                              placeholder="Year"
-                              className="w-20 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
-                            />
-                            <input
-                              type="text"
-                              value={row.rollNumber}
-                              onChange={(e) => updateEducationRow(row.id, 'rollNumber', e.target.value)}
-                              placeholder="Roll No"
-                              className="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
-                            />
-                          </div>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Marks Obtained</label>
+                          <label className="block text-[11px] text-slate-400">Passing Year</label>
                           <input
                             type="text"
-                            value={row.marksObtained}
-                            onChange={(e) => updateEducationRow(row.id, 'marksObtained', e.target.value)}
-                            placeholder="e.g. 450"
+                            value={edu.yearOfPassing}
+                            onChange={(e) => updateEducationRow(edu.id, 'yearOfPassing', e.target.value)}
                             className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
                           />
                         </div>
-
                         <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Max Marks / Scale</label>
+                          <label className="block text-[11px] text-slate-400">Roll / Reg. No.</label>
                           <input
                             type="text"
-                            value={row.maxMarks}
-                            onChange={(e) => updateEducationRow(row.id, 'maxMarks', e.target.value)}
-                            placeholder="e.g. 500"
-                            className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
+                            value={edu.rollNumber}
+                            onChange={(e) => updateEducationRow(edu.id, 'rollNumber', e.target.value)}
+                            className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-mono"
                           />
                         </div>
-
                         <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">% or CGPA</label>
-                          <input
-                            type="text"
-                            value={row.percentageOrCgpa}
-                            onChange={(e) => updateEducationRow(row.id, 'percentageOrCgpa', e.target.value)}
-                            placeholder="e.g. 90.0%"
-                            className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-amber-300 font-semibold"
-                          />
+                          <label className="block text-[11px] text-slate-400">Marks Obtained / Max</label>
+                          <div className="flex gap-1">
+                            <input
+                              type="text"
+                              placeholder="Obt"
+                              value={edu.marksObtained}
+                              onChange={(e) => updateEducationRow(edu.id, 'marksObtained', e.target.value)}
+                              className="w-1/2 bg-slate-950 border border-slate-700 rounded px-1.5 py-1.5 text-xs text-white"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Max"
+                              value={edu.maxMarks}
+                              onChange={(e) => updateEducationRow(edu.id, 'maxMarks', e.target.value)}
+                              className="w-1/2 bg-slate-950 border border-slate-700 rounded px-1.5 py-1.5 text-xs text-white"
+                            />
+                          </div>
                         </div>
-
                         <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Division / Grade</label>
+                          <label className="block text-[11px] text-slate-400">% / CGPA</label>
                           <input
                             type="text"
-                            value={row.divisionGrade}
-                            onChange={(e) => updateEducationRow(row.id, 'divisionGrade', e.target.value)}
-                            placeholder="1st Div"
-                            className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
+                            value={edu.percentageOrCgpa}
+                            onChange={(e) => updateEducationRow(edu.id, 'percentageOrCgpa', e.target.value)}
+                            className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-amber-300 font-bold"
                           />
                         </div>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Main Subjects / Specialization</label>
+            {/* TAB 4: Experience */}
+            {activeTab === 'experience' && (
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-700 pb-2">
+                  <h3 className="text-base font-bold text-amber-400 flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" />
+                    Work Experience (If Applicable)
+                  </h3>
+                  <button
+                    onClick={addExperienceRow}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Work Experience
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {data.experienceList.map((exp, idx) => (
+                    <div key={exp.id} className="bg-slate-900 border border-slate-700 rounded-lg p-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-amber-300">Experience #{idx + 1}</span>
+                        <button
+                          onClick={() => removeExperienceRow(exp.id)}
+                          className="text-rose-400 hover:text-rose-300 text-xs flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
-                          value={row.subjects}
-                          onChange={(e) => updateEducationRow(row.id, 'subjects', e.target.value)}
-                          placeholder="e.g. Physics, Math, Chemistry, Computer Science"
-                          className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
+                          placeholder="Organization Name"
+                          value={exp.organization}
+                          onChange={(e) => updateExperienceRow(exp.id, 'organization', e.target.value)}
+                          className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Designation / Post Held"
+                          value={exp.designation}
+                          onChange={(e) => updateExperienceRow(exp.id, 'designation', e.target.value)}
+                          className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <input
+                          type="date"
+                          value={exp.fromDate}
+                          onChange={(e) => updateExperienceRow(exp.id, 'fromDate', e.target.value)}
+                          className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
+                        />
+                        <input
+                          type="date"
+                          value={exp.toDate}
+                          onChange={(e) => updateExperienceRow(exp.id, 'toDate', e.target.value)}
+                          className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Pay Scale / Salary"
+                          value={exp.payScale}
+                          onChange={(e) => updateExperienceRow(exp.id, 'payScale', e.target.value)}
+                          className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
                         />
                       </div>
                     </div>
@@ -1226,501 +1489,384 @@ Signature: [${data.fullName}]
               </div>
             )}
 
-            {/* TAB 4: Work Experience & Skills */}
-            {activeTab === 'experience' && (
-              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-5">
-                <div className="flex items-center justify-between border-b border-slate-700 pb-2">
-                  <h3 className="text-base font-bold text-amber-400">Work Experience (If Applicable)</h3>
-                  <button
-                    onClick={addExperienceRow}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1 shadow"
-                  >
-                    + Add Experience
-                  </button>
+            {/* TAB 5: Age Calculator Deep Dive */}
+            {activeTab === 'ageChecker' && (
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+                <h3 className="text-base font-bold text-amber-400 border-b border-slate-700 pb-2 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Detailed Category Age Eligibility Analysis
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Exam Base Upper Limit (UR Category)
+                    </label>
+                    <input
+                      type="number"
+                      value={data.targetExamMaxAgeUR}
+                      onChange={(e) => setData({ ...data, targetExamMaxAgeUR: Number(e.target.value) })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Exam Minimum Age</label>
+                    <input
+                      type="number"
+                      value={data.targetExamMinAge}
+                      onChange={(e) => setData({ ...data, targetExamMinAge: Number(e.target.value) })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-bold"
+                    />
+                  </div>
                 </div>
 
-                {data.experienceList.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">No work experience added yet. Click "+ Add Experience" above if required.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {data.experienceList.map((exp, idx) => (
-                      <div key={exp.id} className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-300">Experience #{idx + 1}</span>
-                          <button
-                            onClick={() => removeExperienceRow(exp.id)}
-                            className="text-red-400 hover:text-red-300 text-xs"
-                          >
-                            Remove
-                          </button>
-                        </div>
+                <div className="bg-slate-950 rounded-xl p-4 border border-slate-700 space-y-3">
+                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                    Government Relaxation Breakdown Matrix
+                  </h4>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <input
-                            type="text"
-                            placeholder="Organization / Govt Department"
-                            value={exp.organization}
-                            onChange={(e) => updateExperienceRow(exp.id, 'organization', e.target.value)}
-                            className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Designation / Post Held"
-                            value={exp.designation}
-                            onChange={(e) => updateExperienceRow(exp.id, 'designation', e.target.value)}
-                            className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
-                          />
-                        </div>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between py-1 border-b border-slate-800">
+                      <span className="text-slate-400">Category Relaxation ({data.category}):</span>
+                      <span className="font-bold text-amber-300">
+                        {data.category === 'OBC' ? '+3 Years' : data.category === 'SC' || data.category === 'ST' ? '+5 Years' : '0 Years (UR / EWS)'}
+                      </span>
+                    </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          <select
-                            value={exp.serviceType}
-                            onChange={(e) => updateExperienceRow(exp.id, 'serviceType', e.target.value)}
-                            className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
-                          >
-                            <option value="Permanent">Permanent</option>
-                            <option value="Contractual">Contractual</option>
-                            <option value="Ad-hoc">Ad-hoc</option>
-                            <option value="Govt Project">Govt Project</option>
-                            <option value="Private Sector">Private Sector</option>
-                          </select>
-                          <input
-                            type="date"
-                            value={exp.fromDate}
-                            onChange={(e) => updateExperienceRow(exp.id, 'fromDate', e.target.value)}
-                            className="bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
-                          />
-                          <input
-                            type="date"
-                            value={exp.toDate}
-                            onChange={(e) => updateExperienceRow(exp.id, 'toDate', e.target.value)}
-                            className="bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Pay Scale / Pay Level"
-                            value={exp.payScale}
-                            onChange={(e) => updateExperienceRow(exp.id, 'payScale', e.target.value)}
-                            className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
-                          />
-                        </div>
+                    <div className="flex justify-between py-1 border-b border-slate-800">
+                      <span className="text-slate-400">PwD Benchmark Disability Relaxation:</span>
+                      <span className="font-bold text-amber-300">
+                        {data.isPwd ? (data.category === 'OBC' ? '+13 Years' : data.category === 'SC' || data.category === 'ST' ? '+15 Years' : '+10 Years') : '0 Years'}
+                      </span>
+                    </div>
 
-                        <input
-                          type="text"
-                          placeholder="Brief Nature of Duties"
-                          value={exp.natureOfDuties}
-                          onChange={(e) => updateExperienceRow(exp.id, 'natureOfDuties', e.target.value)}
-                          className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                    <div className="flex justify-between py-1 border-b border-slate-800">
+                      <span className="text-slate-400">Ex-Serviceman (ESM) Extension:</span>
+                      <span className="font-bold text-amber-300">
+                        {data.isExServiceman ? `+${(parseInt(data.exServicemanServiceYears || '3', 10) || 3) + 3} Years` : '0 Years'}
+                      </span>
+                    </div>
 
-                {/* Languages Known & Computer Knowledge */}
-                <div className="pt-3 border-t border-slate-700/60 space-y-3">
-                  <h4 className="text-xs font-bold text-amber-400">Languages & Technical Proficiency</h4>
-
-                  <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 space-y-2">
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Languages Known</label>
-                    {data.languages.map((lang, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-slate-800 last:border-0">
-                        <span className="font-medium text-slate-200 w-24">{lang.language}</span>
-                        <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-1 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={lang.read}
-                              onChange={() => toggleLanguageOption(idx, 'read')}
-                              className="rounded text-amber-500"
-                            />
-                            <span className="text-slate-400">Read</span>
-                          </label>
-                          <label className="flex items-center gap-1 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={lang.write}
-                              onChange={() => toggleLanguageOption(idx, 'write')}
-                              className="rounded text-amber-500"
-                            />
-                            <span className="text-slate-400">Write</span>
-                          </label>
-                          <label className="flex items-center gap-1 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={lang.speak}
-                              onChange={() => toggleLanguageOption(idx, 'speak')}
-                              className="rounded text-amber-500"
-                            />
-                            <span className="text-slate-400">Speak</span>
-                          </label>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Computer / IT Skills</label>
-                    <input
-                      type="text"
-                      value={data.computerKnowledge}
-                      onChange={(e) => setData({ ...data, computerKnowledge: e.target.value })}
-                      placeholder="e.g. CCC Certificate, MS Office, Typing Speed 40 WPM"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Other Extra Qualifications / NCC / Sports</label>
-                    <input
-                      type="text"
-                      value={data.otherQualifications}
-                      onChange={(e) => setData({ ...data, otherQualifications: e.target.value })}
-                      placeholder="e.g. NCC 'B' Certificate, District Sports Medalist"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                    />
+                    <div className="flex justify-between py-2 text-sm font-black border-t border-slate-700 text-white">
+                      <span>Total Effective Upper Age Limit:</span>
+                      <span className="text-emerald-400">{ageEligibility.effectiveUpperLimit} Years</span>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 5: Declaration & Photo Upload */}
-            {activeTab === 'declaration' && (
+            {/* TAB 6: Document Checklist */}
+            {activeTab === 'checklist' && (
               <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
-                <h3 className="text-base font-bold text-amber-400 border-b border-slate-700 pb-2">
-                  Declaration, Place & Photograph Upload
+                <h3 className="text-base font-bold text-amber-400 border-b border-slate-700 pb-2 flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4" />
+                  Sarkari Document Verification Checklist
                 </h3>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Self-Declaration Undertaking Text</label>
-                  <textarea
-                    rows={4}
-                    value={data.customDeclaration}
-                    onChange={(e) => setData({ ...data, customDeclaration: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-500 leading-relaxed"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Place of Application</label>
-                    <input
-                      type="text"
-                      value={data.declarationPlace}
-                      onChange={(e) => setData({ ...data, declarationPlace: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Date</label>
-                    <input
-                      type="date"
-                      value={data.declarationDate}
-                      onChange={(e) => setData({ ...data, declarationDate: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"
-                    />
-                  </div>
-                </div>
-
-                {/* Upload Passport Photo & Signature */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-700/60">
-                  <div className="bg-slate-900 p-3 rounded-lg border border-slate-700 text-center space-y-2">
-                    <span className="block text-xs font-bold text-slate-300">Passport Photo Upload</span>
-                    {data.photoUrl ? (
-                      <div className="relative inline-block">
-                        <img src={data.photoUrl} alt="Photo" className="w-24 h-32 object-cover rounded border border-amber-400 mx-auto" />
-                        <button
-                          onClick={() => setData({ ...data, photoUrl: '' })}
-                          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
-                        >
-                          ×
-                        </button>
+                <div className="space-y-2">
+                  {checklist.map((item) => (
+                    <label
+                      key={item.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition cursor-pointer ${
+                        item.checked ? 'bg-slate-900 border-emerald-500/40 text-white' : 'bg-slate-900/50 border-slate-700 text-slate-400'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={item.checked}
+                        onChange={() =>
+                          setChecklist((prev) =>
+                            prev.map((c) => (c.id === item.id ? { ...c, checked: !c.checked } : c))
+                          )
+                        }
+                        className="mt-0.5 w-4 h-4 rounded accent-emerald-500"
+                      />
+                      <div className="flex-1 text-xs">
+                        <div className="font-semibold flex items-center gap-2">
+                          {item.label}
+                          {item.required && (
+                            <span className="bg-rose-500/20 text-rose-300 text-[10px] px-1.5 py-0.5 rounded border border-rose-500/30">
+                              Mandatory
+                            </span>
+                          )}
+                        </div>
+                        {item.condition && <div className="text-[11px] text-amber-400/80 mt-0.5">{item.condition}</div>}
                       </div>
-                    ) : (
-                      <div className="w-24 h-32 border-2 border-dashed border-slate-700 rounded mx-auto flex flex-col items-center justify-center text-slate-500">
-                        <span className="text-[10px]">Passport Photo</span>
-                        <span className="text-[9px] text-slate-600">(3.5cm x 4.5cm)</span>
-                      </div>
-                    )}
-                    <label className="block bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded cursor-pointer transition border border-slate-600">
-                      Select Photo Image
-                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'photoUrl')} className="hidden" />
                     </label>
-                  </div>
-
-                  <div className="bg-slate-900 p-3 rounded-lg border border-slate-700 text-center space-y-2">
-                    <span className="block text-xs font-bold text-slate-300">Specimen Signature Upload</span>
-                    {data.signatureUrl ? (
-                      <div className="relative inline-block">
-                        <img src={data.signatureUrl} alt="Signature" className="w-36 h-16 object-contain rounded border border-amber-400 mx-auto bg-white p-1" />
-                        <button
-                          onClick={() => setData({ ...data, signatureUrl: '' })}
-                          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="w-36 h-16 border-2 border-dashed border-slate-700 rounded mx-auto flex flex-col items-center justify-center text-slate-500">
-                        <span className="text-[10px]">Candidate Signature</span>
-                      </div>
-                    )}
-                    <label className="block bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded cursor-pointer transition border border-slate-600">
-                      Select Signature Image
-                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'signatureUrl')} className="hidden" />
-                    </label>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* RIGHT PANE: A4 Print Preview Document */}
+        {/* RIGHT PANE: Multi-Page A4 Document Preview */}
         {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'lg:col-span-12'} flex flex-col items-center`}>
-            {/* Paper Container */}
-            <div
-              id="sarkari-print-document"
-              className="w-full max-w-[800px] bg-white text-black p-6 md:p-10 shadow-2xl rounded border border-slate-300 font-serif leading-tight text-slate-900 text-sm"
-              style={{ minHeight: '1050px' }}
-            >
-              {/* Document Header */}
-              <div className="text-center border-b-2 border-slate-900 pb-4 mb-4 relative">
-                <div className="uppercase tracking-widest text-[11px] font-bold text-slate-700">
-                  APPLICATION BIODATA FOR GOVERNMENT EXAMINATIONS
-                </div>
-                <h2 className="text-xl md:text-2xl font-black uppercase text-slate-900 mt-1 tracking-wide">
-                  {data.examName || 'RECRUITMENT APPLICATION FORM'}
-                </h2>
-                <div className="text-xs font-bold text-slate-800 mt-0.5">
-                  POST APPLIED FOR: <span className="underline uppercase">{data.postAppliedFor || 'GENERAL POST'}</span>
-                </div>
+          <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'lg:col-span-12'} space-y-4`}>
+            <div className="flex items-center justify-between no-print px-1">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-amber-400" />
+                Live Print Preview (Official Standard Form)
+              </span>
+              <span className="text-xs text-slate-400">A4 Printable • 210mm x 297mm</span>
+            </div>
 
-                {/* Photo Placeholder Box top right */}
-                <div className="absolute top-0 right-0 w-24 h-32 border-2 border-slate-900 flex flex-col items-center justify-center bg-slate-50 text-[10px] text-slate-600 text-center p-1 font-sans">
-                  {data.photoUrl ? (
-                    <img src={data.photoUrl} alt="Photo" className="w-full h-full object-cover" />
-                  ) : (
-                    <>
-                      <span>AFFIX RECENT</span>
-                      <span>PASSPORT SIZE</span>
-                      <span>PHOTOGRAPH</span>
-                      <span>HERE</span>
-                    </>
+            {/* Scaled Printable Document */}
+            <div className="overflow-x-auto pb-4 flex justify-center bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <div
+                id="sarkari-print-document"
+                style={{ transform: `scale(${zoomScale / 100})`, transformOrigin: 'top center' }}
+                className="bg-white text-black p-8 shadow-2xl rounded-sm w-[210mm] min-h-[297mm] text-[12px] leading-snug font-serif space-y-4 border-2 border-slate-900 relative"
+              >
+                {/* Formal Header with Indian Emblem Style Title */}
+                <div className="text-center border-b-2 border-black pb-4 relative">
+                  <div className="text-xs font-bold tracking-widest uppercase text-slate-700">
+                    APPLICATION FORM / BIODATA FOR RECRUITMENT
+                  </div>
+                  <h2 className="text-xl font-extrabold uppercase mt-1 tracking-tight text-slate-900">
+                    {data.examName || 'GOVERNMENT OF INDIA RECRUITMENT'}
+                  </h2>
+                  <div className="text-sm font-bold text-slate-800 uppercase mt-0.5">
+                    POST: {data.postAppliedFor || 'OFFICER / EXECUTIVE CADRE'}
+                  </div>
+
+                  {/* QR & Barcode Section */}
+                  {data.showQrBarcode && (
+                    <div className="absolute top-0 right-0 flex flex-col items-center">
+                      <div className="w-16 h-16 bg-slate-100 border border-black p-1 flex items-center justify-center font-mono text-[9px] text-center">
+                        [QR CODE]
+                        <br />
+                        {data.registrationNo.slice(-6)}
+                      </div>
+                      <span className="text-[9px] font-mono font-bold mt-0.5">{data.rollNo}</span>
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* Exam Credentials Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-sans font-semibold border-b border-slate-400 pb-3 mb-4 bg-slate-100 p-2 rounded">
-                <div>
-                  <span className="text-slate-600 block">Registration No:</span>
-                  <span className="font-bold">{data.registrationNo || 'N/A'}</span>
-                </div>
-                <div>
-                  <span className="text-slate-600 block">Roll Number:</span>
-                  <span className="font-bold">{data.rollNo || 'N/A'}</span>
-                </div>
-                <div>
-                  <span className="text-slate-600 block">Medium:</span>
-                  <span className="font-bold">{data.examMedium}</span>
-                </div>
-                <div>
-                  <span className="text-slate-600 block">Exam City:</span>
-                  <span className="font-bold">{data.preferredCenter}</span>
-                </div>
-              </div>
-
-              {/* 1. PERSONAL DETAILS TABLE */}
-              <div className="mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider bg-slate-800 text-white px-2 py-1 mb-2 font-sans">
-                  1. Personal Details (As per Matriculation Certificate)
-                </h3>
-                <table className="w-full text-xs border-collapse border border-slate-400 font-sans">
-                  <tbody>
-                    <tr className="border-b border-slate-300">
-                      <td className="w-1/3 p-1.5 font-bold bg-slate-50 border-r border-slate-300">1. Full Name (In Block Letters)</td>
-                      <td className="p-1.5 font-extrabold uppercase text-slate-900" colSpan={3}>{data.fullName}</td>
-                    </tr>
-                    <tr className="border-b border-slate-300">
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">2. Father's Name</td>
-                      <td className="p-1.5 uppercase">{data.fathersName}</td>
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">3. Mother's Name</td>
-                      <td className="p-1.5 uppercase">{data.mothersName}</td>
-                    </tr>
-                    <tr className="border-b border-slate-300">
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">4. Date of Birth (DD-MM-YYYY)</td>
-                      <td className="p-1.5">{data.dob}</td>
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">5. Computed Age (as on {data.ageCutoffDate})</td>
-                      <td className="p-1.5 font-bold text-amber-900">{calculateExactAge(data.dob, data.ageCutoffDate)}</td>
-                    </tr>
-                    <tr className="border-b border-slate-300">
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">6. Gender & Marital Status</td>
-                      <td className="p-1.5">{data.gender} / {data.maritalStatus}</td>
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">7. Category / Reservation</td>
-                      <td className="p-1.5 font-bold">{data.category} {data.isPwd ? `(PwD ${data.pwdType})` : ''}</td>
-                    </tr>
-                    <tr className="border-b border-slate-300">
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">8. Nationality & Religion</td>
-                      <td className="p-1.5">{data.nationality} / {data.religion}</td>
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">9. Ex-Serviceman Status</td>
-                      <td className="p-1.5">{data.isExServiceman ? `Yes (${data.exServicemanServiceYears})` : 'No'}</td>
-                    </tr>
-                    <tr className="border-b border-slate-300">
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">10. ID Proof ({data.idProofType})</td>
-                      <td className="p-1.5 font-mono">{data.idProofNumber}</td>
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">11. Contact Mobile & Email</td>
-                      <td className="p-1.5">{data.mobileNo} | {data.email}</td>
-                    </tr>
-                    <tr>
-                      <td className="p-1.5 font-bold bg-slate-50 border-r border-slate-300">12. Visible Identification Marks</td>
-                      <td className="p-1.5" colSpan={3}>
-                        1) {data.identificationMark1 || 'None'} <br />
-                        2) {data.identificationMark2 || 'None'}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* 2. ADDRESS DETAILS */}
-              <div className="mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider bg-slate-800 text-white px-2 py-1 mb-2 font-sans">
-                  2. Postal & Communication Address
-                </h3>
-                <div className="grid grid-cols-2 gap-3 text-xs font-sans">
-                  <div className="border border-slate-400 p-2 rounded">
-                    <span className="font-bold block border-b border-slate-300 pb-1 mb-1 text-slate-700">Correspondence Address:</span>
-                    <div>{data.corrAddressLine1}</div>
-                    <div>{data.corrAddressLine2}</div>
-                    <div>{data.corrDistrict}, {data.corrState} - <span className="font-bold">{data.corrPincode}</span></div>
+                {/* Candidate Reference Info */}
+                <div className="grid grid-cols-2 bg-slate-100 border border-black p-2 text-[11px] font-sans">
+                  <div>
+                    <strong>REGISTRATION NO:</strong> {data.registrationNo}
                   </div>
-                  <div className="border border-slate-400 p-2 rounded">
-                    <span className="font-bold block border-b border-slate-300 pb-1 mb-1 text-slate-700">Permanent Address:</span>
-                    {data.sameAsCorrespondence ? (
-                      <em className="text-slate-500">Same as Correspondence Address</em>
-                    ) : (
-                      <>
-                        <div>{data.permAddressLine1}</div>
-                        <div>{data.permAddressLine2}</div>
-                        <div>{data.permDistrict}, {data.permState} - <span className="font-bold">{data.permPincode}</span></div>
-                      </>
-                    )}
+                  <div>
+                    <strong>ROLL NO:</strong> {data.rollNo}
+                  </div>
+                  <div>
+                    <strong>EXAM MEDIUM:</strong> {data.examMedium}
+                  </div>
+                  <div>
+                    <strong>PREFERRED CENTER:</strong> {data.preferredCenter}
                   </div>
                 </div>
-              </div>
 
-              {/* 3. EDUCATION TABLE */}
-              <div className="mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider bg-slate-800 text-white px-2 py-1 mb-2 font-sans">
-                  3. Educational Qualifications (Academic Record)
-                </h3>
-                <table className="w-full text-[11px] border-collapse border border-slate-400 font-sans text-left">
-                  <thead>
-                    <tr className="bg-slate-200 text-slate-900 border-b border-slate-400 font-bold text-center">
-                      <th className="p-1 border-r border-slate-300">Exam Passed</th>
-                      <th className="p-1 border-r border-slate-300">Board / University</th>
-                      <th className="p-1 border-r border-slate-300">Year</th>
-                      <th className="p-1 border-r border-slate-300">Roll No</th>
-                      <th className="p-1 border-r border-slate-300">Marks</th>
-                      <th className="p-1 border-r border-slate-300">% / CGPA</th>
-                      <th className="p-1">Division</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.educationList.map((edu) => (
-                      <tr key={edu.id} className="border-b border-slate-300 text-center">
-                        <td className="p-1 font-semibold text-left border-r border-slate-300">{edu.examPassed}</td>
-                        <td className="p-1 text-left border-r border-slate-300">{edu.boardUniversity}</td>
-                        <td className="p-1 border-r border-slate-300">{edu.yearOfPassing}</td>
-                        <td className="p-1 border-r border-slate-300 font-mono text-[10px]">{edu.rollNumber}</td>
-                        <td className="p-1 border-r border-slate-300">{edu.marksObtained}/{edu.maxMarks}</td>
-                        <td className="p-1 font-bold border-r border-slate-300">{edu.percentageOrCgpa}</td>
-                        <td className="p-1">{edu.divisionGrade}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                {/* SECTION 1: PERSONAL DETAILS */}
+                <div className="border border-black">
+                  <div className="bg-slate-200 border-b border-black font-bold uppercase px-2 py-1 text-[11px] flex items-center justify-between">
+                    <span>1. CANDIDATE PERSONAL PARTICULARS</span>
+                    <span className="text-[10px] font-normal italic">
+                      As per Matriculation (10th) Certificate
+                    </span>
+                  </div>
 
-              {/* 4. WORK EXPERIENCE */}
-              {data.experienceList.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider bg-slate-800 text-white px-2 py-1 mb-2 font-sans">
-                    4. Employment / Work Experience Details
-                  </h3>
-                  <table className="w-full text-[11px] border-collapse border border-slate-400 font-sans text-left">
+                  <div className="p-3 grid grid-cols-12 gap-2">
+                    <div className="col-span-9 space-y-1.5">
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Candidate Name:</span>
+                        <span className="col-span-2 font-bold uppercase">{data.fullName}</span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Father's Name:</span>
+                        <span className="col-span-2 font-bold uppercase">{data.fathersName}</span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Mother's Name:</span>
+                        <span className="col-span-2 font-bold uppercase">{data.mothersName}</span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Date of Birth (DOB):</span>
+                        <span className="col-span-2 font-bold">{data.dob}</span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Age (as of {data.ageCutoffDate}):</span>
+                        <span className="col-span-2 font-bold text-slate-900">
+                          {calculateExactAgeDetails(data.dob, data.ageCutoffDate).formatted}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Category / Gender:</span>
+                        <span className="col-span-2 font-bold">
+                          {data.category} | {data.gender}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Nationality / Religion:</span>
+                        <span className="col-span-2">
+                          {data.nationality} | {data.religion}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3">
+                        <span className="font-semibold">Identity Proof:</span>
+                        <span className="col-span-2 font-mono">
+                          {data.idProofType} - {data.idProofNumber}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Passport Photo Box */}
+                    <div className="col-span-3 flex flex-col items-center justify-start border border-dashed border-slate-600 p-1 bg-slate-50 min-h-[140px]">
+                      {data.photoUrl ? (
+                        <img
+                          src={data.photoUrl}
+                          alt="Candidate Passport Photo"
+                          className="w-28 h-32 object-cover border border-black"
+                        />
+                      ) : (
+                        <div className="w-28 h-32 border border-slate-400 bg-white flex flex-col items-center justify-center text-center p-2 text-[10px] text-slate-500">
+                          PASSPORT PHOTO
+                          <br />
+                          (3.5 cm x 4.5 cm)
+                          <br />
+                          Self-Attested
+                        </div>
+                      )}
+                      <span className="text-[9px] mt-1 font-bold">OFFICIAL PHOTO</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 2: CONTACT & ADDRESS */}
+                <div className="border border-black">
+                  <div className="bg-slate-200 border-b border-black font-bold uppercase px-2 py-1 text-[11px]">
+                    2. CONTACT & MAILING ADDRESS
+                  </div>
+                  <div className="p-3 grid grid-cols-2 gap-4 text-[11px]">
+                    <div>
+                      <strong className="block border-b border-slate-300 pb-0.5 mb-1">
+                        Correspondence Address:
+                      </strong>
+                      <div>{data.corrAddressLine1}</div>
+                      <div>{data.corrAddressLine2}</div>
+                      <div>
+                        {data.corrDistrict}, {data.corrState} - <strong>{data.corrPincode}</strong>
+                      </div>
+                      <div className="mt-1">
+                        <strong>Mobile:</strong> {data.mobileNo}
+                      </div>
+                      <div>
+                        <strong>Email:</strong> {data.email}
+                      </div>
+                    </div>
+
+                    <div>
+                      <strong className="block border-b border-slate-300 pb-0.5 mb-1">
+                        Permanent Address:
+                      </strong>
+                      {data.sameAsCorrespondence ? (
+                        <div className="italic text-slate-600">Same as Correspondence Address</div>
+                      ) : (
+                        <>
+                          <div>{data.permAddressLine1}</div>
+                          <div>{data.permAddressLine2}</div>
+                          <div>
+                            {data.permDistrict}, {data.permState} - <strong>{data.permPincode}</strong>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 3: EDUCATIONAL QUALIFICATIONS TABLE */}
+                <div className="border border-black">
+                  <div className="bg-slate-200 border-b border-black font-bold uppercase px-2 py-1 text-[11px]">
+                    3. EDUCATIONAL QUALIFICATIONS (MATRICULATION ONWARDS)
+                  </div>
+                  <table className="w-full text-left border-collapse text-[10.5px]">
                     <thead>
-                      <tr className="bg-slate-200 text-slate-900 border-b border-slate-400 font-bold">
-                        <th className="p-1 border-r border-slate-300">Organization</th>
-                        <th className="p-1 border-r border-slate-300">Designation</th>
-                        <th className="p-1 border-r border-slate-300">Type</th>
-                        <th className="p-1 border-r border-slate-300">Period</th>
-                        <th className="p-1">Duties / Pay</th>
+                      <tr className="bg-slate-100 border-b border-black font-bold">
+                        <th className="p-1.5 border-r border-black">Exam Passed</th>
+                        <th className="p-1.5 border-r border-black">Board / University</th>
+                        <th className="p-1.5 border-r border-black">Year</th>
+                        <th className="p-1.5 border-r border-black">Roll No.</th>
+                        <th className="p-1.5 border-r border-black">Marks / %</th>
+                        <th className="p-1.5">Division</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data.experienceList.map((exp) => (
-                        <tr key={exp.id} className="border-b border-slate-300">
-                          <td className="p-1 font-medium border-r border-slate-300">{exp.organization}</td>
-                          <td className="p-1 border-r border-slate-300">{exp.designation}</td>
-                          <td className="p-1 border-r border-slate-300">{exp.serviceType}</td>
-                          <td className="p-1 border-r border-slate-300 text-[10px]">{exp.fromDate} to {exp.toDate}</td>
-                          <td className="p-1 text-[10px]">{exp.natureOfDuties} ({exp.payScale})</td>
+                      {data.educationList.map((edu) => (
+                        <tr key={edu.id} className="border-b border-slate-300">
+                          <td className="p-1.5 border-r border-black font-bold">{edu.examPassed}</td>
+                          <td className="p-1.5 border-r border-black">{edu.boardUniversity}</td>
+                          <td className="p-1.5 border-r border-black font-mono">{edu.yearOfPassing}</td>
+                          <td className="p-1.5 border-r border-black font-mono">{edu.rollNumber}</td>
+                          <td className="p-1.5 border-r border-black font-bold">{edu.percentageOrCgpa}</td>
+                          <td className="p-1.5">{edu.divisionGrade}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              )}
 
-              {/* 5. ADDITIONAL SKILLS */}
-              <div className="mb-4 text-xs font-sans border border-slate-300 p-2.5 rounded bg-slate-50">
-                <div className="mb-1">
-                  <span className="font-bold text-slate-800">Languages Known: </span>
-                  {data.languages
-                    .filter((l) => l.read || l.write || l.speak)
-                    .map((l) => `${l.language} (${[l.read && 'Read', l.write && 'Write', l.speak && 'Speak'].filter(Boolean).join(', ')})`)
-                    .join(' | ')}
-                </div>
-                {data.computerKnowledge && (
-                  <div className="mb-1">
-                    <span className="font-bold text-slate-800">Computer Proficiency: </span>
-                    {data.computerKnowledge}
+                {/* SECTION 4: WORK EXPERIENCE TABLE */}
+                {data.experienceList.length > 0 && (
+                  <div className="border border-black">
+                    <div className="bg-slate-200 border-b border-black font-bold uppercase px-2 py-1 text-[11px]">
+                      4. WORK EXPERIENCE DETAILS
+                    </div>
+                    <table className="w-full text-left border-collapse text-[10.5px]">
+                      <thead>
+                        <tr className="bg-slate-100 border-b border-black font-bold">
+                          <th className="p-1.5 border-r border-black">Organization</th>
+                          <th className="p-1.5 border-r border-black">Designation</th>
+                          <th className="p-1.5 border-r border-black">Period (From - To)</th>
+                          <th className="p-1.5 border-r border-black">Pay Scale</th>
+                          <th className="p-1.5">Duties</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.experienceList.map((exp) => (
+                          <tr key={exp.id} className="border-b border-slate-300">
+                            <td className="p-1.5 border-r border-black font-semibold">{exp.organization}</td>
+                            <td className="p-1.5 border-r border-black">{exp.designation}</td>
+                            <td className="p-1.5 border-r border-black text-[10px]">
+                              {exp.fromDate} to {exp.toDate}
+                            </td>
+                            <td className="p-1.5 border-r border-black">{exp.payScale}</td>
+                            <td className="p-1.5 text-[10px]">{exp.natureOfDuties}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
-                {data.otherQualifications && (
-                  <div>
-                    <span className="font-bold text-slate-800">Other Achievements / NCC: </span>
-                    {data.otherQualifications}
-                  </div>
-                )}
-              </div>
 
-              {/* 6. SELF DECLARATION & SIGNATURE */}
-              <div className="mt-6 pt-4 border-t-2 border-slate-800 font-sans">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-1">
-                  UNDERTAKING & DECLARATION
-                </h3>
-                <p className="text-[11px] text-slate-800 leading-normal text-justify mb-8 italic">
-                  "{data.customDeclaration}"
-                </p>
+                {/* SECTION 5: DECLARATION & SIGNATURE */}
+                <div className="border border-black p-3 space-y-3 pt-4">
+                  <div className="font-bold uppercase text-[11px]">DECLARATION BY CANDIDATE</div>
+                  <p className="text-[10.5px] leading-relaxed text-justify italic">{data.customDeclaration}</p>
 
-                <div className="flex justify-between items-end text-xs pt-4">
-                  <div>
-                    <p><span className="font-bold">Place:</span> {data.declarationPlace}</p>
-                    <p><span className="font-bold">Date:</span> {data.declarationDate}</p>
-                  </div>
+                  <div className="flex justify-between items-end pt-6">
+                    <div className="text-[11px] space-y-1">
+                      <div>
+                        <strong>Place:</strong> {data.declarationPlace}
+                      </div>
+                      <div>
+                        <strong>Date:</strong> {data.declarationDate}
+                      </div>
+                    </div>
 
-                  <div className="text-center w-48">
-                    {data.signatureUrl ? (
-                      <img src={data.signatureUrl} alt="Signature" className="h-12 mx-auto object-contain mb-1" />
-                    ) : (
-                      <div className="h-12 border-b border-slate-800 border-dashed mb-1"></div>
-                    )}
-                    <span className="font-bold block uppercase text-slate-900">({data.fullName})</span>
-                    <span className="text-[10px] text-slate-600 block">Signature of the Applicant</span>
+                    <div className="flex flex-col items-center justify-center border-t border-black pt-1 w-48 text-center">
+                      {data.signatureUrl ? (
+                        <img src={data.signatureUrl} alt="Signature" className="h-10 object-contain mb-1" />
+                      ) : (
+                        <div className="h-8 border border-dashed border-slate-400 w-full mb-1 flex items-center justify-center text-[9px] text-slate-400">
+                          [SIGNATURE HERE]
+                        </div>
+                      )}
+                      <span className="font-bold text-[11px] uppercase">{data.fullName}</span>
+                      <span className="text-[9px] text-slate-600">(Signature of Applicant)</span>
+                    </div>
                   </div>
                 </div>
               </div>

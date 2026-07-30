@@ -102,6 +102,17 @@ const TEMPLATES: Record<string, Partial<MeetingDetails>> = {
   },
 };
 
+const SAMPLE_AUDIO_TRANSCRIPTS = [
+  {
+    name: 'Voice Note 1: Engineering Sync',
+    text: `Sarah opened the engineering sync at 10 AM. We discussed the API latency issue in production. David explained that database queries were lacking proper indexes. We decided to add composite indexes to the users table by tomorrow. David will write and deploy the migration script by Friday. Elena will write integration unit tests for the authentication hooks by next Monday. Alex suggested moving the release window to 6 PM UTC, which everyone agreed to.`,
+  },
+  {
+    name: 'Voice Note 2: Product Architecture',
+    text: `Meeting started with Marcus presenting the Q3 roadmap. We agreed to adopt Tailwind CSS v4 and Next.js 16 for all new UI components. Marcus will draft the project charter by Wednesday. Jordan to design the preliminary Figma mockups by Friday. We decided to conduct weekly design review syncs every Tuesday.`,
+  },
+];
+
 export default function MeetingMinutes() {
   const titleId = useId();
   const dateId = useId();
@@ -128,7 +139,7 @@ export default function MeetingMinutes() {
     agenda: [
       { id: 'ag-1', topic: 'Weekly Status Updates & Metrics', presenter: 'Sarah C.', durationMinutes: 15 },
       { id: 'ag-2', topic: 'Database Migration Architecture Review', presenter: 'Alex M.', durationMinutes: 25 },
-      { id: 'ag-[#]', topic: 'Q&A & Action Item Assignment', presenter: 'All', durationMinutes: 15 },
+      { id: 'ag-3', topic: 'Q&A & Action Item Assignment', presenter: 'All', durationMinutes: 15 },
     ],
     actionItems: [
       { id: 'ai-1', task: 'Deploy backend database migration script', owner: 'David K.', priority: 'High', dueDate: new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10), status: 'In Progress' },
@@ -139,7 +150,22 @@ export default function MeetingMinutes() {
   const [copyMarkdownStatus, setCopyMarkdownStatus] = useState(false);
   const [copyHtmlStatus, setCopyHtmlStatus] = useState(false);
   const [newDecisionInput, setNewDecisionInput] = useState('');
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const [showPrintPdfModal, setShowPrintPdfModal] = useState(false);
+
+  // Email Draft State
+  const [selectedEmailAssignee, setSelectedEmailAssignee] = useState<string>('All');
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  // Transcript Parser State
+  const [rawTranscriptText, setRawTranscriptText] = useState('');
+  const [parsedResults, setParsedResults] = useState<{
+    summary: string;
+    decisions: string[];
+    actionItems: ActionItem[];
+  } | null>(null);
+
   const [savedDrafts, setSavedDrafts] = useState<MeetingDetails[]>([]);
 
   // Load saved drafts
@@ -236,7 +262,121 @@ export default function MeetingMinutes() {
     setMeeting({ ...meeting, decisions: meeting.decisions.filter((_, i) => i !== idx) });
   };
 
-  // Formatter: Markdown
+  // TRANSCRIPT PARSER SIMULATOR ENGINE
+  const parseTranscript = () => {
+    if (!rawTranscriptText.trim()) return;
+
+    const lines = rawTranscriptText.split(/\.|\n/).map((s) => s.trim()).filter((s) => s.length > 0);
+    const extractedDecisions: string[] = [];
+    const extractedActions: ActionItem[] = [];
+    let summaryBuffer: string[] = [];
+
+    lines.forEach((sentence, idx) => {
+      const lower = sentence.toLowerCase();
+
+      // Check decisions keywords
+      if (
+        lower.includes('decided') ||
+        lower.includes('agreed') ||
+        lower.includes('approved') ||
+        lower.includes('concluded')
+      ) {
+        extractedDecisions.push(sentence);
+      }
+      // Check action keywords: "[Name] will [task]", "[Name] to [task]"
+      else if (
+        lower.includes('will') ||
+        lower.includes('to draft') ||
+        lower.includes('to design') ||
+        lower.includes('to write') ||
+        lower.includes('action item') ||
+        lower.includes('todo')
+      ) {
+        // Simple entity extractor
+        const words = sentence.split(' ');
+        const ownerCandidate = words[0].replace(/[^a-zA-Z]/g, '') || 'Team Member';
+        extractedActions.push({
+          id: `ai-parsed-${Date.now()}-${idx}`,
+          task: sentence,
+          owner: ownerCandidate.length > 2 ? ownerCandidate : 'Assignee',
+          priority: lower.includes('urgent') || lower.includes('immediately') ? 'High' : 'Medium',
+          dueDate: new Date(Date.now() + 86400000 * (idx + 2)).toISOString().slice(0, 10),
+          status: 'Pending',
+        });
+      } else {
+        summaryBuffer.push(sentence);
+      }
+    });
+
+    setParsedResults({
+      summary: summaryBuffer.join('. ') + '.',
+      decisions: extractedDecisions.length > 0 ? extractedDecisions : ['Approved alignment on key objectives.'],
+      actionItems: extractedActions,
+    });
+  };
+
+  const applyParsedResultsToMeeting = () => {
+    if (!parsedResults) return;
+    setMeeting((prev) => ({
+      ...prev,
+      summaryNotes: (prev.summaryNotes ? prev.summaryNotes + '\n\n' : '') + parsedResults.summary,
+      decisions: [...prev.decisions, ...parsedResults.decisions],
+      actionItems: [...prev.actionItems, ...parsedResults.actionItems],
+    }));
+    setShowTranscriptModal(false);
+    setParsedResults(null);
+    setRawTranscriptText('');
+  };
+
+  // EMAIL DRAFT GENERATOR
+  const generateActionItemsEmail = () => {
+    const filteredActions =
+      selectedEmailAssignee === 'All'
+        ? meeting.actionItems
+        : meeting.actionItems.filter(
+            (ai) => ai.owner.toLowerCase() === selectedEmailAssignee.toLowerCase()
+          );
+
+    let body = `Hi Team,\n\n`;
+    body += `Here is the action item breakdown following our meeting: "${meeting.title}" on ${meeting.date}.\n\n`;
+    body += `--------------------------------------------------\n`;
+    body += `ACTION ITEMS & ASSIGNMENTS:\n`;
+    body += `--------------------------------------------------\n`;
+
+    if (filteredActions.length === 0) {
+      body += `No pending action items assigned.\n`;
+    } else {
+      filteredActions.forEach((ai, idx) => {
+        body += `${idx + 1}. [${ai.priority} Priority] ${ai.task}\n`;
+        body += `   - Owner: ${ai.owner}\n`;
+        body += `   - Due Date: ${ai.dueDate}\n`;
+        body += `   - Status: ${ai.status}\n\n`;
+      });
+    }
+
+    body += `--------------------------------------------------\n`;
+    body += `KEY DECISIONS SUMMARY:\n`;
+    meeting.decisions.forEach((dec) => {
+      body += `✓ ${dec}\n`;
+    });
+
+    body += `\nPlease reply if you need any adjustments to these assignments.\n\nBest regards,\n${meeting.scribe || 'Meeting Host'}`;
+
+    return {
+      subject: `[Action Required] Action Items: ${meeting.title} (${meeting.date})`,
+      body,
+    };
+  };
+
+  const emailDraftData = generateActionItemsEmail();
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(`Subject: ${emailDraftData.subject}\n\n${emailDraftData.body}`);
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 2000);
+  };
+
+  // Formatters: Markdown & HTML
   const generateMarkdown = () => {
     let md = `# 📝 Meeting Minutes: ${meeting.title}\n\n`;
     md += `**Date:** ${meeting.date} | **Time:** ${meeting.time}\n`;
@@ -285,7 +425,6 @@ export default function MeetingMinutes() {
     return md;
   };
 
-  // Formatter: HTML
   const generateHTML = () => {
     let html = `<div style="font-family: Arial, sans-serif; max-w: 700px; line-height: 1.5; color: #111;">\n`;
     html += `  <h1 style="color: #000; border-bottom: 2px solid #e4e4e7; padding-bottom: 8px;">📝 Meeting Minutes: ${meeting.title}</h1>\n`;
@@ -373,10 +512,17 @@ export default function MeetingMinutes() {
     document.body.removeChild(link);
   };
 
+  const handlePrintDocument = () => {
+    setShowPrintPdfModal(true);
+    setTimeout(() => {
+      window.print();
+    }, 400);
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-4 print:hidden">
         <div>
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-lg bg-[var(--secondary-bg)] border border-[var(--border)] text-[var(--foreground)]">
@@ -389,52 +535,52 @@ export default function MeetingMinutes() {
             </h1>
           </div>
           <p className="text-sm text-[var(--muted)] mt-1">
-            Capture agendas, decisions, & action items with instant Markdown and HTML export.
+            Action items email draft generator, voice notes transcript parser, Markdown/HTML export, and PDF print layout.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
+            onClick={() => setShowTranscriptModal(true)}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            🎙️ Audio Transcript Parser
+          </button>
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            ✉️ Email Draft Generator
+          </button>
+          <button
+            onClick={handlePrintDocument}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            🖨️ PDF / Print Export
+          </button>
+          <button
             onClick={saveMeetingDraft}
             className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-            </svg>
             Save Draft
           </button>
           <button
             onClick={handleDownloadMarkdown}
             className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
             Download .MD
-          </button>
-          <button
-            onClick={handleCopyHTML}
-            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-            {copyHtmlStatus ? 'HTML Copied!' : 'Copy HTML'}
           </button>
           <button
             onClick={handleCopyMarkdown}
             className="nyxa-btn nyxa-btn-primary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 0h2a2 2 0 002 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-            </svg>
             {copyMarkdownStatus ? 'Markdown Copied!' : 'Copy Markdown'}
           </button>
         </div>
       </div>
 
       {/* Quick Template Switcher Bar */}
-      <div className="nyxa-card p-3 space-y-2 bg-[var(--secondary-bg)]">
+      <div className="nyxa-card p-3 space-y-2 bg-[var(--secondary-bg)] print:hidden">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-[var(--muted)]">Load Preset Template:</span>
           <button
@@ -459,7 +605,7 @@ export default function MeetingMinutes() {
       </div>
 
       {/* Main Details Form Grid */}
-      <div className="nyxa-card space-y-4">
+      <div className="nyxa-card space-y-4 print:hidden">
         <h2 className="text-lg font-bold text-[var(--foreground)] border-b border-[var(--border)] pb-2 m-0">
           Meeting Overview & Metadata
         </h2>
@@ -559,7 +705,7 @@ export default function MeetingMinutes() {
       </div>
 
       {/* Agenda Section */}
-      <div className="nyxa-card space-y-4">
+      <div className="nyxa-card space-y-4 print:hidden">
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
           <h2 className="text-lg font-bold text-[var(--foreground)] border-0 p-0 m-0">
             Agenda Topics ({meeting.agenda.length})
@@ -619,11 +765,8 @@ export default function MeetingMinutes() {
                 <button
                   onClick={() => removeAgendaItem(ag.id)}
                   className="p-1 text-red-500 hover:bg-red-500/10 rounded"
-                  title="Remove agenda topic"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  ✕
                 </button>
               </div>
             </div>
@@ -632,8 +775,7 @@ export default function MeetingMinutes() {
       </div>
 
       {/* Discussion Notes & Key Decisions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Discussion Summary Notes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:hidden">
         <div className="nyxa-card space-y-3">
           <h2 className="text-lg font-bold text-[var(--foreground)] border-b border-[var(--border)] pb-2 m-0">
             Discussion Summary & Key Points
@@ -646,7 +788,6 @@ export default function MeetingMinutes() {
           />
         </div>
 
-        {/* Decisions List */}
         <div className="nyxa-card space-y-3">
           <h2 className="text-lg font-bold text-[var(--foreground)] border-b border-[var(--border)] pb-2 m-0">
             Key Decisions Recorded ({meeting.decisions.length})
@@ -694,7 +835,7 @@ export default function MeetingMinutes() {
       </div>
 
       {/* Action Items Table */}
-      <div className="nyxa-card space-y-4">
+      <div className="nyxa-card space-y-4 print:hidden">
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
           <h2 className="text-lg font-bold text-[var(--foreground)] border-0 p-0 m-0">
             Action Items & Task Ownership ({meeting.actionItems.length})
@@ -773,9 +914,7 @@ export default function MeetingMinutes() {
                       onClick={() => removeActionItem(ai.id)}
                       className="p-1 text-red-500 hover:bg-red-500/10 rounded"
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      ✕
                     </button>
                   </td>
                 </tr>
@@ -784,6 +923,247 @@ export default function MeetingMinutes() {
           </table>
         </div>
       </div>
+
+      {/* AUDIO TRANSCRIPT PARSER MODAL */}
+      {showTranscriptModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="nyxa-card max-w-2xl w-full space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 className="text-lg font-bold border-0 p-0 m-0">🎙️ Audio Notes Transcript Parser Simulation</h2>
+              <button onClick={() => setShowTranscriptModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="nyxa-label text-xs">Paste Raw Transcript Text or Voice Note</label>
+                <div className="flex gap-2">
+                  {SAMPLE_AUDIO_TRANSCRIPTS.map((sample, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setRawTranscriptText(sample.text)}
+                      className="text-[10px] text-blue-500 hover:underline"
+                    >
+                      {sample.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <textarea
+                className="nyxa-textarea text-xs font-mono min-h-[140px]"
+                placeholder="e.g., Sarah opened the sync. We decided to move the release window to Tuesday. David will deploy backend migrations by Friday..."
+                value={rawTranscriptText}
+                onChange={(e) => setRawTranscriptText(e.target.value)}
+              />
+
+              <div className="flex justify-end">
+                <button
+                  onClick={parseTranscript}
+                  disabled={!rawTranscriptText.trim()}
+                  className="nyxa-btn nyxa-btn-primary text-xs"
+                >
+                  ⚡ Parse Transcript & Extract Minutes
+                </button>
+              </div>
+            </div>
+
+            {parsedResults && (
+              <div className="p-4 rounded-lg bg-[var(--secondary-bg)] border border-[var(--accent)] space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">
+                  Parsed Results Preview:
+                </h3>
+
+                <div>
+                  <span className="text-[11px] font-bold text-[var(--muted)] uppercase block">Extracted Summary</span>
+                  <p className="text-xs text-[var(--foreground)]">{parsedResults.summary}</p>
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-bold text-[var(--muted)] uppercase block">Detected Decisions ({parsedResults.decisions.length})</span>
+                  <ul className="text-xs space-y-1 list-disc pl-4 text-emerald-600 font-semibold">
+                    {parsedResults.decisions.map((d, i) => (
+                      <li key={i}>{d}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-bold text-[var(--muted)] uppercase block">Detected Action Items ({parsedResults.actionItems.length})</span>
+                  <div className="space-y-1 mt-1">
+                    {parsedResults.actionItems.map((ai, i) => (
+                      <div key={i} className="text-xs p-1.5 rounded bg-[var(--card-bg)] border border-[var(--border)] flex items-center justify-between">
+                        <span>{ai.task}</span>
+                        <span className="font-bold font-mono">Owner: {ai.owner}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-[var(--border)]">
+                  <button
+                    onClick={() => setParsedResults(null)}
+                    className="nyxa-btn nyxa-btn-secondary text-xs"
+                  >
+                    Discard
+                  </button>
+                  <button
+                    onClick={applyParsedResultsToMeeting}
+                    className="nyxa-btn nyxa-btn-primary text-xs"
+                  >
+                    ✓ Apply to Meeting Minutes
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ACTION ITEMS EMAIL DRAFT MODAL */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="nyxa-card max-w-2xl w-full space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 className="text-lg font-bold border-0 p-0 m-0">✉️ Action Items Email Draft Generator</h2>
+              <button onClick={() => setShowEmailModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-[var(--secondary-bg)] border border-[var(--border)]">
+              <div>
+                <label className="text-xs font-semibold text-[var(--muted)] block">Filter Assignee:</label>
+                <select
+                  className="nyxa-select text-xs py-1"
+                  value={selectedEmailAssignee}
+                  onChange={(e) => setSelectedEmailAssignee(e.target.value)}
+                >
+                  <option value="All">All Action Items ({meeting.actionItems.length})</option>
+                  {Array.from(new Set(meeting.actionItems.map((ai) => ai.owner))).map((owner) => (
+                    <option key={owner} value={owner}>
+                      {owner} only
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-2">
+                <button onClick={handleCopyEmail} className="nyxa-btn nyxa-btn-secondary text-xs">
+                  {emailCopied ? 'Copied!' : 'Copy Email Body'}
+                </button>
+                <a
+                  href={`mailto:?subject=${encodeURIComponent(emailDraftData.subject)}&body=${encodeURIComponent(emailDraftData.body)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="nyxa-btn nyxa-btn-primary text-xs inline-flex items-center gap-1"
+                >
+                  Open Email Client ↗
+                </a>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg bg-[var(--card-bg)] border border-[var(--border)] space-y-3 font-mono text-xs">
+              <div>
+                <span className="text-[var(--muted)] block">Subject:</span>
+                <span className="font-bold text-[var(--foreground)]">{emailDraftData.subject}</span>
+              </div>
+              <div className="pt-2 border-t border-[var(--border)] whitespace-pre-wrap text-[var(--foreground)]">
+                {emailDraftData.body}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EXECUTIVE PRINTABLE DOCUMENT LAYOUT (PDF PREVIEW) */}
+      {showPrintPdfModal && (
+        <div className="fixed inset-0 z-50 bg-white text-black p-8 overflow-y-auto print:p-0 print:static print:bg-white print:text-black">
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex justify-between items-center border-b-2 border-black pb-4 print:hidden">
+              <span className="font-bold text-lg">📄 PDF / Printable Document Preview</span>
+              <button
+                onClick={() => setShowPrintPdfModal(false)}
+                className="px-3 py-1 bg-gray-200 text-black font-semibold rounded"
+              >
+                Close Preview
+              </button>
+            </div>
+
+            <div className="space-y-4 font-serif">
+              <div className="border-b-2 border-black pb-3">
+                <h1 className="text-3xl font-bold uppercase tracking-tight">{meeting.title}</h1>
+                <p className="text-sm text-gray-700 mt-1">Official Meeting Minutes & Action Register</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-xs border p-3 bg-gray-50 border-gray-300">
+                <div>
+                  <p><strong>Date:</strong> {meeting.date}</p>
+                  <p><strong>Time:</strong> {meeting.time}</p>
+                  <p><strong>Location:</strong> {meeting.location}</p>
+                </div>
+                <div>
+                  <p><strong>Chairperson:</strong> {meeting.chairperson}</p>
+                  <p><strong>Minute Taker:</strong> {meeting.scribe}</p>
+                  <p><strong>Attendees:</strong> {meeting.attendees}</p>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold uppercase border-b border-black pb-1 mb-2">1. Agenda Topics</h2>
+                <ol className="list-decimal pl-5 text-xs space-y-1">
+                  {meeting.agenda.map((ag) => (
+                    <li key={ag.id}>
+                      <strong>{ag.topic}</strong> ({ag.durationMinutes} mins) &mdash; Presenter: {ag.presenter}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold uppercase border-b border-black pb-1 mb-2">2. Discussion Summary</h2>
+                <p className="text-xs whitespace-pre-wrap leading-relaxed">{meeting.summaryNotes || 'None recorded.'}</p>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold uppercase border-b border-black pb-1 mb-2">3. Decisions Made</h2>
+                <ul className="list-disc pl-5 text-xs space-y-1">
+                  {meeting.decisions.map((d, i) => (
+                    <li key={i} className="font-semibold">{d}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold uppercase border-b border-black pb-1 mb-2">4. Action Item Register</h2>
+                <table className="w-full text-left text-xs border-collapse border border-black">
+                  <thead>
+                    <tr className="bg-gray-200 border-b border-black">
+                      <th className="p-2 border-r border-black">Task Description</th>
+                      <th className="p-2 border-r border-black">Assignee</th>
+                      <th className="p-2 border-r border-black">Priority</th>
+                      <th className="p-2 border-r border-black">Due Date</th>
+                      <th className="p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {meeting.actionItems.map((ai) => (
+                      <tr key={ai.id} className="border-b border-black">
+                        <td className="p-2 border-r border-black">{ai.task}</td>
+                        <td className="p-2 border-r border-black font-bold">{ai.owner}</td>
+                        <td className="p-2 border-r border-black">{ai.priority}</td>
+                        <td className="p-2 border-r border-black font-mono">{ai.dueDate}</td>
+                        <td className="p-2">{ai.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,6 +9,8 @@ export interface PriorityTask {
   title: string;
   quadrant: EisenhowerQuadrant;
   estimatedMinutes: number;
+  completedPomodoros: number;
+  targetPomodoros: number;
   category: string;
   notes?: string;
   completed: boolean;
@@ -41,7 +43,7 @@ const QUADRANT_META: Record<
     code: 'Q1',
     title: 'Urgent & Important',
     actionLabel: 'Do Now',
-    subtitle: 'Crises, pressings tasks, immediate deadlines',
+    subtitle: 'Crises, pressing tasks, immediate deadlines',
     badgeStyle: 'bg-red-500/10 text-red-600 border-red-500/30',
     borderStyle: 'border-l-4 border-l-red-500',
     bgAccent: 'bg-red-500/5',
@@ -85,6 +87,8 @@ const DEFAULT_TASKS: PriorityTask[] = [
     title: 'Submit Physics Lab Report before 5 PM',
     quadrant: 'Q1',
     estimatedMinutes: 45,
+    completedPomodoros: 1,
+    targetPomodoros: 2,
     category: 'Academics',
     completed: false,
     createdAt: new Date().toISOString(),
@@ -94,6 +98,8 @@ const DEFAULT_TASKS: PriorityTask[] = [
     title: 'Study Mathematics Integration Chapter 4',
     quadrant: 'Q2',
     estimatedMinutes: 90,
+    completedPomodoros: 2,
+    targetPomodoros: 4,
     category: 'Exam Prep',
     completed: false,
     createdAt: new Date().toISOString(),
@@ -103,6 +109,8 @@ const DEFAULT_TASKS: PriorityTask[] = [
     title: 'Reply to group project WhatsApp messages',
     quadrant: 'Q3',
     estimatedMinutes: 15,
+    completedPomodoros: 0,
+    targetPomodoros: 1,
     category: 'Communication',
     completed: false,
     createdAt: new Date().toISOString(),
@@ -112,6 +120,8 @@ const DEFAULT_TASKS: PriorityTask[] = [
     title: 'Organize study desk folders and stationery',
     quadrant: 'Q4',
     estimatedMinutes: 30,
+    completedPomodoros: 0,
+    targetPomodoros: 1,
     category: 'General',
     completed: false,
     createdAt: new Date().toISOString(),
@@ -129,6 +139,17 @@ export default function TaskSorter() {
 
   const [tasks, setTasks] = useState<PriorityTask[]>([]);
   const [viewMode, setViewMode] = useState<'matrix' | 'list'>('matrix');
+
+  // Drag and Drop State
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [activeDropTarget, setActiveDropTarget] = useState<EisenhowerQuadrant | null>(null);
+
+  // Pomodoro Timer State
+  const [selectedTaskForPomo, setSelectedTaskForPomo] = useState<PriorityTask | null>(null);
+  const [pomoMode, setPomoMode] = useState<'work' | 'shortBreak' | 'longBreak'>('work');
+  const [pomoTimeLeft, setPomoTimeLeft] = useState<number>(25 * 60);
+  const [isPomoRunning, setIsPomoRunning] = useState<boolean>(false);
+  const [showPomoModal, setShowPomoModal] = useState<boolean>(false);
 
   // Add Task Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -169,15 +190,89 @@ export default function TaskSorter() {
     }
   };
 
+  // POMODORO TIMER TICKER
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (isPomoRunning && pomoTimeLeft > 0) {
+      timer = setInterval(() => {
+        setPomoTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (isPomoRunning && pomoTimeLeft === 0) {
+      setIsPomoRunning(false);
+      // If work session finished, update completed Pomodoros count on active task
+      if (pomoMode === 'work' && selectedTaskForPomo) {
+        const updated = tasks.map((t) =>
+          t.id === selectedTaskForPomo.id
+            ? { ...t, completedPomodoros: t.completedPomodoros + 1 }
+            : t
+        );
+        saveTasks(updated);
+        alert(`🍅 Pomodoro Finished for task: "${selectedTaskForPomo.title}"! Take a break.`);
+      } else {
+        alert('☕ Break Session Completed! Ready to get back to work?');
+      }
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isPomoRunning, pomoTimeLeft, pomoMode, selectedTaskForPomo, tasks]);
+
+  const handleStartPomoForTask = (task: PriorityTask) => {
+    setSelectedTaskForPomo(task);
+    setPomoMode('work');
+    setPomoTimeLeft(25 * 60);
+    setIsPomoRunning(true);
+    setShowPomoModal(true);
+  };
+
+  const switchPomoMode = (mode: 'work' | 'shortBreak' | 'longBreak') => {
+    setPomoMode(mode);
+    setIsPomoRunning(false);
+    if (mode === 'work') setPomoTimeLeft(25 * 60);
+    else if (mode === 'shortBreak') setPomoTimeLeft(5 * 60);
+    else if (mode === 'longBreak') setPomoTimeLeft(15 * 60);
+  };
+
+  // DRAG AND DROP HANDLERS
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData('text/plain', id);
+    setDraggedTaskId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, qCode: EisenhowerQuadrant) => {
+    e.preventDefault();
+    if (activeDropTarget !== qCode) {
+      setActiveDropTarget(qCode);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setActiveDropTarget(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetQuadrant: EisenhowerQuadrant) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('text/plain') || draggedTaskId;
+    if (id) {
+      moveTaskQuadrant(id, targetQuadrant);
+    }
+    setDraggedTaskId(null);
+    setActiveDropTarget(null);
+  };
+
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!taskTitle.trim()) return;
 
+    const mins = Number(taskMinutes) || 30;
     const newTask: PriorityTask = {
       id: `task-${Date.now()}`,
       title: taskTitle.trim(),
       quadrant: taskQuadrant,
-      estimatedMinutes: Number(taskMinutes) || 30,
+      estimatedMinutes: mins,
+      completedPomodoros: 0,
+      targetPomodoros: Math.max(1, Math.ceil(mins / 25)),
       category: taskCategory || 'General',
       notes: taskNotes,
       completed: false,
@@ -202,6 +297,23 @@ export default function TaskSorter() {
     saveTasks(tasks.filter((t) => t.id !== id));
   };
 
+  // CSV EXPORT HANDLER
+  const handleExportCSV = () => {
+    let csv = `ID,Task Title,Quadrant,Estimated Minutes,Completed Pomodoros,Target Pomodoros,Category,Status,Notes,CreatedAt\n`;
+    tasks.forEach((t) => {
+      csv += `"${t.id}","${t.title.replace(/"/g, '""')}","${t.quadrant}",${t.estimatedMinutes},${t.completedPomodoros},${t.targetPomodoros},"${t.category}","${t.completed ? 'Completed' : 'Pending'}","${(t.notes || '').replace(/"/g, '""')}","${t.createdAt}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Eisenhower_Tasks_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Helper formatting for duration (e.g. 90m -> 1h 30m)
   const formatDuration = (mins: number) => {
     if (mins < 60) return `${mins}m`;
@@ -210,11 +322,16 @@ export default function TaskSorter() {
     return remainder > 0 ? `${hrs}h ${remainder}m` : `${hrs}h`;
   };
 
-  // Calculate sum of minutes for a list of tasks
+  const formatClockSeconds = (secTotal: number) => {
+    const mins = Math.floor(secTotal / 60);
+    const secs = secTotal % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
   const getSumMinutes = (taskList: PriorityTask[]) =>
     taskList.reduce((acc, t) => acc + (t.completed ? 0 : t.estimatedMinutes), 0);
 
-  // Generate Time-Block Schedule Engine
+  // Time-Block Schedule Generator
   const generateSchedule = () => {
     const activeTasks = tasks.filter((t) => !t.completed);
     if (activeTasks.length === 0) {
@@ -222,7 +339,6 @@ export default function TaskSorter() {
       return;
     }
 
-    // Sort priority order: Q1 -> Q2 -> Q3 -> Q4
     const priorityOrder: EisenhowerQuadrant[] = ['Q1', 'Q2', 'Q3', 'Q4'];
     const sorted = [...activeTasks].sort(
       (a, b) => priorityOrder.indexOf(a.quadrant) - priorityOrder.indexOf(b.quadrant)
@@ -245,7 +361,6 @@ export default function TaskSorter() {
       let taskMinsRemaining = task.estimatedMinutes;
 
       while (taskMinsRemaining > 0) {
-        // If current work session reached max before break, insert break block
         if (accumulatedWorkInSession >= maxBlockMinutes) {
           const breakStart = formatClockTime(currentTotalMinutes);
           currentTotalMinutes += breakMinutes;
@@ -302,11 +417,11 @@ export default function TaskSorter() {
               </svg>
             </span>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--foreground)]">
-              Eisenhower Task Sorter & Scheduler
+              Eisenhower Task Sorter & Focus Timer
             </h1>
           </div>
           <p className="text-sm text-[var(--muted)] mt-1">
-            Categorize tasks by urgency & importance with automated time-block schedule generation.
+            Drag-and-drop quadrant shifting, integrated Pomodoro focus timer, CSV export, and time blocks.
           </p>
         </div>
 
@@ -321,7 +436,7 @@ export default function TaskSorter() {
                   : 'text-[var(--muted)] hover:text-[var(--foreground)]'
               }`}
             >
-              4-Quadrant View
+              4-Quadrant Drag-Drop
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -336,28 +451,36 @@ export default function TaskSorter() {
           </div>
 
           <button
+            onClick={() => setShowPomoModal(true)}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            🍅 Pomodoro Focus ({formatClockSeconds(pomoTimeLeft)})
+          </button>
+
+          <button
+            onClick={handleExportCSV}
+            className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
+          >
+            📁 Export CSV
+          </button>
+
+          <button
             onClick={() => setShowScheduleModal(true)}
             className="nyxa-btn nyxa-btn-secondary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Generate Time Blocks
+            📅 Time Blocks
           </button>
 
           <button
             onClick={() => setShowAddModal(true)}
             className="nyxa-btn nyxa-btn-primary text-xs flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
             + Add Task
           </button>
         </div>
       </div>
 
-      {/* Quick Summary Dashboard */}
+      {/* Quick Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {(['Q1', 'Q2', 'Q3', 'Q4'] as EisenhowerQuadrant[]).map((qCode) => {
           const meta = QUADRANT_META[qCode];
@@ -381,7 +504,7 @@ export default function TaskSorter() {
               </div>
               <div className="my-1.5">
                 <span className="text-2xl font-black text-[var(--foreground)]">{qTasks.length}</span>
-                <span className="text-xs text-[var(--muted)] ml-1">pending task(s)</span>
+                <span className="text-xs text-[var(--muted)] ml-1">pending</span>
               </div>
               <div className="text-[11px] text-[var(--muted)] font-mono">
                 Workload: {formatDuration(qMins)}
@@ -391,7 +514,7 @@ export default function TaskSorter() {
         })}
       </div>
 
-      {/* Total Pending Time Banner */}
+      {/* Workload Banner */}
       <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--secondary-bg)] flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-[var(--foreground)]">Total Active Workload:</span>
@@ -401,21 +524,27 @@ export default function TaskSorter() {
           <span className="text-[var(--muted)]">across {tasks.filter((t) => !t.completed).length} pending task(s)</span>
         </div>
         <span className="text-[var(--muted)] hidden sm:inline">
-          Click "+ Add Task" or tap any quadrant card to insert new items.
+          💡 Drag & drop any task card to move it between matrix quadrants.
         </span>
       </div>
 
-      {/* Main 4-Quadrant Matrix Layout */}
+      {/* 4-Quadrant Drag and Drop Matrix */}
       {viewMode === 'matrix' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {(['Q1', 'Q2', 'Q3', 'Q4'] as EisenhowerQuadrant[]).map((qCode) => {
             const meta = QUADRANT_META[qCode];
             const qTasks = tasks.filter((t) => t.quadrant === qCode);
+            const isTarget = activeDropTarget === qCode;
 
             return (
               <div
                 key={qCode}
-                className={`nyxa-card ${meta.borderStyle} space-y-3 bg-[var(--card-bg)] min-h-[280px]`}
+                onDragOver={(e) => handleDragOver(e, qCode)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, qCode)}
+                className={`nyxa-card ${meta.borderStyle} space-y-3 bg-[var(--card-bg)] min-h-[300px] transition-all duration-200 ${
+                  isTarget ? 'ring-2 ring-emerald-500 bg-emerald-500/5 border-emerald-500' : ''
+                }`}
               >
                 {/* Quadrant Title Header */}
                 <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
@@ -436,17 +565,15 @@ export default function TaskSorter() {
                     className="p-1 rounded hover:bg-[var(--secondary-bg)] text-[var(--muted)] hover:text-[var(--foreground)]"
                     title={`Add task directly to ${meta.code}`}
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
+                    +
                   </button>
                 </div>
 
                 {/* Tasks List */}
                 <div className="space-y-2 flex-grow">
                   {qTasks.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center py-8 text-center text-[var(--muted)]">
-                      <span className="text-xs">No tasks in this quadrant.</span>
+                    <div className="h-full flex flex-col items-center justify-center py-10 text-center text-[var(--muted)] border-2 border-dashed border-[var(--border)] rounded-lg">
+                      <span className="text-xs">Drop tasks here to move to {meta.code}</span>
                       <button
                         onClick={() => {
                           setTaskQuadrant(qCode);
@@ -461,7 +588,9 @@ export default function TaskSorter() {
                     qTasks.map((task) => (
                       <div
                         key={task.id}
-                        className={`p-3 rounded-lg border border-[var(--border)] bg-[var(--secondary-bg)] space-y-2 transition-all ${
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task.id)}
+                        className={`p-3 rounded-lg border border-[var(--border)] bg-[var(--secondary-bg)] space-y-2 transition-all cursor-grab active:cursor-grabbing hover:border-[var(--accent)] ${
                           task.completed ? 'opacity-50 line-through bg-gray-500/5' : ''
                         }`}
                       >
@@ -485,40 +614,39 @@ export default function TaskSorter() {
                             </div>
                           </div>
 
-                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[var(--card-bg)] border border-[var(--border)] text-[var(--foreground)] shrink-0">
-                            ⏱ {formatDuration(task.estimatedMinutes)}
-                          </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[var(--card-bg)] border border-[var(--border)] text-[var(--foreground)]">
+                              ⏱ {formatDuration(task.estimatedMinutes)}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Controls & Move Dropdown */}
+                        {/* Card Controls & Pomodoro Attachment */}
                         <div className="pt-2 border-t border-[var(--border)] flex items-center justify-between text-[11px]">
-                          <span className="text-[10px] text-[var(--muted)] px-1.5 py-0.5 rounded bg-[var(--card-bg)] border border-[var(--border)]">
-                            {task.category}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-[var(--muted)] px-1.5 py-0.5 rounded bg-[var(--card-bg)] border border-[var(--border)]">
+                              {task.category}
+                            </span>
+                            <span className="text-[10px] font-mono text-amber-600 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
+                              🍅 {task.completedPomodoros}/{task.targetPomodoros || 1}
+                            </span>
+                          </div>
 
                           <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-[var(--muted)]">Move:</span>
-                            {(['Q1', 'Q2', 'Q3', 'Q4'] as EisenhowerQuadrant[])
-                              .filter((q) => q !== task.quadrant)
-                              .map((qTarget) => (
-                                <button
-                                  key={qTarget}
-                                  onClick={() => moveTaskQuadrant(task.id, qTarget)}
-                                  className="px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded bg-[var(--card-bg)] border border-[var(--border)] hover:bg-[var(--accent)] hover:text-[var(--background)] transition-colors"
-                                  title={`Move task to ${qTarget}`}
-                                >
-                                  {qTarget}
-                                </button>
-                              ))}
+                            <button
+                              onClick={() => handleStartPomoForTask(task)}
+                              className="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/20 text-amber-600 border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+                              title="Start Pomodoro Timer for this task"
+                            >
+                              Focus 🍅
+                            </button>
 
                             <button
                               onClick={() => deleteTask(task.id)}
                               className="p-1 text-gray-400 hover:text-red-500 ml-1"
                               title="Delete task"
                             >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
+                              ✕
                             </button>
                           </div>
                         </div>
@@ -541,6 +669,7 @@ export default function TaskSorter() {
                   <th>Task Title</th>
                   <th>Quadrant</th>
                   <th>Estimated Time</th>
+                  <th>Pomodoros</th>
                   <th>Category</th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -548,7 +677,7 @@ export default function TaskSorter() {
               <tbody>
                 {tasks.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-6 text-[var(--muted)]">
+                    <td colSpan={7} className="text-center py-6 text-[var(--muted)]">
                       No tasks found. Click "+ Add Task" to get started.
                     </td>
                   </tr>
@@ -572,17 +701,25 @@ export default function TaskSorter() {
                           </span>
                         </td>
                         <td className="font-mono text-xs">{formatDuration(t.estimatedMinutes)}</td>
+                        <td className="font-mono text-xs text-amber-600 font-bold">
+                          🍅 {t.completedPomodoros} / {t.targetPomodoros || 1}
+                        </td>
                         <td>
                           <span className="text-xs text-[var(--muted)]">{t.category}</span>
                         </td>
                         <td className="text-right">
                           <button
+                            onClick={() => handleStartPomoForTask(t)}
+                            className="p-1 text-amber-600 hover:bg-amber-500/10 rounded mr-1"
+                            title="Start Pomodoro"
+                          >
+                            🍅
+                          </button>
+                          <button
                             onClick={() => deleteTask(t.id)}
                             className="p-1 text-red-500 hover:bg-red-500/10 rounded"
                           >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                            ✕
                           </button>
                         </td>
                       </tr>
@@ -595,19 +732,104 @@ export default function TaskSorter() {
         </div>
       )}
 
+      {/* Pomodoro Focus Timer Modal */}
+      {showPomoModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="nyxa-card max-w-md w-full text-center space-y-6 p-6">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-500">
+                🍅 Pomodoro Focus Timer
+              </span>
+              <button
+                onClick={() => setShowPomoModal(false)}
+                className="text-[var(--muted)] hover:text-[var(--foreground)]"
+              >
+                ✕
+              </button>
+            </div>
+
+            {selectedTaskForPomo && (
+              <div className="p-3 rounded-lg bg-[var(--secondary-bg)] border border-[var(--border)] text-left">
+                <span className="text-[10px] text-[var(--muted)] uppercase font-bold block">Active Focus Task:</span>
+                <span className="font-bold text-sm text-[var(--foreground)] block">{selectedTaskForPomo.title}</span>
+                <span className="text-xs text-amber-600 font-mono font-bold block mt-0.5">
+                  Completed: {selectedTaskForPomo.completedPomodoros} / {selectedTaskForPomo.targetPomodoros} Pomodoros
+                </span>
+              </div>
+            )}
+
+            {/* Mode Switcher */}
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={() => switchPomoMode('work')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                  pomoMode === 'work' ? 'bg-amber-500 text-white border-amber-600' : 'bg-[var(--secondary-bg)] text-[var(--muted)]'
+                }`}
+              >
+                Focus (25m)
+              </button>
+              <button
+                onClick={() => switchPomoMode('shortBreak')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                  pomoMode === 'shortBreak' ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-[var(--secondary-bg)] text-[var(--muted)]'
+                }`}
+              >
+                Short Break (5m)
+              </button>
+              <button
+                onClick={() => switchPomoMode('longBreak')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                  pomoMode === 'longBreak' ? 'bg-blue-500 text-white border-blue-600' : 'bg-[var(--secondary-bg)] text-[var(--muted)]'
+                }`}
+              >
+                Long Break (15m)
+              </button>
+            </div>
+
+            {/* Clock Timer Display */}
+            <div className="py-6 my-2 rounded-2xl bg-[var(--secondary-bg)] border border-[var(--border)]">
+              <span className="text-6xl font-black font-mono tracking-tight text-[var(--foreground)] block">
+                {formatClockSeconds(pomoTimeLeft)}
+              </span>
+              <span className="text-xs uppercase tracking-widest text-[var(--muted)] block mt-2 font-bold">
+                {pomoMode === 'work' ? '🔥 Focus Time' : '☕ Rest Break'}
+              </span>
+            </div>
+
+            {/* Play/Pause Controls */}
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setIsPomoRunning(!isPomoRunning)}
+                className={`px-6 py-2.5 text-sm font-bold rounded-xl shadow-lg transition-all ${
+                  isPomoRunning
+                    ? 'bg-amber-600 text-white hover:bg-amber-700'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                }`}
+              >
+                {isPomoRunning ? 'Pause Timer' : 'Start Focus Session'}
+              </button>
+              <button
+                onClick={() => {
+                  setIsPomoRunning(false);
+                  switchPomoMode(pomoMode);
+                }}
+                className="nyxa-btn nyxa-btn-secondary text-xs"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add Task Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="nyxa-card max-w-md w-full space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h2 className="text-lg font-bold border-0 p-0 m-0">Add Eisenhower Task</h2>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="p-1 text-[var(--muted)] hover:text-[var(--foreground)]"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={() => setShowAddModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
               </button>
             </div>
 
@@ -636,8 +858,8 @@ export default function TaskSorter() {
                   >
                     <option value="Q1">Q1: Urgent & Important (Do Now)</option>
                     <option value="Q2">Q2: Not Urgent & Important (Do Next)</option>
-                    <option value="Q3">Q3: Urgent & Not Important (Delegate/Quick Win)</option>
-                    <option value="Q4">Q4: Low Priority (Do Later)</option>
+                    <option value="Q3">Q3: Urgent & Not Important (Delegate)</option>
+                    <option value="Q4">Q4: Low Priority (Eliminate)</option>
                   </select>
                 </div>
 
@@ -650,11 +872,10 @@ export default function TaskSorter() {
                     onChange={(e) => setTaskMinutes(Number(e.target.value))}
                   >
                     <option value={15}>15 Minutes</option>
-                    <option value={30}>30 Minutes</option>
+                    <option value={25}>25 Mins (1 Pomodoro)</option>
                     <option value={45}>45 Minutes</option>
-                    <option value={60}>1 Hour (60m)</option>
+                    <option value={50}>50 Mins (2 Pomodoros)</option>
                     <option value={90}>1.5 Hours (90m)</option>
-                    <option value={120}>2 Hours (120m)</option>
                   </select>
                 </div>
               </div>
@@ -710,17 +931,11 @@ export default function TaskSorter() {
                   Automated schedule based on your prioritized tasks & rest breaks
                 </p>
               </div>
-              <button
-                onClick={() => setShowScheduleModal(false)}
-                className="p-1 text-[var(--muted)] hover:text-[var(--foreground)]"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={() => setShowScheduleModal(false)} className="text-[var(--muted)] hover:text-[var(--foreground)]">
+                ✕
               </button>
             </div>
 
-            {/* Config controls */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-[var(--secondary-bg)] border border-[var(--border)]">
               <div>
                 <label htmlFor={startTimeId} className="nyxa-label text-[11px]">Workday Start Time</label>
@@ -744,7 +959,6 @@ export default function TaskSorter() {
                   <option value={25}>25 Mins (Pomodoro)</option>
                   <option value={45}>45 Mins</option>
                   <option value={50}>50 Mins (Standard)</option>
-                  <option value={90}>90 Mins (Deep Work)</option>
                 </select>
               </div>
 
@@ -763,7 +977,6 @@ export default function TaskSorter() {
               </div>
             </div>
 
-            {/* Generated Time Block Itinerary */}
             <div className="space-y-2">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
                 Daily Time-Block Itinerary
@@ -798,14 +1011,14 @@ export default function TaskSorter() {
                               {block.title}
                             </span>
                             {quadMeta && (
-                              <span className="text-[10px] text-[var(--muted)]">
-                                Priority: {quadMeta.code} ({quadMeta.actionLabel})
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border inline-block mt-0.5 ${quadMeta.badgeStyle}`}>
+                                {quadMeta.code}: {quadMeta.actionLabel}
                               </span>
                             )}
                           </div>
                         </div>
 
-                        <span className="font-mono font-bold text-[var(--muted)] shrink-0">
+                        <span className="font-mono text-xs font-semibold text-[var(--muted)]">
                           {block.durationMinutes}m
                         </span>
                       </div>
