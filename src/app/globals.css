@@ -69,18 +69,32 @@ html[data-theme="dark"] {
   }
 }
 
-/* Invert logo in dark mode */
-.theme-logo {
-  transition: filter 0.3s ease;
+/* Signature Golden Glowing Logo & Pulse Animation */
+.theme-logo, .gold-logo {
+  border-radius: 50%;
+  box-shadow: 0 0 25px var(--halo-3), 0 0 50px var(--halo-2);
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.75));
+  animation: goldPulse 4s ease-in-out infinite alternate;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
 }
 
-html[data-theme="dark"] .theme-logo {
-  filter: invert(1);
+.theme-logo:hover, .gold-logo:hover {
+  transform: scale(1.08) rotate(180deg);
+  box-shadow: 0 0 45px var(--halo-3), 0 0 75px var(--halo-2);
 }
 
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) .theme-logo {
-    filter: invert(1);
+@keyframes goldPulse {
+  0% {
+    box-shadow: 0 0 20px var(--halo-2), 0 0 40px var(--halo-1);
+    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+  }
+  50% {
+    box-shadow: 0 0 35px var(--halo-3), 0 0 65px var(--halo-2);
+    filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.9));
+  }
+  100% {
+    box-shadow: 0 0 25px var(--halo-2), 0 0 45px var(--halo-1);
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.75));
   }
 }
 
