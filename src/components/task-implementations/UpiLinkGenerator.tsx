@@ -201,11 +201,18 @@ function generateQrMatrix(text: string): boolean[][] {
 const POPULAR_HANDLES = ['@paytm', '@okaxis', '@oksbi', '@okicici', '@ybl', '@upi'];
 
 export default function UpiLinkGenerator() {
-  const [upiId, setUpiId] = useState('shopkeeper@upi');
-  const [payeeName, setPayeeName] = useState('Akash Traders');
-  const [amount, setAmount] = useState('250');
-  const [note, setNote] = useState('Store Purchase');
+  const [upiId, setUpiId] = useState('');
+  const [payeeName, setPayeeName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
   const [copied, setCopied] = useState(false);
+
+  const loadDemoData = () => {
+    setUpiId('merchant@upi');
+    setPayeeName('Apex Store');
+    setAmount('250');
+    setNote('Store Purchase');
+  };
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 

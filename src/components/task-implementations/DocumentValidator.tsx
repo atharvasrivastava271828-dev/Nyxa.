@@ -101,7 +101,7 @@ const PINCODE_ZONES: Record<string, { region: string; states: string }> = {
 type DocType = 'AUTO' | 'PAN' | 'AADHAAR' | 'IFSC' | 'PINCODE';
 
 export default function DocumentValidator() {
-  const [query, setQuery] = useState('ABCDE1234F');
+  const [query, setQuery] = useState('');
   const [selectedType, setSelectedType] = useState<DocType>('AUTO');
   const [copied, setCopied] = useState(false);
 

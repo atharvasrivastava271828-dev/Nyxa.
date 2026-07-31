@@ -67,7 +67,7 @@ function getUSGradePoint(pct: number): number {
 
 export default function MarksCalculator() {
   const studentNameId = useId();
-  const [studentName, setStudentName] = useState('Alex Morgan');
+  const [studentName, setStudentName] = useState('');
   const [subjects, setSubjects] = useState<SubjectMarks[]>(DEFAULT_SUBJECTS);
   const [copied, setCopied] = useState(false);
 

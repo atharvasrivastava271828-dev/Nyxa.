@@ -18,19 +18,18 @@ export default function GstInvoice() {
   const [copied, setCopied] = useState(false);
 
   // Supplier
-  const [supplierName, setSupplierName] = useState('Apex Digital Solutions');
-  const [supplierGstin, setSupplierGstin] = useState('27AAAAA0000A1Z5');
-  const [supplierAddress, setSupplierAddress] = useState('Suite 402, Tech Park, Mumbai');
+  const [supplierName, setSupplierName] = useState('');
+  const [supplierGstin, setSupplierGstin] = useState('');
+  const [supplierAddress, setSupplierAddress] = useState('');
 
   // Buyer
-  const [buyerName, setBuyerName] = useState('Acme Global Technologies');
-  const [buyerGstin, setBuyerGstin] = useState('27BBBCC1111B1Z2');
-  const [buyerAddress, setBuyerAddress] = useState('12 Innovation Boulevard, Bengaluru');
+  const [buyerName, setBuyerName] = useState('');
+  const [buyerGstin, setBuyerGstin] = useState('');
+  const [buyerAddress, setBuyerAddress] = useState('');
 
   // Line items
   const [items, setItems] = useState<LineItem[]>([
-    { id: '1', description: 'UI/UX Web Application Design', quantity: 1, rate: 25000, gstRate: 18 },
-    { id: '2', description: 'Cloud Infrastructure & Setup', quantity: 1, rate: 15000, gstRate: 18 }
+    { id: '1', description: '', quantity: 1, rate: 0, gstRate: 18 }
   ]);
 
   const addItem = () => {
