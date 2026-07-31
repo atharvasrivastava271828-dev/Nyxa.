@@ -38,6 +38,7 @@ export default function NavHeader() {
   const navLinks = [
     { href: '/tasks', label: 'Tasks' },
     { href: '/bidder', label: 'TaskBidder' },
+    { href: '/pitch', label: 'Pitch Deck' },
     { href: '/dashboard', label: 'Dashboard' },
   ];
 
@@ -46,7 +47,7 @@ export default function NavHeader() {
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center text-decoration-none group gap-2">
-          <img src="/favicon.svg" alt="Nyxa Logo" className="w-5 h-5" />
+          <img src="/yinyang.png" alt="Nyxa Logo" className="w-6 h-6 theme-logo" />
           <span className="font-bold tracking-tight text-lg text-[var(--foreground)]">
             Nyxa.
           </span>

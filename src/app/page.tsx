@@ -62,7 +62,7 @@ export default function Home() {
       <section className="text-center py-16 border-b border-[var(--border)] flex flex-col items-center">
         {/* NYXA Logo in Hero */}
         <div className="flex flex-col items-center justify-center mb-6 select-none relative h-48 w-48">
-          <img src="/favicon.svg" alt="Nyxa Logo" className="w-full h-full transition-transform hover:rotate-180 duration-1000 ease-in-out drop-shadow-2xl" />
+          <img src="/yinyang.png" alt="Nyxa Logo" className="w-full h-full transition-transform hover:rotate-180 duration-1000 ease-in-out drop-shadow-2xl theme-logo" />
         </div>
 
         {/* Mission Statement */}

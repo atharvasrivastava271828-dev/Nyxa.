@@ -182,7 +182,7 @@ p {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
   padding: 1.5rem;
-  border-radius: 12px; /* Apple squircle/rounded corner style */
+  border-radius: 12px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
@@ -194,7 +194,7 @@ p {
   box-shadow: 0 8px 30px var(--halo-2);
 }
 
-/* Inputs & Forms: sharp, dense */
+/* Inputs & Forms */
 .nyxa-label {
   display: block;
   font-family: var(--font-display);
@@ -212,7 +212,7 @@ p {
   font-family: var(--font-display);
   font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
-  border-radius: 8px; /* Apple rounded inputs */
+  border-radius: 8px;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -231,7 +231,7 @@ p {
   font-weight: 500;
   font-size: 0.85rem;
   padding: 0.5rem 1rem;
-  border-radius: 8px; /* Apple rounded buttons */
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid var(--border);
@@ -276,7 +276,7 @@ p {
   border: 1px solid var(--border);
   color: var(--muted);
   text-transform: uppercase;
-  border-radius: 6px; /* Softened badge corners */
+  border-radius: 6px;
   box-shadow: 0 2px 5px var(--halo-1);
 }
 
@@ -357,4 +357,55 @@ p {
 
 .search-input {
   padding-left: 4.25rem !important;
+}
+
+/* --- Pitch Deck Minimalistic Dynamic Animation Classes --- */
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseHalo {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+.pitch-animate-title {
+  animation: slideUpFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pitch-animate-subtitle {
+  animation: slideUpFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+  opacity: 0;
+}
+
+.pitch-animate-stagger-1 {
+  animation: slideUpFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.22s forwards;
+  opacity: 0;
+}
+
+.pitch-animate-stagger-2 {
+  animation: slideUpFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.32s forwards;
+  opacity: 0;
+}
+
+.pitch-animate-stagger-3 {
+  animation: slideUpFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.42s forwards;
+  opacity: 0;
+}
+
+.pitch-pulse-halo {
+  animation: pulseHalo 4s ease-in-out infinite;
 }
