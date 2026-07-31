@@ -62,35 +62,32 @@ export default function Home() {
       <section className="text-center py-16 border-b border-[var(--border)] flex flex-col items-center">
         {/* NYXA Logo in Hero */}
         <div className="flex flex-col items-center justify-center mb-6 select-none relative h-48 w-48">
-          <img src="/yinyang.png" alt="Nyxa Logo" className="w-full h-full transition-transform hover:rotate-180 duration-1000 ease-in-out drop-shadow-2xl theme-logo" />
+          <img src="/yinyang.png" alt="Nyxa Logo" className="w-full h-full transition-transform hover:rotate-180 duration-1000 ease-in-out theme-logo gold-logo" />
         </div>
 
         {/* Mission Statement */}
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3 max-w-2xl text-center">
-          Get your daily tasks done in seconds.
-        </h1>
-        <p className="text-sm sm:text-base text-[var(--muted)] max-w-lg mt-1 mb-8 text-center font-normal">
-          Simple, free, and private utilities designed for students, freelancers, and small businesses.
+        <p className="text-base text-[var(--muted)] max-w-lg mt-2 mb-8 uppercase tracking-widest font-semibold text-center">
+          MAKING SURE NO ONE IS LEFT OUT.
         </p>
 
         {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="w-full max-w-lg flex gap-2">
           <input
             type="text"
-            placeholder="Search GST invoice, marks calculator, UPI QR, tax estimator..."
+            placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="nyxa-input text-sm"
           />
-          <button type="submit" className="nyxa-btn nyxa-btn-primary text-xs whitespace-nowrap px-5">
-            Search Tools
+          <button type="submit" className="nyxa-btn nyxa-btn-primary text-xs whitespace-nowrap px-6">
+            Get Started
           </button>
         </form>
         
         {/* User Guide Button */}
         <div className="mt-6">
-          <a href="#how-it-works" className="nyxa-btn nyxa-btn-secondary text-xs px-6 py-2 border-[var(--halo-2)] hover:shadow-[0_0_15px_var(--halo-1)] transition-shadow duration-300">
-            ✨ Learn How It Works
+          <a href="#how-it-works" className="nyxa-btn nyxa-btn-secondary text-xs px-6 py-2">
+            📖 Read User Guide & Tutorials
           </a>
         </div>
       </section>
