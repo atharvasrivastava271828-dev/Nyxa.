@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Printer, Plus, Trash2, RotateCcw, Sparkles } from 'lucide-react';
+import { Printer, Plus, Trash2, RotateCcw, Sparkles, Share2, Copy, Check, Download, Send } from 'lucide-react';
 
 export interface LineItem {
   id: string;
@@ -14,6 +14,8 @@ export interface LineItem {
 export default function GstInvoice() {
   const [invoiceNumber, setInvoiceNumber] = useState('INV-2026-001');
   const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [currency, setCurrency] = useState('₹');
+  const [copied, setCopied] = useState(false);
 
   // Supplier
   const [supplierName, setSupplierName] = useState('Apex Digital Solutions');
@@ -96,32 +98,107 @@ export default function GstInvoice() {
     window.print();
   };
 
+  // WhatsApp Share
+  const handleWhatsAppShare = () => {
+    const text = `🧾 *TAX INVOICE: ${invoiceNumber}*\nFrom: ${supplierName || 'Seller'}\nTo: ${buyerName || 'Client'}\nDate: ${invoiceDate}\n\n*Total Amount:* ${currency}${totals.grandTotal.toLocaleString('en-IN')}\n\nGenerated via Nyxa (https://nyxa.vercel.app/tasks/gst-invoice)`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  // Copy Summary
+  const handleCopySummary = () => {
+    const text = `INVOICE SUMMARY (${invoiceNumber})
+Seller: ${supplierName}
+Buyer: ${buyerName}
+Date: ${invoiceDate}
+Subtotal: ${currency}${totals.subtotal.toLocaleString('en-IN')}
+Total GST: ${currency}${totals.totalGst.toLocaleString('en-IN')}
+Grand Total: ${currency}${totals.grandTotal.toLocaleString('en-IN')}`;
+
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Download JSON Backup
+  const handleDownloadJson = () => {
+    const data = {
+      invoiceNumber,
+      invoiceDate,
+      supplier: { name: supplierName, gstin: supplierGstin, address: supplierAddress },
+      buyer: { name: buyerName, gstin: buyerGstin, address: buyerAddress },
+      items,
+      totals
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${invoiceNumber || 'invoice'}.json`;
+    a.click();
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 pb-12">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[var(--card-bg)] p-6 rounded-3xl border border-[var(--border)] shadow-sm print:hidden">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--card-bg)] p-6 rounded-3xl border border-[var(--border)] shadow-sm print:hidden">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[var(--foreground)]">GST & Tax Invoice Generator</h1>
-          <p className="text-xs text-[var(--muted)]">Create, customize, and print tax invoices instantly.</p>
+          <p className="text-xs text-[var(--muted)]">Create, share, and print professional invoices instantly.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Currency Switcher */}
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="nyxa-input text-xs font-bold py-1.5 px-2.5 w-auto"
+          >
+            <option value="₹">INR (₹)</option>
+            <option value="$">USD ($)</option>
+            <option value="€">EUR (€)</option>
+            <option value="£">GBP (£)</option>
+          </select>
+
           <button
             onClick={loadDemoData}
             className="nyxa-btn nyxa-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Load Demo
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Demo
           </button>
+
+          <button
+            onClick={handleCopySummary}
+            className="nyxa-btn nyxa-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+
+          <button
+            onClick={handleWhatsAppShare}
+            className="nyxa-btn nyxa-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
+          >
+            <Send className="w-3.5 h-3.5" /> WhatsApp
+          </button>
+
+          <button
+            onClick={handleDownloadJson}
+            className="nyxa-btn nyxa-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-500" /> JSON
+          </button>
+
           <button
             onClick={resetForm}
             className="nyxa-btn nyxa-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-400" /> Reset
           </button>
+
           <button
             onClick={handlePrint}
             className="nyxa-btn nyxa-btn-primary text-xs px-4 py-2 flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform"
           >
-            <Printer className="w-4 h-4" /> Print / Save PDF
+            <Printer className="w-4 h-4" /> Print / PDF
           </button>
         </div>
       </div>
@@ -246,7 +323,7 @@ export default function GstInvoice() {
                       />
                     </div>
                     <div>
-                      <label className="text-[9px] uppercase text-[var(--muted)] font-bold">Rate (₹)</label>
+                      <label className="text-[9px] uppercase text-[var(--muted)] font-bold">Rate ({currency})</label>
                       <input
                         type="number"
                         value={item.rate}
@@ -321,9 +398,9 @@ export default function GstInvoice() {
                     <td className="py-3 text-slate-400">{idx + 1}</td>
                     <td className="py-3 font-medium text-slate-900">{item.description || 'Service'}</td>
                     <td className="py-3 text-center text-slate-700">{item.quantity}</td>
-                    <td className="py-3 text-right text-slate-700">₹{item.rate.toLocaleString('en-IN')}</td>
+                    <td className="py-3 text-right text-slate-700">{currency}{item.rate.toLocaleString('en-IN')}</td>
                     <td className="py-3 text-right text-slate-500">{item.gstRate}%</td>
-                    <td className="py-3 text-right font-bold text-slate-900">₹{itemTotal.toLocaleString('en-IN')}</td>
+                    <td className="py-3 text-right font-bold text-slate-900">{currency}{itemTotal.toLocaleString('en-IN')}</td>
                   </tr>
                 );
               })}
@@ -334,19 +411,19 @@ export default function GstInvoice() {
           <div className="flex flex-col items-end pt-4 border-t border-slate-200 space-y-1.5 text-xs">
             <div className="flex justify-between w-64 text-slate-600">
               <span>Subtotal:</span>
-              <span className="font-semibold text-slate-900">₹{totals.subtotal.toLocaleString('en-IN')}</span>
+              <span className="font-semibold text-slate-900">{currency}{totals.subtotal.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between w-64 text-slate-500">
               <span>CGST:</span>
-              <span>₹{totals.cgst.toLocaleString('en-IN')}</span>
+              <span>{currency}{totals.cgst.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between w-64 text-slate-500">
               <span>SGST:</span>
-              <span>₹{totals.sgst.toLocaleString('en-IN')}</span>
+              <span>{currency}{totals.sgst.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between w-64 text-base font-bold text-slate-900 pt-2 border-t border-slate-900">
               <span>Grand Total:</span>
-              <span>₹{totals.grandTotal.toLocaleString('en-IN')}</span>
+              <span>{currency}{totals.grandTotal.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
