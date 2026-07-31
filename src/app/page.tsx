@@ -66,38 +66,35 @@ export default function Home() {
         </div>
 
         {/* Mission Statement */}
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3 max-w-2xl text-center">
-          Get your daily tasks done in seconds.
-        </h1>
-        <p className="text-sm sm:text-base text-[var(--muted)] max-w-lg mt-1 mb-8 text-center font-normal">
-          Simple, free, and private utilities designed for students, freelancers, and small businesses.
+        <p className="text-base text-[var(--muted)] max-w-lg mt-2 mb-8 uppercase tracking-widest font-semibold text-center">
+          MAKING SURE NO ONE IS LEFT OUT.
         </p>
 
         {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="w-full max-w-lg flex gap-2">
           <input
             type="text"
-            placeholder="Search GST invoice, marks calculator, UPI QR, tax estimator..."
+            placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="nyxa-input text-sm"
           />
-          <button type="submit" className="nyxa-btn nyxa-btn-primary text-xs whitespace-nowrap px-5">
-            Search Tools
+          <button type="submit" className="nyxa-btn nyxa-btn-primary text-xs whitespace-nowrap px-6">
+            Get Started
           </button>
         </form>
         
         {/* User Guide Button */}
         <div className="mt-6">
-          <a href="#how-it-works" className="nyxa-btn nyxa-btn-secondary text-xs px-6 py-2 border-[var(--halo-2)] hover:shadow-[0_0_15px_var(--halo-1)] transition-shadow duration-300">
-            ✨ Learn How It Works
+          <a href="#how-it-works" className="nyxa-btn nyxa-btn-secondary text-xs px-6 py-2">
+            📖 Read User Guide & Tutorials
           </a>
         </div>
       </section>
 
       {/* 2. Marketplace Overview */}
       <section className="py-12 border-b border-[var(--border)]">
-        <h2 className="text-xl tracking-tight mb-8 text-center md:text-left font-semibold border-0 pb-0">The Shortcut Economy</h2>
+        <h2 className="text-xl tracking-tight mb-8 text-center md:text-left font-semibold border-0 pb-0">Why You&apos;ll Love Nyxa</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Instant Execution */}
           <div className="nyxa-card p-6 justify-between space-y-3">
@@ -105,45 +102,45 @@ export default function Home() {
               <div className="w-10 h-10 rounded-xl bg-[var(--secondary-bg)] border border-[var(--border)] flex items-center justify-center text-lg mb-3">
                 ⚡
               </div>
-              <h3 className="font-semibold text-base mb-1">Instant Execution</h3>
+              <h3 className="font-semibold text-base mb-1">Works Instantly</h3>
               <p className="text-xs text-[var(--muted)] leading-relaxed m-0">
-                AI agents request a task. Specialized micro-tools complete it in milliseconds.
+                No signups or software downloads required. Everything runs right in your browser immediately.
               </p>
             </div>
             <Link href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center text-xs mt-2 w-full">
-              Explore Outcomes ➔
+              Explore All Tools ➔
             </Link>
           </div>
 
-          {/* Escrow Protection */}
+          {/* Client-Side Privacy */}
           <div className="nyxa-card p-6 justify-between space-y-3">
             <div>
               <div className="w-10 h-10 rounded-xl bg-[var(--secondary-bg)] border border-[var(--border)] flex items-center justify-center text-lg mb-3">
                 🔒
               </div>
-              <h3 className="font-semibold text-base mb-1">Smart Escrow</h3>
+              <h3 className="font-semibold text-base mb-1">100% Private & Safe</h3>
               <p className="text-xs text-[var(--muted)] leading-relaxed m-0">
-                Payment is held safely during execution. Creators get paid only when work is delivered correctly.
+                Your personal details never leave your browser. Zero tracking, zero data selling.
               </p>
             </div>
             <Link href="/tasks" className="nyxa-btn nyxa-btn-secondary text-center text-xs mt-2 w-full">
-              Learn About Escrow ➔
+              Try Free Utilities ➔
             </Link>
           </div>
 
-          {/* TaskBidder */}
+          {/* Escrow Payments */}
           <div className="nyxa-card p-6 justify-between space-y-3">
             <div>
               <div className="w-10 h-10 rounded-xl bg-[var(--secondary-bg)] border border-[var(--border)] flex items-center justify-center text-lg mb-3">
-                🎯
+                🤝
               </div>
-              <h3 className="font-semibold text-base mb-1">TaskBidder</h3>
+              <h3 className="font-semibold text-base mb-1">Custom Task Board</h3>
               <p className="text-xs text-[var(--muted)] leading-relaxed m-0">
-                Can&apos;t find the task you need? Post a bounty and let developers bid to build your custom solution.
+                Need a custom workflow built? Post your request on our board and connect with creators safely.
               </p>
             </div>
             <Link href="/bidder" className="nyxa-btn nyxa-btn-secondary text-center text-xs mt-2 w-full">
-              Post a Bounty ➔
+              Post a Request ➔
             </Link>
           </div>
         </div>
@@ -182,18 +179,18 @@ export default function Home() {
 
       {/* 4. How It Works (User Guide) */}
       <section id="how-it-works" className="py-16 border-b border-[var(--border)] scroll-mt-20">
-        <h2 className="text-2xl tracking-tight mb-2 text-center font-bold border-0 pb-0">Input → Task → Output</h2>
+        <h2 className="text-2xl tracking-tight mb-2 text-center font-bold border-0 pb-0">How Nyxa Works</h2>
         <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
-          A standardized digital outcome engine. You ask for a finished result, pay a tiny fee, and get on with your day.
+          No complex setup or prompt engineering required. Pick a tool, type your details, and copy your results.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <div className="nyxa-card relative group hover:-translate-y-1 transition-transform duration-300">
             <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center font-bold text-lg shadow-[0_0_15px_var(--halo-3)]">
               1
             </div>
-            <h3 className="font-semibold mb-3 mt-2 text-lg">Input</h3>
+            <h3 className="font-semibold mb-3 mt-2 text-lg">Pick a Tool</h3>
             <p className="text-sm text-[var(--muted)]">
-              Provide the raw materials. A startup idea, a website URL, or a textbook chapter.
+              Choose from our free utility library — whether you need a GST invoice, UPI payment QR code, or tax calculation.
             </p>
           </div>
           
@@ -201,9 +198,9 @@ export default function Home() {
             <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center font-bold text-lg shadow-[0_0_15px_var(--halo-3)]">
               2
             </div>
-            <h3 className="font-semibold mb-3 mt-2 text-lg">Execution</h3>
+            <h3 className="font-semibold mb-3 mt-2 text-lg">Type Your Details</h3>
             <p className="text-sm text-[var(--muted)]">
-              Nyxa runs the Task securely on the edge, routing it through the right AI agents or API tools instantly.
+              Fill in simple form fields. Everything updates in real time right in front of you.
             </p>
           </div>
 
@@ -211,9 +208,9 @@ export default function Home() {
             <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center font-bold text-lg shadow-[0_0_15px_var(--halo-3)]">
               3
             </div>
-            <h3 className="font-semibold mb-3 mt-2 text-lg">Output</h3>
+            <h3 className="font-semibold mb-3 mt-2 text-lg">Print or Copy 1-Click</h3>
             <p className="text-sm text-[var(--muted)]">
-              Receive the finished outcome. A business plan, a competitor analysis, or a study quiz.
+              Download your formatted PDF, print your A4 document, or copy formatted text with a single click.
             </p>
           </div>
         </div>
