@@ -38,7 +38,6 @@ export default function NavHeader() {
   const navLinks = [
     { href: '/tasks', label: 'Tasks' },
     { href: '/bidder', label: 'TaskBidder' },
-    { href: '/pitch', label: 'Pitch Deck' },
     { href: '/dashboard', label: 'Dashboard' },
   ];
 
