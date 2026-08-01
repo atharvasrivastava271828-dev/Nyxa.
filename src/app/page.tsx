@@ -219,7 +219,12 @@ export default function Home() {
         </div>
       </section>
       {/* Hidden button for market validation */}
-      <Link href="/market-validation" className="fixed bottom-0 right-0 w-8 h-8 opacity-0 z-50 cursor-default" aria-hidden="true" />
+      <Link 
+        href="/market-validation" 
+        className="fixed bottom-0 right-0 w-12 h-12 z-[9999] cursor-default bg-transparent"
+        style={{ display: 'block' }}
+        aria-hidden="true" 
+      />
     </div>
   );
 }
