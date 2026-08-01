@@ -218,13 +218,14 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Hidden button for market validation */}
+      {/* Discreet button for market validation */}
       <Link 
         href="/market-validation" 
-        className="fixed bottom-0 right-0 w-12 h-12 z-[9999] cursor-default bg-transparent"
-        style={{ display: 'block' }}
-        aria-hidden="true" 
-      />
+        className="fixed bottom-2 right-2 w-8 h-8 z-[9999] rounded-full bg-purple-500/10 hover:bg-purple-500/30 flex items-center justify-center opacity-30 hover:opacity-100 transition-all cursor-pointer"
+        aria-label="Market Validation"
+      >
+        <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+      </Link>
     </div>
   );
 }
