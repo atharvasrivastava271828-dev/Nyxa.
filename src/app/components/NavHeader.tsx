@@ -46,7 +46,7 @@ export default function NavHeader() {
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center text-decoration-none group gap-2">
-          <img src="/yinyang.png" alt="Nyxa Logo" className="w-6 h-6 theme-logo" />
+          <img src="/yinyang.png" alt="Nyxa Logo" className="w-6 h-6 rounded-full theme-logo" />
           <span className="font-bold tracking-tight text-lg text-[var(--foreground)]">
             Nyxa.
           </span>
