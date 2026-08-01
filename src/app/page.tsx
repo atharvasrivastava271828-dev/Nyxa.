@@ -218,6 +218,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* Hidden button for market validation */}
+      <Link href="/market-validation" className="fixed bottom-0 right-0 w-8 h-8 opacity-0 z-50 cursor-default" aria-hidden="true" />
     </div>
   );
 }
