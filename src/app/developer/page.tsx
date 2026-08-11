@@ -146,7 +146,7 @@ export default function DeveloperPortal() {
     }
 
     if (userId && storedAuth === 'true') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       fetchDeveloperData();
     }
   }, [userId, fetchDeveloperData]);

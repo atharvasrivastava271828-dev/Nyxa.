@@ -283,7 +283,7 @@ ${data.experienceList.map((x) => `- ${x.designation} at ${x.organization} (${x.p
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Father's Name *</label>
+                <label className="block text-xs text-slate-400 mb-1">Father&apos;s Name *</label>
                 <input
                   type="text"
                   value={data.fathersName}
@@ -292,7 +292,7 @@ ${data.experienceList.map((x) => `- ${x.designation} at ${x.organization} (${x.p
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Mother's Name *</label>
+                <label className="block text-xs text-slate-400 mb-1">Mother&apos;s Name *</label>
                 <input
                   type="text"
                   value={data.mothersName}
@@ -520,10 +520,10 @@ ${data.experienceList.map((x) => `- ${x.designation} at ${x.organization} (${x.p
                   <strong>Full Name:</strong> <span className="font-bold uppercase">{data.fullName}</span>
                 </div>
                 <div>
-                  <strong>Father's Name:</strong> <span className="uppercase">{data.fathersName}</span>
+                  <strong>Father&apos;s Name:</strong> <span className="uppercase">{data.fathersName}</span>
                 </div>
                 <div>
-                  <strong>Mother's Name:</strong> <span className="uppercase">{data.mothersName}</span>
+                  <strong>Mother&apos;s Name:</strong> <span className="uppercase">{data.mothersName}</span>
                 </div>
                 <div>
                   <strong>Date of Birth:</strong> {data.dob}
