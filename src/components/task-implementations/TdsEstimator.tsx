@@ -112,7 +112,7 @@ export default function TdsEstimator() {
 
   // Old Regime Tax Math
   const oldRegimeTax = useMemo(() => {
-    let income = oldRegimeTaxableIncome;
+    const income = oldRegimeTaxableIncome;
     if (income <= 250000) return 0;
     let tax = 0;
     if (income > 250000) tax += Math.min(income - 250000, 250000) * 0.05;

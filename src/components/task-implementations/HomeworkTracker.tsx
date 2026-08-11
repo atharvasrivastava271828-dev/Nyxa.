@@ -84,9 +84,7 @@ export default function HomeworkTracker() {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('Mathematics');
   const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
-  const [dueDate, setDueDate] = useState(
-    new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10)
-  );
+  const [dueDate, setDueDate] = useState('2026-12-31');
 
   const handleAddHomework = (e: React.FormEvent) => {
     e.preventDefault();

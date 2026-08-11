@@ -68,6 +68,7 @@ export default function TasksMarketplace() {
       const params = new URLSearchParams(window.location.search);
       const search = params.get('search');
       if (search) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSearchTerm(search);
       }
     }

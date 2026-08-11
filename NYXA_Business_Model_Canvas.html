@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Model Canvas - NYXA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #000;
+            color: #000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .canvas-container {
+            width: 1200px;
+            height: 850px;
+            background-color: #000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            color: #00FF55;
+            font-size: 48px;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            align-self: flex-end;
+            margin-bottom: -5px;
+        }
+
+        .logo-box {
+            background-color: #00FF55;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: -20px;
+            margin-right: -20px;
+            border-top-right-radius: 0;
+        }
+        
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background-color: #000;
+            border-radius: 6px;
+            position: relative;
+        }
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            width: 12px;
+            height: 12px;
+            background-color: #00FF55;
+            border-radius: 2px;
+        }
+
+        .logo-text {
+            color: #000;
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1.1;
+        }
+
+        /* Meta Info Fields */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .meta-box {
+            background-color: #FFF;
+            padding: 12px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            gap: 10px;
+        }
+
+        .meta-box span {
+            font-weight: 400;
+        }
+
+        /* Main Canvas Grid */
+        .grid-container {
+            flex-grow: 1;
+            background-color: #FFF;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: 2fr 2fr 2.5fr 2fr 2fr;
+            grid-template-rows: 2fr 2fr 1.5fr;
+            gap: 1px;
+            background-color: #000;
+            border: 2px solid #FFF;
+        }
+
+        .grid-box {
+            background-color: #FFF;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* Specific Box Placements */
+        .kp { grid-column: 1 / 2; grid-row: 1 / 3; }
+        .ka { grid-column: 2 / 3; grid-row: 1 / 2; }
+        .kr { grid-column: 2 / 3; grid-row: 2 / 3; }
+        .vp { grid-column: 3 / 4; grid-row: 1 / 3; }
+        .cr { grid-column: 4 / 5; grid-row: 1 / 2; }
+        .ch { grid-column: 4 / 5; grid-row: 2 / 3; }
+        .cs { grid-column: 5 / 6; grid-row: 1 / 3; }
+        
+        /* Bottom row */
+        .cst { grid-column: 1 / 4; grid-row: 3 / 4; margin-right: -1px; }
+        .rev { grid-column: 3 / 6; grid-row: 3 / 4; grid-column-start: span 3; }
+
+        .box-title {
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .box-title .star {
+            color: #000;
+        }
+
+        /* Content Styling */
+        ul {
+            padding-left: 20px;
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        li {
+            margin-bottom: 6px;
+        }
+        
+        p {
+            font-size: 12px;
+            line-height: 1.4;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+        
+        h4 {
+            margin: 10px 0 5px 0;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #444;
+        }
+
+        .highlight-box {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-left: 4px solid #00FF55;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><circle cx="50" cy="50" r="40" fill="none" stroke="black" stroke-width="10"/><circle cx="50" cy="50" r="20" fill="none" stroke="black" stroke-width="10"/><circle cx="50" cy="50" r="5" fill="black"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="canvas-container">
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">BUSINESS MODEL CANVAS</h1>
+            <div class="logo-box">
+                <div class="logo-icon"></div>
+                <div class="logo-text">Know Your<br>Careers</div>
+            </div>
+        </div>
+
+        <!-- Meta Info -->
+        <div class="meta-grid">
+            <div class="meta-box">DESIGNED FOR : <span>NYXA</span></div>
+            <div class="meta-box">DESIGNED BY : <span>Atharva Srivastava</span></div>
+            <div class="meta-box">DATE : <span>1 August 2026</span></div>
+            <div class="meta-box">VERSION : <span>1.0 — MVP / Vision</span></div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid-container">
+            <!-- Watermark Overlay (approximate) -->
+            <div class="watermark" style="grid-column: 2 / 5; grid-row: 1 / 4;"></div>
+
+            <!-- Key Partners -->
+            <div class="grid-box kp">
+                <div class="box-title">KEY PARTNERS</div>
+                <div class="content">
+                    <ul>
+                        <li>Developers / Task creators</li>
+                        <li>AI & automation providers</li>
+                        <li>Cloud / infrastructure providers</li>
+                        <li>Payment providers</li>
+                        <li>Educational & business institutions</li>
+                        <li>Early adopters / pilot users</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Key Activities -->
+            <div class="grid-box ka">
+                <div class="box-title">KEY ACTIVITIES</div>
+                <div class="content">
+                    <ul>
+                        <li>Build & maintain Task platform</li>
+                        <li>Create and test initial Tasks</li>
+                        <li>Task execution & quality control</li>
+                        <li>Developer onboarding</li>
+                        <li>User testing & feedback</li>
+                        <li>Standardize inputs → outputs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Value Propositions -->
+            <div class="grid-box vp">
+                <div class="box-title">VALUE PROPOSITIONS <span class="star">⭐</span></div>
+                <div class="content">
+                    <div class="highlight-box">
+                        NYXA transforms digital work from software consumption into outcome consumption.
+                    </div>
+                    
+                    <h4>For users</h4>
+                    <ul>
+                        <li>Get outcomes instead of learning software</li>
+                        <li>Predictable, standardized Tasks</li>
+                        <li>One place to discover digital work</li>
+                        <li>Less tool-hopping and workflow complexity</li>
+                    </ul>
+                    
+                    <h4>For developers</h4>
+                    <ul>
+                        <li>Turn reusable digital capabilities into Tasks</li>
+                        <li>Reach users without building an entire standalone product</li>
+                        <li>Monetize repeatable digital outcomes</li>
+                    </ul>
+                    
+                    <p style="margin-top: 15px; font-weight: bold; font-style: italic; text-align: center;">
+                        "Consume the outcome, not the software."
+                    </p>
+                </div>
+            </div>
+
+            <!-- Customer Relationship -->
+            <div class="grid-box cr">
+                <div class="box-title">CUSTOMER RELATIONSHIP</div>
+                <div class="content">
+                    <ul>
+                        <li>Self-service platform</li>
+                        <li>Guided Task discovery</li>
+                        <li>Ratings / reviews</li>
+                        <li>Feedback-driven improvement</li>
+                        <li>Automated support</li>
+                        <li>Trust through predictable outputs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Customer Segments -->
+            <div class="grid-box cs">
+                <div class="box-title">CUSTOMER SEGMENTS</div>
+                <div class="content">
+                    <h4>Primary</h4>
+                    <ul>
+                        <li>Students</li>
+                        <li>Professionals</li>
+                        <li>Small businesses</li>
+                        <li>Teams needing repeatable digital work</li>
+                    </ul>
+                    
+                    <h4>Supply side</h4>
+                    <ul>
+                        <li>Developers</li>
+                        <li>AI builders</li>
+                        <li>Automation creators</li>
+                        <li>Specialized service providers</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Key Resources -->
+            <div class="grid-box kr">
+                <div class="box-title">KEY RESOURCES</div>
+                <div class="content">
+                    <ul>
+                        <li>NYXA platform</li>
+                        <li>Task execution infrastructure</li>
+                        <li>Developer ecosystem</li>
+                        <li>AI / automation integrations</li>
+                        <li>Task templates & specifications</li>
+                        <li>User/task data</li>
+                        <li>Quality & reliability mechanisms</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Channels -->
+            <div class="grid-box ch">
+                <div class="box-title">CHANNELS</div>
+                <div class="content">
+                    <ul>
+                        <li>Web platform</li>
+                        <li>Developer community</li>
+                        <li>Campus / student outreach</li>
+                        <li>Social media</li>
+                        <li>Partnerships</li>
+                        <li>Referrals</li>
+                        <li>Direct business outreach</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Cost Structure -->
+            <div class="grid-box cst" style="grid-column: 1 / 4;">
+                <div class="box-title">COST STRUCTURE</div>
+                <div class="content" style="display: flex; gap: 40px;">
+                    <ul style="flex: 1;">
+                        <li>Hosting & compute</li>
+                        <li>AI/API usage</li>
+                        <li>Payment processing</li>
+                        <li>Development & maintenance</li>
+                    </ul>
+                    <ul style="flex: 1;">
+                        <li>Security / monitoring</li>
+                        <li>Customer acquisition</li>
+                        <li>Developer incentives</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Revenue Stream -->
+            <div class="grid-box rev" style="grid-column: 4 / 6; border-left: 1px solid #000;">
+                <div class="box-title">REVENUE STREAM <span class="star">⭐</span></div>
+                <div class="content">
+                    <ul>
+                        <li>Commission on paid Tasks</li>
+                        <li>Developer subscription / premium tools</li>
+                        <li>Enterprise / institutional plans</li>
+                        <li>Premium Task execution</li>
+                        <li>Potential API / platform fees</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

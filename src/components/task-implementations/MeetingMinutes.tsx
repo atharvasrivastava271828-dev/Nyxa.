@@ -140,7 +140,7 @@ export default function MeetingMinutes() {
         task: 'Deploy backend database migration script',
         owner: 'David',
         priority: 'High',
-        dueDate: new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10),
+        dueDate: '2026-12-31',
         status: 'In Progress',
       },
       {
@@ -148,7 +148,7 @@ export default function MeetingMinutes() {
         task: 'Write unit tests for authentication hooks',
         owner: 'Elena',
         priority: 'Medium',
-        dueDate: new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 10),
+        dueDate: '2026-12-31',
         status: 'Pending',
       },
     ],
