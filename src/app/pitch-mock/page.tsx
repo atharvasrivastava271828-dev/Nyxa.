@@ -411,6 +411,8 @@ export default function PitchMock() {
             </div>
             
           </div>
+        )}
+        
         {/* SLIDE 6: Business Model */}
         {currentSlide === 6 && (
           <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
