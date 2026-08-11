@@ -32,19 +32,19 @@ export default function PitchMock() {
           <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-500 relative">
             
             {/* Simple Yin-Yang Logo */}
-            <div className="w-16 h-16 mb-12 opacity-80">
+            <div className="w-32 h-32 mb-12 opacity-80">
               <img src="/favicon.svg" alt="Nyxa" className="w-full h-full object-contain" />
             </div>
             
             <div className="flex flex-col items-center gap-6">
               {/* Center Text */}
-              <h1 className="text-8xl font-medium text-white tracking-tight leading-none">
+              <h1 className="text-[130px] font-medium text-white tracking-tight leading-none">
                 Nyxa.
               </h1>
               
               {/* Tagline */}
-              <p className="text-2xl font-light text-white/60 tracking-widest">
-                For the Light.
+              <p className="text-3xl font-light text-white/60 tracking-widest">
+                For the Light
               </p>
             </div>
 
