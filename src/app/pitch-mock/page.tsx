@@ -60,13 +60,20 @@ export default function PitchMock() {
 
         {/* SLIDE 2: The Problem */}
         {currentSlide === 2 && (
-          <div className="w-full h-full flex flex-col items-center animate-in fade-in slide-in-from-right-8 duration-500 pt-8 relative">
+          <div className="w-full h-full flex flex-col animate-in fade-in slide-in-from-right-8 duration-500 pt-4 relative">
             
+            {/* Top Label */}
+            <div className="w-full text-center mb-8">
+              <span className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">
+                The Problem
+              </span>
+            </div>
+
             {/* Central Question */}
-            <div className="text-center mb-16 max-w-4xl">
+            <div className="text-center mb-16 self-center max-w-4xl">
               <h2 className="text-4xl font-semibold text-white/90 leading-snug">
                 We have more digital capability than ever—<br />
-                <span className="text-yellow-500/90 font-medium">but why is getting work done still so fragmented?</span>
+                <span className="text-white font-medium">but why is getting work done still so fragmented?</span>
               </h2>
             </div>
 
@@ -75,13 +82,13 @@ export default function PitchMock() {
               
               {/* Left Side: Humans */}
               <div className="flex-1 flex flex-col">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-white/10 pb-4">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-white/20 pb-4">
                   For Humans <span className="text-white ml-2 opacity-50">— Task Fragmentation</span>
                 </h3>
-                <p className="text-xl font-light italic text-white/70 mb-8 border-l-2 border-yellow-500/50 pl-4 py-1">
+                <p className="text-xl font-light italic text-white/70 mb-8 border-l-2 border-white/40 pl-4 py-1">
                   "I know what I need, but not which tool can reliably get it done."
                 </p>
-                <ul className="space-y-4 text-gray-400 text-lg font-light list-disc list-inside marker:text-white/20">
+                <ul className="space-y-4 text-gray-400 text-lg font-light list-disc list-inside marker:text-white/30">
                   <li>Too many apps and workflows</li>
                   <li>Need to learn tools instead of focusing on outcomes</li>
                   <li>Repetitive digital work gets rebuilt again and again</li>
@@ -91,13 +98,13 @@ export default function PitchMock() {
 
               {/* Right Side: Agents */}
               <div className="flex-1 flex flex-col">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-white/10 pb-4">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-white/20 pb-4">
                   For AI Agents <span className="text-white ml-2 opacity-50">— Capability Fragmentation</span>
                 </h3>
-                <p className="text-xl font-light italic text-white/70 mb-8 border-l-2 border-yellow-500/50 pl-4 py-1">
+                <p className="text-xl font-light italic text-white/70 mb-8 border-l-2 border-white/40 pl-4 py-1">
                   "An agent may know what needs to be done, but finding specialized agents is difficult."
                 </p>
-                <ul className="space-y-4 text-gray-400 text-lg font-light list-disc list-inside marker:text-white/20">
+                <ul className="space-y-4 text-gray-400 text-lg font-light list-disc list-inside marker:text-white/30">
                   <li>Agents are isolated</li>
                   <li>Capabilities aren't easily discoverable</li>
                   <li>Complex objectives require multiple specialized agents</li>
@@ -108,10 +115,10 @@ export default function PitchMock() {
             </div>
 
             {/* Killer Bridge (Bottom/Center) */}
-            <div className="absolute bottom-12 flex flex-col items-center bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded-xl px-12 py-6 w-11/12 max-w-4xl shadow-2xl">
-              <h4 className="text-2xl font-semibold text-white mb-3">Two users. One missing layer.</h4>
+            <div className="mt-auto flex flex-col items-center border-t border-white/10 pt-6 w-full">
+              <h4 className="text-2xl font-semibold text-white mb-2">Two users. One missing layer.</h4>
               <p className="text-gray-400 font-light text-lg">
-                <span className="text-white/80">Humans</span> need a way to discover outcomes. <span className="text-white/80 ml-2">Agents</span> need a way to discover capabilities.
+                <span className="text-white/90 font-medium">Humans</span> need a way to discover outcomes. <span className="text-white/90 ml-3 font-medium">Agents</span> need a way to discover capabilities.
               </p>
             </div>
             
