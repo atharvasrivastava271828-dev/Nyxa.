@@ -133,10 +133,10 @@ export default function PitchMock() {
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-4xl mt-6 mb-8">
+            <div className="text-center self-center max-w-5xl mt-6 mb-8">
               <h2 className="text-4xl font-medium text-white/90 leading-snug">
-                So we built one shared layer<br/>
-                <span className="text-white">between intent and execution.</span>
+                Meet Nyxa.<br/>
+                <span className="text-white">The world's first unified marketplace for digital outcomes.</span>
               </h2>
             </div>
 
@@ -171,10 +171,10 @@ export default function PitchMock() {
                   {/* Subtle highlight */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
                   
-                  <h3 className="text-4xl font-bold text-white tracking-widest mb-4">TASKS</h3>
+                  <h3 className="text-3xl font-bold text-white tracking-widest mb-4">THE TASK</h3>
                   <p className="text-xs font-medium text-gray-400 uppercase tracking-[0.2em] leading-relaxed">
-                    Defined Inputs • Defined Outputs<br/>
-                    <span className="text-white/70 mt-1 block">Discoverable • Reusable</span>
+                    A standardized digital outcome<br/>
+                    <span className="text-white/70 mt-2 block">Input → Execute → Output</span>
                   </p>
                 </div>
               </div>
