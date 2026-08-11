@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 5; // Updated to 5 slides
+  const totalSlides = 6; // Updated to 6 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -403,6 +403,82 @@ export default function PitchMock() {
             <div className="w-full text-center mt-6">
               <h3 className="text-[40px] font-medium text-white/95 tracking-tight">
                 &quot;Humans consume Tasks. Agents compose Tasks.&quot;
+              </h3>
+            </div>
+            
+          </div>
+        {/* SLIDE 6: Unit Economics */}
+        {currentSlide === 6 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
+            
+            {/* Top Label */}
+            <div className="w-full text-center mb-6">
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
+                Business Model & Unit Economics
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-5xl mt-2 mb-10">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug">
+                Software margins.<br/>
+                <span className="text-white">Protocol economics.</span>
+              </h2>
+            </div>
+
+            <div className="flex w-full max-w-5xl mx-auto gap-12 flex-1 items-stretch pb-4">
+              
+              {/* Left Column: Protocol Take-Rate */}
+              <div className="flex-1 flex flex-col justify-center border border-white/10 rounded-2xl p-10 bg-white/[0.02] shadow-[0_0_40px_rgba(255,255,255,0.02)] relative overflow-hidden text-center items-center">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+                <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4">Protocol Take-Rate</h3>
+                <div className="text-6xl font-medium text-white mb-6 tracking-tighter">3.5%</div>
+                <p className="text-lg text-white/70 font-light leading-relaxed max-w-sm">
+                  We take a transparent fee on every micro-utility executed across the network.
+                </p>
+                <div className="mt-8 bg-[#0a0a0a] border border-white/10 rounded-lg p-4 w-full flex flex-col gap-2">
+                  <div className="flex justify-between items-center text-xs font-mono text-gray-500">
+                    <span>Task Cost</span><span>$0.10</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs font-mono text-gray-500 border-b border-white/10 pb-2">
+                    <span>Nyxa Fee</span><span className="text-blue-400">+$0.0035</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs font-mono text-white/90 pt-1">
+                    <span>Total Paid</span><span>$0.1035</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Gross Margins */}
+              <div className="flex-1 flex flex-col justify-center border border-white/10 rounded-2xl p-10 bg-white/[0.02] shadow-[0_0_40px_rgba(255,255,255,0.02)] relative overflow-hidden text-center items-center">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent"></div>
+                <h3 className="text-xs font-bold text-green-400 uppercase tracking-widest mb-4">Gross Margins</h3>
+                <div className="text-6xl font-medium text-white mb-6 tracking-tighter">95%+</div>
+                <p className="text-lg text-white/70 font-light leading-relaxed max-w-sm">
+                  Tasks execute on WASM edge sandboxes. Our marginal compute cost approaches zero.
+                </p>
+                <div className="mt-8 flex flex-col gap-3 w-full items-center">
+                  <div className="w-full flex items-center justify-center gap-4">
+                    <span className="text-xs font-mono text-gray-500 w-24 text-right">Compute Cost</span>
+                    <div className="h-1 flex-1 bg-white/10 rounded overflow-hidden">
+                      <div className="w-[5%] h-full bg-gray-500"></div>
+                    </div>
+                  </div>
+                  <div className="w-full flex items-center justify-center gap-4">
+                    <span className="text-xs font-mono text-white/80 w-24 text-right">Net Margin</span>
+                    <div className="h-1 flex-1 bg-white/10 rounded overflow-hidden">
+                      <div className="w-[95%] h-full bg-green-500"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Statement */}
+            <div className="w-full text-center mt-6">
+              <h3 className="text-xl font-light text-gray-400 tracking-wide">
+                LTV to CAC ratio projected at <span className="text-white font-medium">48:1+</span>
               </h3>
             </div>
             
