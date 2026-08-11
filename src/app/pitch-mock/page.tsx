@@ -603,7 +603,7 @@ export default function PitchMock() {
             {/* Central Headline */}
             <div className="text-center self-center max-w-5xl mt-2 mb-16">
               <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
-                Built by engineers obsessed with zero-friction systems.
+                Built by a young engineer obsessed with zero-friction systems.
               </h2>
             </div>
 
@@ -612,15 +612,11 @@ export default function PitchMock() {
               
               {/* Col 1 */}
               <div className="flex-1 pr-6 border-r border-white/10 last:border-0">
-                <h3 className="text-lg font-bold text-white mb-6">Founders</h3>
+                <h3 className="text-lg font-bold text-white mb-6">Founder</h3>
                 <ul className="space-y-4 text-sm text-gray-400 font-light">
                   <li>
-                    <strong className="text-white font-medium">[Name], CEO</strong><br/>
-                    <span className="text-white/60">Product & Vision</span>
-                  </li>
-                  <li>
-                    <strong className="text-white font-medium">[Name], CTO</strong><br/>
-                    <span className="text-white/60">WASM & Infrastructure</span>
+                    <strong className="text-white font-medium">Atharva Srivastava</strong><br/>
+                    <span className="text-white/60">High Schooler & Developer</span>
                   </li>
                 </ul>
               </div>
@@ -629,7 +625,7 @@ export default function PitchMock() {
               <div className="flex-1 px-6 border-r border-white/10 last:border-0">
                 <h3 className="text-lg font-bold text-white mb-6">Execution Velocity</h3>
                 <p className="text-sm text-gray-400 font-light leading-relaxed">
-                  We don&apos;t just theorize about the agentic economy. We shipped the core WASM-edge protocol and Task Marketplace prototype in record time.
+                  A rapid learner and relentless builder. Capable of turning complex conceptual architectures into working prototypes at high speed, without legacy baggage.
                 </p>
               </div>
 
@@ -637,7 +633,7 @@ export default function PitchMock() {
               <div className="flex-1 px-6 border-r border-white/10 last:border-0">
                 <h3 className="text-lg font-bold text-white mb-6">Domain Obsession</h3>
                 <p className="text-sm text-gray-400 font-light leading-relaxed">
-                  Decades of combined experience suffering through broken API integrations. We are building the exact autonomous layer we always needed.
+                  Deeply obsessed with systems design and the future of machine-to-machine interactions. Building the autonomous layer because it is the inevitable next step for AI.
                 </p>
               </div>
 
@@ -646,10 +642,10 @@ export default function PitchMock() {
                 <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-5 shadow-lg h-full">
                   <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-wider border-b border-white/10 pb-2">Investors Evaluate:</h3>
                   <ul className="space-y-3 text-sm font-light text-white/70 list-disc list-inside marker:text-white/30">
-                    <li>Deep domain understanding</li>
-                    <li>Execution ability</li>
-                    <li>Relentless passion</li>
                     <li>High coachability</li>
+                    <li>Relentless passion</li>
+                    <li>Execution ability</li>
+                    <li>Deep domain curiosity</li>
                   </ul>
                 </div>
               </div>
@@ -659,7 +655,7 @@ export default function PitchMock() {
             {/* Bottom Statement */}
             <div className="w-full text-center mt-12">
               <h3 className="text-xl font-medium text-white/60 tracking-wide">
-                We have the passion and the technical chops to execute.
+                Age is a number. Execution is everything.
               </h3>
             </div>
             
