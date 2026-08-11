@@ -349,19 +349,23 @@ export default function PitchMock() {
                 </div>
               </div>
 
-              {/* Center: The Pill */}
-              <div className="w-48 flex flex-col items-center justify-center relative z-10 shrink-0">
-                {/* Horizontal connecting lines behind the pill */}
-                <div className="absolute w-[160%] h-px bg-white/10 top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10"></div>
+              {/* Center: The Task Market Wireframe */}
+              <div className="w-64 flex flex-col items-center justify-center relative z-10 shrink-0">
+                {/* Horizontal connecting lines behind the wireframe */}
+                <div className="absolute w-[160%] h-px bg-white/10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10"></div>
                 
-                <div className="bg-black border border-white/20 rounded-[40px] py-12 px-4 flex flex-col items-center text-center shadow-[0_0_30px_rgba(255,255,255,0.05)] w-full">
-                  <span className="text-white font-bold tracking-widest mb-6">TASK LAYER</span>
-                  <ul className="text-xs text-gray-400 space-y-4 font-mono leading-relaxed">
-                    <li>Discoverable</li>
-                    <li>Defined</li>
-                    <li>Reusable</li>
-                    <li>Composable</li>
-                  </ul>
+                <div className="bg-[#050505] border border-white/20 rounded-xl p-6 flex flex-col shadow-[0_0_30px_rgba(255,255,255,0.05)] w-full relative">
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-black px-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Product Demo</div>
+                  <div className="text-center mb-6 mt-2">
+                    <span className="text-white text-sm font-bold tracking-widest">TASK MARKET</span>
+                  </div>
+                  <div className="space-y-4 font-mono text-[11px] text-white/80">
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded"><span className="text-white/40">📋</span> Research</div>
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded"><span className="text-white/40">📋</span> Data Analysis</div>
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded ring-1 ring-white/30"><span className="text-white/40">📋</span> Competitor Report</div>
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded"><span className="text-white/40">📋</span> Translation</div>
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded"><span className="text-white/40">📋</span> Design</div>
+                  </div>
                 </div>
               </div>
 
