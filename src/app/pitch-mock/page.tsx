@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 6; // Updated to 6 slides
+  const totalSlides = 7; // Updated to 7 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -494,6 +494,93 @@ export default function PitchMock() {
               <h3 className="text-2xl font-medium text-white/95 tracking-tight">
                 B2C today. B2B for the agentic economy. <span className="text-white font-bold border-b-2 border-white/30 pb-1">One marketplace revenue model.</span>
               </h3>
+            </div>
+            
+          </div>
+        )}
+
+        {/* SLIDE 7: Traction & Validation */}
+        {currentSlide === 7 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
+            
+            {/* Top Label */}
+            <div className="w-full text-center mb-6">
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
+                Traction & Validation
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-5xl mt-2 mb-10">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
+                From Idea → Validation → Momentum
+              </h2>
+            </div>
+
+            {/* The Progression Timeline */}
+            <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center">
+              
+              {/* Huge Number Callout */}
+              <div className="mb-14 text-center">
+                <div className="text-7xl font-medium text-white tracking-tighter mb-2">2×</div>
+                <div className="text-xl text-white/80 font-bold tracking-widest uppercase mt-4">Competition Selections</div>
+                <p className="text-sm text-white/50 mt-2 font-mono">Our concept has been selected to advance in two competitive settings.</p>
+              </div>
+
+              {/* The Timeline Diagram */}
+              <div className="flex items-start justify-center gap-6 w-full max-w-4xl relative">
+                
+                {/* Connecting Lines */}
+                <div className="absolute top-[52px] left-[10%] right-[10%] h-px bg-white/20 -z-10"></div>
+                
+                {/* IDEA */}
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-lg z-10">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">IDEA</span>
+                  <div className="w-px h-6 bg-white/20 mb-4"></div>
+                  <span className="text-sm text-white font-medium mb-1">AI2AI</span>
+                  <span className="text-sm text-white/60">Agents</span>
+                </div>
+
+                <div className="text-white/30 pt-12 text-xl font-light">→</div>
+
+                {/* PRODUCT */}
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-lg z-10">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">PRODUCT</span>
+                  <div className="w-px h-6 bg-white/20 mb-4"></div>
+                  <span className="text-sm text-white font-medium mb-1">Tasks built</span>
+                  <span className="text-sm text-white/60">Prototype</span>
+                </div>
+
+                <div className="text-white/30 pt-12 text-xl font-light">→</div>
+
+                {/* VALIDATION */}
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-blue-500/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(59,130,246,0.1)] ring-1 ring-blue-500/20 z-10">
+                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4">VALIDATION</span>
+                  <div className="w-px h-6 bg-blue-500/50 mb-4"></div>
+                  <span className="text-sm text-white font-medium mb-1">Selection</span>
+                  <span className="text-sm text-white/60">Feedback</span>
+                </div>
+
+                <div className="text-white/30 pt-12 text-xl font-light">→</div>
+
+                {/* MARKET */}
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-lg z-10">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">MARKET</span>
+                  <div className="w-px h-6 bg-white/20 mb-4"></div>
+                  <span className="text-sm text-white font-medium mb-1">B2C launch</span>
+                  <div className="text-white/30 text-xs my-2">↓</div>
+                  <span className="text-sm text-white/60">B2B Agents</span>
+                </div>
+
+              </div>
+              
+              {/* Bottom Quote */}
+              <div className="mt-16 px-12 text-center max-w-4xl border-l-4 border-white/20 pl-8 text-left bg-white/[0.02] py-4 rounded-r-lg">
+                <p className="text-lg text-white/80 font-light leading-relaxed italic">
+                  &quot;We&apos;re no longer validating whether we can build it. We&apos;re validating whether people will repeatedly use and pay for it.&quot;
+                </p>
+              </div>
+
             </div>
             
           </div>
