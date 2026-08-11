@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 8; // Updated to 8 slides
+  const totalSlides = 9; // Updated to 9 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -657,6 +657,107 @@ export default function PitchMock() {
               <h3 className="text-xl font-medium text-white/60 tracking-wide">
                 Age is a number. Execution is everything.
               </h3>
+            </div>
+            
+            </div>
+            
+          </div>
+        )}
+
+        {/* SLIDE 9: Competition / USP */}
+        {currentSlide === 9 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-6 pb-8 relative px-12">
+            
+            {/* Top Label */}
+            <div className="w-full text-center mb-4">
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
+                Competition & Positioning
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-5xl mb-10">
+              <h2 className="text-[32px] font-medium text-white/90 leading-tight">
+                We&apos;re not competing with one product.<br/>
+                <span className="text-white">We&apos;re connecting two fragmented markets.</span>
+              </h2>
+            </div>
+
+            {/* Middle Section: 2x2 Matrix & Visual Flow */}
+            <div className="flex-1 w-full max-w-6xl mx-auto flex items-center justify-between gap-12">
+              
+              {/* Left: 2x2 Positioning Matrix */}
+              <div className="flex-[1.2] w-full">
+                <div className="w-full border border-white/10 rounded-xl overflow-hidden bg-white/[0.02]">
+                  {/* Headers */}
+                  <div className="grid grid-cols-3 border-b border-white/10 bg-white/[0.05]">
+                    <div className="p-4"></div>
+                    <div className="p-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-l border-white/10">Human-first</div>
+                    <div className="p-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-l border-white/10">Agent-first</div>
+                  </div>
+                  {/* Row 1 */}
+                  <div className="grid grid-cols-3 border-b border-white/10">
+                    <div className="p-4 text-sm font-bold text-gray-300 uppercase tracking-wide flex items-center">Tools / capabilities</div>
+                    <div className="p-4 text-sm font-light text-white/70 border-l border-white/10 flex items-center">AI apps, automation tools</div>
+                    <div className="p-4 text-sm font-light text-white/70 border-l border-white/10 flex items-center">Agent marketplaces</div>
+                  </div>
+                  {/* Row 2 */}
+                  <div className="grid grid-cols-3">
+                    <div className="p-4 text-sm font-bold text-gray-300 uppercase tracking-wide flex items-center">Digital work / outcomes</div>
+                    <div className="p-4 text-sm font-light text-white/70 border-l border-white/10 flex items-center">Task / freelance marketplaces</div>
+                    <div className="p-4 text-sm font-bold text-white bg-blue-500/10 border-l border-white/10 shadow-[inset_0_0_20px_rgba(59,130,246,0.15)] flex items-center leading-snug">
+                      NYXA — Task layer for both
+                    </div>
+                  </div>
+                </div>
+                
+                {/* USP Text below matrix */}
+                <div className="mt-6 border-l-2 border-blue-500/50 pl-4 py-1">
+                  <p className="text-[15px] text-white/80 font-light leading-relaxed">
+                    <strong className="text-white font-medium">Our USP:</strong> One Task ecosystem that humans can consume directly—and AI agents can discover, compose, and execute autonomously.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: Interaction Flow */}
+              <div className="flex-1 flex flex-col items-start justify-center gap-2 pl-6 border-l border-white/10">
+                
+                {/* Human Flow */}
+                <div className="mb-4">
+                  <div className="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2 mb-2">
+                    <span className="text-xl">👤</span> Human
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 font-mono text-sm text-white/80">
+                    Intent → <strong className="text-white">Task</strong> → Outcome
+                  </div>
+                </div>
+
+                {/* The Bridge */}
+                <div className="h-10 border-l-2 border-dashed border-white/30 ml-8 flex items-center">
+                  <span className="ml-4 text-xs font-bold uppercase tracking-widest text-blue-400">↕ Same Task Layer</span>
+                </div>
+
+                {/* Agent Flow */}
+                <div className="mt-4">
+                  <div className="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2 mb-2">
+                    <span className="text-xl">🤖</span> Agent
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 font-mono text-sm text-white/80 leading-relaxed">
+                    Objective → <strong className="text-white">Task → Task → Task</strong> → Larger Outcome
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+            
+            {/* Huge USP Quote at Bottom */}
+            <div className="w-full text-center mt-auto border-t border-white/10 pt-8">
+              <h3 className="text-3xl font-medium text-white tracking-tight mb-2">
+                &quot;Humans consume Tasks. Agents compose Tasks.&quot;
+              </h3>
+              <p className="text-sm font-light text-gray-400 uppercase tracking-[0.2em]">
+                Same supply. Two demand surfaces. One marketplace economy.
+              </p>
             </div>
             
           </div>
