@@ -24,32 +24,38 @@ export default function PitchMock() {
       
       {/* 16:9 Aspect Ratio Slide Container */}
       <div 
-        className="relative w-full max-w-6xl aspect-video bg-[#0a0a0a] border border-white/10 rounded-lg overflow-hidden flex flex-col items-center justify-center text-center p-12 transition-all duration-500"
-        style={{ boxShadow: '0 0 100px rgba(0,0,0,0.8)' }}
+        className="relative w-full max-w-6xl aspect-video bg-black overflow-hidden flex flex-col items-center justify-center text-center p-12 transition-all duration-500"
       >
         
         {/* SLIDE 1 */}
         {currentSlide === 1 && (
           <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-500">
-            {/* Logo Placeholder */}
-            <div className="w-24 h-24 mb-8">
-              <img src="/yinyang.png" alt="Nyxa" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]" />
+            {/* Simple Yin-Yang Logo */}
+            <div className="w-20 h-20 mb-10">
+              <img src="/yinyang.png" alt="Nyxa" className="w-full h-full object-contain" />
             </div>
             
-            <h1 className="text-7xl font-extrabold text-white tracking-tight mb-6">
+            {/* Center Text */}
+            <h1 className="text-[100px] font-bold text-white tracking-tighter mb-4 leading-none">
               Nyxa.
             </h1>
             
-            <p className="text-2xl text-gray-400 max-w-3xl leading-relaxed">
-              [Slide 1 Placeholder: Let's nail the opening hook.]
+            {/* Tagline */}
+            <p className="text-3xl font-light text-gray-200 tracking-wide mb-8">
+              For the Light.
+            </p>
+
+            {/* Subtle Subtext */}
+            <p className="text-sm font-medium text-gray-500 uppercase tracking-widest mt-4">
+              Making sure no one is left out.
             </p>
           </div>
         )}
 
       </div>
       
-      {/* Slide Controls & Instructions */}
-      <div className="mt-8 flex flex-col items-center gap-4">
+      {/* Slide Controls & Instructions (Hidden in production presentation) */}
+      <div className="mt-8 flex flex-col items-center gap-4 opacity-30 hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-6">
           <button 
             onClick={() => setCurrentSlide(s => Math.max(1, s - 1))}
