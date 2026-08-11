@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 3; // Updated to 3 slides
+  const totalSlides = 4; // Updated to 4 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -208,6 +208,96 @@ export default function PitchMock() {
               <p className="text-gray-400 font-light text-xl">
                 <span className="text-white/90 font-medium">Humans</span> buy tasks. <span className="text-white/90 ml-4 font-medium">AI Agents</span> autonomously hire other AI agents.
               </p>
+            </div>
+            
+          </div>
+        )}
+
+        {/* SLIDE 4: The Market */}
+        {currentSlide === 4 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-4 pb-4 relative">
+            
+            {/* Top Label */}
+            <div className="w-full text-center">
+              <span className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">
+                The Market
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-5xl mt-6 mb-10">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug">
+                We're not entering one market.<br/>
+                <span className="text-white">We're building at the intersection of two.</span>
+              </h2>
+            </div>
+
+            {/* Two-Column Layout */}
+            <div className="flex w-full px-12 gap-12 mb-2 flex-1">
+              
+              {/* Left Column: The Demand Surfaces */}
+              <div className="flex-1 flex flex-col justify-center border-r border-white/10 pr-12">
+                <div className="mb-10">
+                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-3">
+                    <span className="text-xl">👤</span> Human Task Market
+                  </h3>
+                  <p className="text-lg text-white/70 font-light leading-relaxed">
+                    The economy of digital work that humans pay to seamlessly consume.
+                  </p>
+                </div>
+                
+                <div className="mb-10">
+                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-3">
+                    <span className="text-xl">🤖</span> Agentic Market
+                  </h3>
+                  <p className="text-lg text-white/70 font-light leading-relaxed">
+                    The rapidly growing ecosystem of digital capabilities that AI agents must orchestrate.
+                  </p>
+                </div>
+
+                <div className="pt-8 border-t border-white/10">
+                  <p className="text-2xl font-semibold text-white">Two demand surfaces.<br/><span className="text-white/50 font-light">One underlying economy.</span></p>
+                </div>
+              </div>
+
+              {/* Right Column: TAM/SAM/SOM Zoom-in */}
+              <div className="flex-[1.2] flex flex-col justify-center gap-5">
+                
+                {/* TAM */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 relative overflow-hidden transition-all hover:bg-white/10">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">TAM — Total Universe</h4>
+                      <p className="text-sm text-gray-400 font-light">Global API & Digital Task Economy</p>
+                    </div>
+                    <div className="text-4xl font-bold text-white tracking-tight">$135B</div>
+                  </div>
+                </div>
+
+                {/* SAM */}
+                <div className="bg-white/10 border border-white/20 rounded-xl p-6 relative overflow-hidden ml-8 transition-all hover:bg-white/15">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">SAM — Reachable Market</h4>
+                      <p className="text-sm text-gray-300 font-light">AI Agentic & Edge Compute Layer (45% CAGR)</p>
+                    </div>
+                    <div className="text-4xl font-bold text-white tracking-tight">$45B</div>
+                  </div>
+                </div>
+
+                {/* SOM */}
+                <div className="bg-[#050505] border-2 border-white/40 rounded-xl p-6 relative overflow-hidden ml-16 shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all hover:border-white/60">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-1">SOM — Our Beachhead</h4>
+                      <p className="text-sm text-white/70 font-light">Initial 10,000 Agents ($30M GMV → $1.05M ARR at 3.5% fee)</p>
+                    </div>
+                    <div className="text-4xl font-bold text-white tracking-tight">$30M</div>
+                  </div>
+                </div>
+
+              </div>
             </div>
             
           </div>
