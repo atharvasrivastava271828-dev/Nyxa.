@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 4; // Updated to 4 slides
+  const totalSlides = 5; // Updated to 5 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -295,6 +295,93 @@ export default function PitchMock() {
                     </div>
                     <div className="text-4xl font-bold text-white tracking-tight">$30M</div>
                   </div>
+                </div>
+
+              </div>
+            </div>
+            
+          </div>
+        )}
+
+        {/* SLIDE 5: Product Demo */}
+        {currentSlide === 5 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-4 pb-4 relative">
+            
+            {/* Top Label */}
+            <div className="w-full text-center">
+              <span className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">
+                The Product
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-5xl mt-4 mb-6">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug">
+                TaskBidder.<br/>
+                <span className="text-white">A marketplace that bids on your intent.</span>
+              </h2>
+            </div>
+
+            {/* Wireframe UI */}
+            <div className="flex-1 w-full px-12 flex flex-col justify-center pb-6">
+              
+              <div className="bg-[#050505] border border-white/20 rounded-xl shadow-[0_0_50px_rgba(255,255,255,0.02)] w-full h-full flex flex-col overflow-hidden relative">
+                
+                {/* UI Header */}
+                <div className="h-10 border-b border-white/10 flex items-center px-4 gap-2 bg-white/5">
+                  <div className="w-3 h-3 rounded-full bg-white/20"></div>
+                  <div className="w-3 h-3 rounded-full bg-white/20"></div>
+                  <div className="w-3 h-3 rounded-full bg-white/20"></div>
+                  <div className="mx-auto text-xs font-mono text-white/40 tracking-widest">NYXA TERMINAL // LIVE PROTOCOL</div>
+                </div>
+
+                {/* UI Body - 3 Step Flow */}
+                <div className="flex flex-1 p-8 gap-8 items-stretch">
+                  
+                  {/* Step 1: Input */}
+                  <div className="flex-1 border border-white/10 rounded-lg p-6 flex flex-col relative bg-[#0a0a0a]">
+                    <div className="absolute -top-3 left-6 bg-[#050505] px-2 text-xs font-bold text-gray-500 uppercase tracking-widest">1. The Intent</div>
+                    <p className="text-gray-400 font-mono text-xs mb-3">User: Human</p>
+                    <div className="bg-white/10 text-white font-mono text-sm p-4 rounded-md border-l-2 border-white/50">
+                      > Request: "Build a pitch deck for a fintech startup."
+                    </div>
+                    <div className="mt-auto text-xs text-white/40 font-mono animate-pulse pt-4">Status: Broadcasted to TaskBidder</div>
+                  </div>
+
+                  {/* Step 2: Execution */}
+                  <div className="flex-[1.2] border border-white/10 rounded-lg p-6 flex flex-col relative bg-[#0a0a0a]">
+                    <div className="absolute -top-3 left-6 bg-[#050505] px-2 text-xs font-bold text-gray-500 uppercase tracking-widest">2. The Auction</div>
+                    <div className="space-y-3 font-mono text-xs mt-2 flex flex-col flex-1 justify-center">
+                      <div className="flex justify-between items-center text-gray-400 pb-2">
+                        <span>Scanning network for capabilities...</span>
+                        <span className="text-white/30">0.1s</span>
+                      </div>
+                      <div className="flex justify-between items-center border border-white/10 bg-white/5 p-3 rounded">
+                        <span className="text-white/80">Agent: 'Market Researcher'</span>
+                        <span className="text-white">$0.02</span>
+                      </div>
+                      <div className="flex justify-between items-center border border-white/10 bg-white/5 p-3 rounded">
+                        <span className="text-white/80">Agent: 'Slide Generator'</span>
+                        <span className="text-white">$0.05</span>
+                      </div>
+                      <div className="flex justify-between items-center text-white/90 pt-3 border-t border-white/10 mt-2">
+                        <span>[Executing WASM Sandboxes...]</span>
+                        <span>████████░░ 80%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3: Output */}
+                  <div className="flex-1 border border-white/10 rounded-lg p-6 flex flex-col relative bg-[#0a0a0a] justify-center items-center text-center">
+                    <div className="absolute -top-3 left-6 bg-[#050505] px-2 text-xs font-bold text-gray-500 uppercase tracking-widest">3. The Outcome</div>
+                    <div className="w-16 h-20 border-2 border-white/40 rounded flex items-center justify-center mb-5 bg-white/5 relative overflow-hidden">
+                       <div className="absolute top-0 left-0 w-full h-full bg-white/5 opacity-50"></div>
+                      <span className="font-bold text-white/80 uppercase">PPTX</span>
+                    </div>
+                    <p className="text-white font-medium mb-1">fintech_deck.pptx</p>
+                    <p className="text-xs text-gray-500 font-mono mt-2">Delivered in 4.2s<br/>Total Cost: $0.07</p>
+                  </div>
+
                 </div>
 
               </div>
