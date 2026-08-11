@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 9; // Updated to 9 slides
+  const totalSlides = 10; // Updated to 10 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -758,6 +758,155 @@ export default function PitchMock() {
               <p className="text-sm font-light text-gray-400 uppercase tracking-[0.2em]">
                 Same supply. Two demand surfaces. One marketplace economy.
               </p>
+            </div>
+            
+            </div>
+            
+          </div>
+        )}
+
+        {/* SLIDE 10: Roadmap */}
+        {currentSlide === 10 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
+            
+            {/* Top Label */}
+            <div className="w-full text-center mb-6">
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
+                Roadmap
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-5xl mb-12">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
+                From Tasks to an Agentic Economy
+              </h2>
+            </div>
+
+            {/* Content: Left Flowchart, Right Phases */}
+            <div className="flex-1 w-full max-w-6xl mx-auto flex items-start gap-12">
+              
+              {/* Left: Expanding Outward Visual */}
+              <div className="flex-[0.8] bg-[#050505] border border-white/10 rounded-xl p-8 flex flex-col items-center justify-center relative shadow-lg">
+                
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">TODAY</div>
+                <div className="w-px h-6 bg-white/20 mb-4"></div>
+                
+                <div className="border border-white/30 rounded px-6 py-4 text-center w-48 bg-white/[0.02]">
+                  <div className="text-sm font-bold text-white uppercase tracking-wider">TASK MARKET</div>
+                  <div className="text-xs text-gray-400 mt-1">B2C</div>
+                </div>
+
+                <div className="w-px h-8 bg-white/20 my-2 relative">
+                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 text-white/30 text-[10px]">▼</div>
+                </div>
+
+                <div className="border border-white/30 rounded px-6 py-4 text-center w-48 bg-white/[0.02]">
+                  <div className="text-sm font-bold text-white uppercase tracking-wider">AGENT LAYER</div>
+                  <div className="text-xs text-gray-400 mt-1">AI2AI + Tasks</div>
+                </div>
+
+                <div className="w-px h-8 bg-white/20 my-2 relative">
+                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 text-white/30 text-[10px]">▼</div>
+                </div>
+
+                {/* Fork */}
+                <div className="w-48 border-t border-white/20 h-4 flex justify-between relative">
+                   <div className="w-px h-4 bg-white/20 absolute left-0 top-0"></div>
+                   <div className="w-px h-4 bg-white/20 absolute right-0 top-0"></div>
+                </div>
+
+                <div className="flex w-full justify-center gap-12">
+                  <div className="text-center w-20">
+                    <div className="text-[10px] font-bold text-white uppercase tracking-widest">HUMAN MARKET</div>
+                    <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
+                  </div>
+                  <div className="text-center w-20">
+                    <div className="text-[10px] font-bold text-white uppercase tracking-widest">AGENT MARKET</div>
+                    <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
+                  </div>
+                </div>
+
+                {/* Join */}
+                <div className="w-48 border-b border-white/20 h-4 flex justify-between relative mb-2">
+                   <div className="w-px h-4 bg-white/20 absolute left-0 bottom-0"></div>
+                   <div className="w-px h-4 bg-white/20 absolute right-0 bottom-0"></div>
+                </div>
+                
+                <div className="w-px h-4 bg-white/20 mb-2 relative">
+                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 text-white/30 text-[10px]">▼</div>
+                </div>
+
+                <div className="text-sm font-bold text-blue-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                  <span className="text-lg">🌐</span> AGENTIC ECONOMY
+                </div>
+
+              </div>
+
+              {/* Right: Phases List */}
+              <div className="flex-[1.2] flex flex-col gap-6 overflow-y-auto pr-4" style={{ maxHeight: '55vh' }}>
+                
+                {/* Phase 1 */}
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 1 — Prove the Task Economy</h3>
+                  <div className="text-xs text-blue-400 font-mono mb-3">Now → 6 months</div>
+                  <ul className="space-y-1 text-sm text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                    <li>Launch B2C Task marketplace</li>
+                    <li>Build initial high-value Tasks</li>
+                    <li>Onboard Task creators</li>
+                    <li>Validate repeat usage & willingness to pay</li>
+                    <li>Establish trust, quality & ratings</li>
+                  </ul>
+                </div>
+                
+                <div className="text-white/20 text-xs ml-4">↓</div>
+
+                {/* Phase 2 */}
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 2 — Build the Agent Layer</h3>
+                  <div className="text-xs text-blue-400 font-mono mb-3">6 → 12 months</div>
+                  <ul className="space-y-1 text-sm text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                    <li>Enable agents to discover Tasks</li>
+                    <li>Enable agents to consume and compose Tasks</li>
+                    <li>Reintroduce AI2AI communication</li>
+                    <li>Pilot with developers / businesses</li>
+                    <li>Validate B2B agentic use cases</li>
+                  </ul>
+                </div>
+
+                <div className="text-white/20 text-xs ml-4">↓</div>
+
+                {/* Phase 3 */}
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 3 — Connect the Two Markets</h3>
+                  <div className="text-xs text-blue-400 font-mono mb-3">12 → 24 months</div>
+                  <ul className="space-y-1 text-sm text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                    <li>Humans consume Tasks directly</li>
+                    <li>Agents autonomously discover & compose Tasks</li>
+                    <li>Shared reputation / quality infrastructure</li>
+                    <li>Marketplace flywheel begins</li>
+                  </ul>
+                </div>
+
+                <div className="text-white/20 text-xs ml-4">↓</div>
+
+                {/* Phase 4 */}
+                <div className="bg-white/[0.03] border-l-2 border-blue-500/50 p-4 rounded-r-lg">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 4 — The Agentic Economy</h3>
+                  <div className="text-xs text-blue-400 font-mono mb-2">24+ months</div>
+                  <p className="text-sm text-white/80 font-medium">
+                    Humans ask for outcomes. Agents ask for capabilities. Tasks connect both.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+            
+            {/* Bottom Statement */}
+            <div className="w-full text-center mt-12 border-t border-white/10 pt-8">
+              <h3 className="text-2xl font-light text-white/80 tracking-wide italic">
+                &quot;Start with what humans want done. Build toward a world where agents can get it done for them.&quot;
+              </h3>
             </div>
             
           </div>
