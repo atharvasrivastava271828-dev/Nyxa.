@@ -531,48 +531,39 @@ export default function PitchMock() {
               </div>
 
               {/* The Timeline Diagram */}
-              <div className="flex items-start justify-center gap-6 w-full max-w-4xl relative">
+              <div className="flex items-start justify-center gap-4 w-full max-w-4xl relative">
                 
                 {/* Connecting Lines */}
-                <div className="absolute top-[52px] left-[10%] right-[10%] h-px bg-white/20 -z-10"></div>
+                <div className="absolute top-[38px] left-[15%] right-[15%] h-px bg-white/20 -z-10"></div>
                 
                 {/* IDEA */}
-                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-lg z-10">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">IDEA</span>
-                  <div className="w-px h-6 bg-white/20 mb-4"></div>
-                  <span className="text-sm text-white font-medium mb-1">AI2AI</span>
-                  <span className="text-sm text-white/60">Agents</span>
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-xl p-4 shadow-lg z-10">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">IDEA</span>
+                  <span className="text-sm text-white font-medium text-center">Core AI2AI Concept</span>
                 </div>
 
-                <div className="text-white/30 pt-12 text-xl font-light">→</div>
+                <div className="text-white/30 pt-6 text-lg font-light">→</div>
 
                 {/* PRODUCT */}
-                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-lg z-10">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">PRODUCT</span>
-                  <div className="w-px h-6 bg-white/20 mb-4"></div>
-                  <span className="text-sm text-white font-medium mb-1">Tasks built</span>
-                  <span className="text-sm text-white/60">Prototype</span>
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-xl p-4 shadow-lg z-10">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">BUILT</span>
+                  <span className="text-sm text-white font-medium text-center">Working Prototype</span>
                 </div>
 
-                <div className="text-white/30 pt-12 text-xl font-light">→</div>
+                <div className="text-white/30 pt-6 text-lg font-light">→</div>
 
                 {/* VALIDATION */}
-                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-blue-500/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(59,130,246,0.1)] ring-1 ring-blue-500/20 z-10">
-                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4">VALIDATION</span>
-                  <div className="w-px h-6 bg-blue-500/50 mb-4"></div>
-                  <span className="text-sm text-white font-medium mb-1">Selection</span>
-                  <span className="text-sm text-white/60">Feedback</span>
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-blue-500/30 rounded-xl p-4 shadow-[0_0_30px_rgba(59,130,246,0.1)] ring-1 ring-blue-500/20 z-10">
+                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">VALIDATED</span>
+                  <span className="text-sm text-white font-medium text-center">2× National Finals</span>
                 </div>
 
-                <div className="text-white/30 pt-12 text-xl font-light">→</div>
+                <div className="text-white/30 pt-6 text-lg font-light">→</div>
 
                 {/* MARKET */}
-                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-lg z-10">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">MARKET</span>
-                  <div className="w-px h-6 bg-white/20 mb-4"></div>
-                  <span className="text-sm text-white font-medium mb-1">B2C launch</span>
-                  <div className="text-white/30 text-xs my-2">↓</div>
-                  <span className="text-sm text-white/60">B2B Agents</span>
+                <div className="flex-1 flex flex-col items-center bg-[#0a0a0a] border border-white/10 rounded-xl p-4 shadow-lg z-10">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">NEXT</span>
+                  <span className="text-sm text-white font-medium text-center">B2C Launch</span>
                 </div>
 
               </div>
@@ -608,44 +599,39 @@ export default function PitchMock() {
             </div>
 
             {/* 4-Column Layout (Inspired by the reference image's flow) */}
-            <div className="flex-1 w-full max-w-5xl mx-auto flex items-stretch justify-between gap-4 border-t border-b border-white/10 py-12">
+            <div className="flex-1 w-full max-w-5xl mx-auto flex items-stretch justify-between gap-4 border-t border-b border-white/10 py-10">
               
               {/* Col 1 */}
-              <div className="flex-1 pr-6 border-r border-white/10 last:border-0">
-                <h3 className="text-lg font-bold text-white mb-6">Founder</h3>
-                <ul className="space-y-4 text-sm text-gray-400 font-light">
-                  <li>
-                    <strong className="text-white font-medium">Atharva Srivastava</strong><br/>
-                    <span className="text-white/60">High Schooler & Developer</span>
-                  </li>
-                </ul>
+              <div className="flex-[0.8] pr-4 border-r border-white/10">
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Founder</h3>
+                <strong className="text-white font-medium block text-lg">Atharva Srivastava</strong>
+                <span className="text-blue-400 text-sm">High Schooler & Dev</span>
               </div>
 
               {/* Col 2 */}
-              <div className="flex-1 px-6 border-r border-white/10 last:border-0">
-                <h3 className="text-lg font-bold text-white mb-6">Execution Velocity</h3>
-                <p className="text-sm text-gray-400 font-light leading-relaxed">
-                  A rapid learner and relentless builder. Capable of turning complex conceptual architectures into working prototypes at high speed, without legacy baggage.
+              <div className="flex-1 px-4 border-r border-white/10">
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Velocity</h3>
+                <p className="text-sm text-gray-300 font-light leading-relaxed">
+                  Rapid builder. Capable of turning complex conceptual architectures into working prototypes at high speed without legacy baggage.
                 </p>
               </div>
 
               {/* Col 3 */}
-              <div className="flex-1 px-6 border-r border-white/10 last:border-0">
-                <h3 className="text-lg font-bold text-white mb-6">Domain Obsession</h3>
-                <p className="text-sm text-gray-400 font-light leading-relaxed">
-                  Deeply obsessed with systems design and the future of machine-to-machine interactions. Building the autonomous layer because it is the inevitable next step for AI.
+              <div className="flex-1 px-4 border-r border-white/10">
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Obsession</h3>
+                <p className="text-sm text-gray-300 font-light leading-relaxed">
+                  Deeply obsessed with systems design and the future of machine-to-machine interactions.
                 </p>
               </div>
 
               {/* Col 4 */}
-              <div className="flex-1 pl-6">
-                <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-5 shadow-lg h-full">
-                  <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-wider border-b border-white/10 pb-2">Investors Evaluate:</h3>
-                  <ul className="space-y-3 text-sm font-light text-white/70 list-disc list-inside marker:text-white/30">
+              <div className="flex-1 pl-4">
+                <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-4 shadow-lg h-full">
+                  <h3 className="text-[10px] font-bold text-white mb-3 uppercase tracking-wider border-b border-white/10 pb-2">Investors Evaluate:</h3>
+                  <ul className="space-y-2 text-sm font-light text-white/70 list-disc list-inside marker:text-white/30">
                     <li>High coachability</li>
                     <li>Relentless passion</li>
                     <li>Execution ability</li>
-                    <li>Deep domain curiosity</li>
                   </ul>
                 </div>
               </div>
@@ -687,66 +673,44 @@ export default function PitchMock() {
             <div className="flex-1 w-full max-w-6xl mx-auto flex items-center justify-between gap-12">
               
               {/* Left: 2x2 Positioning Matrix */}
-              <div className="flex-[1.2] w-full">
+              <div className="flex-1 w-full max-w-5xl">
                 <div className="w-full border border-white/10 rounded-xl overflow-hidden bg-white/[0.02]">
-                  {/* Headers */}
                   <div className="grid grid-cols-3 border-b border-white/10 bg-white/[0.05]">
-                    <div className="p-4"></div>
-                    <div className="p-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-l border-white/10">Human-first</div>
-                    <div className="p-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-l border-white/10">Agent-first</div>
+                    <div className="p-3"></div>
+                    <div className="p-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-l border-white/10">Human-first</div>
+                    <div className="p-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-l border-white/10">Agent-first</div>
                   </div>
-                  {/* Row 1 */}
                   <div className="grid grid-cols-3 border-b border-white/10">
-                    <div className="p-4 text-sm font-bold text-gray-300 uppercase tracking-wide flex items-center">Tools / capabilities</div>
-                    <div className="p-4 text-sm font-light text-white/70 border-l border-white/10 flex items-center">AI apps, automation tools</div>
-                    <div className="p-4 text-sm font-light text-white/70 border-l border-white/10 flex items-center">Agent marketplaces</div>
+                    <div className="p-3 text-xs font-bold text-gray-300 uppercase tracking-wide flex items-center">Tools / capabilities</div>
+                    <div className="p-3 text-xs font-light text-white/70 border-l border-white/10 flex items-center">AI apps, automation tools</div>
+                    <div className="p-3 text-xs font-light text-white/70 border-l border-white/10 flex items-center">Agent marketplaces</div>
                   </div>
-                  {/* Row 2 */}
                   <div className="grid grid-cols-3">
-                    <div className="p-4 text-sm font-bold text-gray-300 uppercase tracking-wide flex items-center">Digital work / outcomes</div>
-                    <div className="p-4 text-sm font-light text-white/70 border-l border-white/10 flex items-center">Task / freelance marketplaces</div>
-                    <div className="p-4 text-sm font-bold text-white bg-blue-500/10 border-l border-white/10 shadow-[inset_0_0_20px_rgba(59,130,246,0.15)] flex items-center leading-snug">
-                      NYXA — Task layer for both
-                    </div>
+                    <div className="p-3 text-xs font-bold text-gray-300 uppercase tracking-wide flex items-center">Digital work</div>
+                    <div className="p-3 text-xs font-light text-white/70 border-l border-white/10 flex items-center">Freelance marketplaces</div>
+                    <div className="p-3 text-xs font-bold text-white bg-blue-500/10 border-l border-white/10 flex items-center">NYXA — Task layer for both</div>
                   </div>
                 </div>
-                
-                {/* USP Text below matrix */}
-                <div className="mt-6 border-l-2 border-blue-500/50 pl-4 py-1">
-                  <p className="text-[15px] text-white/80 font-light leading-relaxed">
-                    <strong className="text-white font-medium">Our USP:</strong> One Task ecosystem that humans can consume directly—and AI agents can discover, compose, and execute autonomously.
+                <div className="mt-4 border-l-2 border-blue-500/50 pl-4 py-1">
+                  <p className="text-sm text-white/80 font-light leading-relaxed">
+                    <strong className="text-white font-medium">USP:</strong> One Task ecosystem that humans consume directly, and AI discovers autonomously.
                   </p>
                 </div>
               </div>
 
               {/* Right: Interaction Flow */}
-              <div className="flex-1 flex flex-col items-start justify-center gap-2 pl-6 border-l border-white/10">
-                
-                {/* Human Flow */}
-                <div className="mb-4">
-                  <div className="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2 mb-2">
-                    <span className="text-xl">👤</span> Human
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 font-mono text-sm text-white/80">
-                    Intent → <strong className="text-white">Task</strong> → Outcome
-                  </div>
+              <div className="flex-[0.8] flex flex-col items-start justify-center gap-2 pl-8 border-l border-white/10">
+                <div className="mb-2">
+                  <div className="text-xs font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2 mb-2">👤 Human</div>
+                  <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 font-mono text-xs text-white/80">Intent → <strong className="text-white">Task</strong> → Outcome</div>
                 </div>
-
-                {/* The Bridge */}
-                <div className="h-10 border-l-2 border-dashed border-white/30 ml-8 flex items-center">
-                  <span className="ml-4 text-xs font-bold uppercase tracking-widest text-blue-400">↕ Same Task Layer</span>
+                <div className="h-6 border-l-2 border-dashed border-white/30 ml-6 flex items-center">
+                  <span className="ml-3 text-[10px] font-bold uppercase tracking-widest text-blue-400">↕ Same Layer</span>
                 </div>
-
-                {/* Agent Flow */}
-                <div className="mt-4">
-                  <div className="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2 mb-2">
-                    <span className="text-xl">🤖</span> Agent
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 font-mono text-sm text-white/80 leading-relaxed">
-                    Objective → <strong className="text-white">Task → Task → Task</strong> → Larger Outcome
-                  </div>
+                <div className="mt-2">
+                  <div className="text-xs font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2 mb-2">🤖 Agent</div>
+                  <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 font-mono text-xs text-white/80 leading-relaxed">Objective → <strong className="text-white">Task → Task</strong> → Outcome</div>
                 </div>
-                
               </div>
             </div>
             
@@ -844,58 +808,47 @@ export default function PitchMock() {
               </div>
 
               {/* Right: Phases List */}
-              <div className="flex-[1.2] flex flex-col gap-6 overflow-y-auto pr-4" style={{ maxHeight: '55vh' }}>
+              <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-4" style={{ maxHeight: '50vh' }}>
                 
                 {/* Phase 1 */}
                 <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 1 — Prove the Task Economy</h3>
-                  <div className="text-xs text-blue-400 font-mono mb-3">Now → 6 months</div>
-                  <ul className="space-y-1 text-sm text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
-                    <li>Launch B2C Task marketplace</li>
-                    <li>Build initial high-value Tasks</li>
-                    <li>Onboard Task creators</li>
-                    <li>Validate repeat usage & willingness to pay</li>
-                    <li>Establish trust, quality & ratings</li>
+                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 1 — Prove Task Economy</h3>
+                  <div className="text-[10px] text-blue-400 font-mono mb-2">Now → 6 months</div>
+                  <ul className="space-y-1 text-xs text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                    <li>Launch B2C Task market</li>
+                    <li>Onboard creators</li>
+                    <li>Validate usage & pricing</li>
                   </ul>
                 </div>
-                
-                <div className="text-white/20 text-xs ml-4">↓</div>
 
                 {/* Phase 2 */}
                 <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 2 — Build the Agent Layer</h3>
-                  <div className="text-xs text-blue-400 font-mono mb-3">6 → 12 months</div>
-                  <ul className="space-y-1 text-sm text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
-                    <li>Enable agents to discover Tasks</li>
-                    <li>Enable agents to consume and compose Tasks</li>
-                    <li>Reintroduce AI2AI communication</li>
-                    <li>Pilot with developers / businesses</li>
-                    <li>Validate B2B agentic use cases</li>
+                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 2 — Build Agent Layer</h3>
+                  <div className="text-[10px] text-blue-400 font-mono mb-2">6 → 12 months</div>
+                  <ul className="space-y-1 text-xs text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                    <li>Enable agent discovery</li>
+                    <li>Reintroduce AI2AI</li>
+                    <li>Pilot B2B agentic uses</li>
                   </ul>
                 </div>
-
-                <div className="text-white/20 text-xs ml-4">↓</div>
 
                 {/* Phase 3 */}
                 <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 3 — Connect the Two Markets</h3>
-                  <div className="text-xs text-blue-400 font-mono mb-3">12 → 24 months</div>
-                  <ul className="space-y-1 text-sm text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
-                    <li>Humans consume Tasks directly</li>
-                    <li>Agents autonomously discover & compose Tasks</li>
-                    <li>Shared reputation / quality infrastructure</li>
-                    <li>Marketplace flywheel begins</li>
+                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 3 — Connect Markets</h3>
+                  <div className="text-[10px] text-blue-400 font-mono mb-2">12 → 24 months</div>
+                  <ul className="space-y-1 text-xs text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                    <li>Humans consume directly</li>
+                    <li>Agents compose autonomously</li>
+                    <li>Marketplace flywheel starts</li>
                   </ul>
                 </div>
 
-                <div className="text-white/20 text-xs ml-4">↓</div>
-
                 {/* Phase 4 */}
-                <div className="bg-white/[0.03] border-l-2 border-blue-500/50 p-4 rounded-r-lg">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">PHASE 4 — The Agentic Economy</h3>
-                  <div className="text-xs text-blue-400 font-mono mb-2">24+ months</div>
-                  <p className="text-sm text-white/80 font-medium">
-                    Humans ask for outcomes. Agents ask for capabilities. Tasks connect both.
+                <div className="bg-white/[0.03] border-l-2 border-blue-500/50 p-3 rounded-r-lg mt-2">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 4 — Agentic Economy</h3>
+                  <div className="text-[10px] text-blue-400 font-mono mb-2">24+ months</div>
+                  <p className="text-xs text-white/80 font-medium leading-relaxed">
+                    Humans ask for outcomes.<br/>Agents ask for capabilities.<br/>Tasks connect both.
                   </p>
                 </div>
 
