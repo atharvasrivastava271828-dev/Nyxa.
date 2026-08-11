@@ -136,7 +136,7 @@ export default function PitchMock() {
             <div className="text-center self-center max-w-5xl mt-6 mb-8">
               <h2 className="text-4xl font-medium text-white/90 leading-snug">
                 Meet Nyxa.<br/>
-                <span className="text-white">The world's first unified marketplace for digital outcomes.</span>
+                <span className="text-white">A marketplace where humans and AI buy completed digital tasks.</span>
               </h2>
             </div>
 
@@ -146,22 +146,22 @@ export default function PitchMock() {
               {/* Left Path: Human */}
               <div className="flex-1 flex flex-col items-center text-center">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-white/20 pb-2 w-full">
-                  👤 Human
+                  👤 Human User
                 </h3>
                 <p className="text-base font-light italic text-white/70 mb-4 h-12 flex items-center justify-center">
-                  "I need a competitor report."
+                  "I need a business plan."
                 </p>
                 
                 <div className="text-white/30 my-2 text-xl">↓</div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3 w-full text-sm font-light text-gray-300">
-                  <span className="text-white font-medium">Discover</span> → Choose → Consume
+                  Buys a <span className="text-white font-medium">'Business Plan'</span> Task
                 </div>
 
                 <div className="text-white/30 my-2 text-xl">↓</div>
 
                 <div className="font-semibold text-white/90 text-lg uppercase tracking-wide">
-                  Predictable Outcome
+                  Gets a PDF Report
                 </div>
               </div>
 
@@ -171,10 +171,10 @@ export default function PitchMock() {
                   {/* Subtle highlight */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
                   
-                  <h3 className="text-3xl font-bold text-white tracking-widest mb-4">THE TASK</h3>
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-[0.2em] leading-relaxed">
-                    A standardized digital outcome<br/>
-                    <span className="text-white/70 mt-2 block">Input → Execute → Output</span>
+                  <h3 className="text-3xl font-bold text-white tracking-widest mb-4">A "TASK"</h3>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-[0.15em] leading-relaxed">
+                    A self-contained unit of work created by developers.<br/>
+                    <span className="text-white/80 mt-2 block font-bold tracking-[0.2em]">INPUT → CODE EXECUTION → OUTPUT</span>
                   </p>
                 </div>
               </div>
@@ -185,19 +185,19 @@ export default function PitchMock() {
                   🤖 AI Agent
                 </h3>
                 <p className="text-base font-light italic text-white/70 mb-4 h-12 flex items-center justify-center">
-                  "I need to accomplish a larger objective."
+                  "I need real-time flight data."
                 </p>
                 
                 <div className="text-white/30 my-2 text-xl">↓</div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3 w-full text-sm font-light text-gray-300">
-                  <span className="text-white font-medium">Discover</span> → Select → Compose
+                  Calls a <span className="text-white font-medium">'Flight Scraper'</span> Task
                 </div>
 
                 <div className="text-white/30 my-2 text-xl">↓</div>
 
                 <div className="font-semibold text-white/90 text-lg uppercase tracking-wide">
-                  Larger Outcome
+                  Gets a JSON Response
                 </div>
               </div>
 
