@@ -303,46 +303,101 @@ export default function PitchMock() {
           </div>
         )}
 
-        {/* SLIDE 5: Live Product Demo */}
+        {/* SLIDE 5: Product & Stack */}
         {currentSlide === 5 && (
           <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-4 pb-4 relative">
             
             {/* Top Label */}
-            <div className="w-full text-center mb-4">
-              <span className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">
-                Live Demo
+            <div className="w-full text-center">
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
+                The Product
               </span>
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mb-6">
-              <h2 className="text-4xl font-medium text-white/90 leading-snug">
-                Meet TaskBidder.<br/>
-                <span className="text-white">Our functioning marketplace for digital outcomes.</span>
+            <div className="text-center self-center max-w-5xl mt-2 mb-4">
+              <h2 className="text-3xl font-medium text-white/90 leading-snug">
+                One impressive journey.<br/>
+                <span className="text-white">Human Intent → Agents → Tasks → Outcome</span>
               </h2>
             </div>
 
-            {/* Live Prototype Iframe */}
-            <div className="flex-1 w-full px-12 flex flex-col justify-center pb-6 h-full overflow-hidden">
-              <div className="w-full h-full border border-white/20 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.05)] bg-[#050505] relative flex flex-col">
+            <div className="flex w-full px-12 gap-12 flex-1 items-center overflow-hidden pb-4">
+              
+              {/* Left Column: The Flow */}
+              <div className="flex-[1.5] h-full flex flex-col justify-center border border-white/10 rounded-xl p-6 bg-white/[0.02] shadow-[0_0_40px_rgba(255,255,255,0.02)]">
                 
-                {/* Browser-style Header */}
-                <div className="h-8 border-b border-white/10 flex items-center px-4 gap-2 bg-white/5 shrink-0">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
-                  <div className="mx-auto text-[10px] font-mono text-white/30 tracking-widest bg-black/20 px-3 py-0.5 rounded">nyxa.com/tasks</div>
+                {/* 1. Intent */}
+                <div className="mb-4">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">1. The Human Intent</span>
+                  <div className="bg-[#0a0a0a] border border-white/10 rounded-lg p-3">
+                    <p className="text-white/80 font-mono text-xs">&gt; Human: &quot;I need a market-entry report for Fintech in SEA.&quot;</p>
+                  </div>
                 </div>
 
-                {/* Actual App Iframe */}
-                <iframe 
-                  src="/tasks" 
-                  className="w-full flex-1 border-none"
-                  title="TaskBidder Live Demo"
-                />
+                {/* 2. Execution (AI2AI) */}
+                <div className="mb-4 relative">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">2. Autonomous AI2AI Execution</span>
+                  <div className="space-y-2 pl-4 border-l-2 border-white/10 ml-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">🤖</span>
+                      <span className="text-xs font-medium text-white/70 w-28">Research Agent</span>
+                      <span className="text-white/30 text-[10px]">→</span>
+                      <div className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-[10px] font-mono text-white/90">📋 Web Scraper Task</div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">🤖</span>
+                      <span className="text-xs font-medium text-white/70 w-28">Analysis Agent</span>
+                      <span className="text-white/30 text-[10px]">→</span>
+                      <div className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-[10px] font-mono text-white/90">📋 Data Processing Task</div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">🤖</span>
+                      <span className="text-xs font-medium text-white/70 w-28">Report Agent</span>
+                      <span className="text-white/30 text-[10px]">→</span>
+                      <div className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-[10px] font-mono text-white/90">📋 PDF Generator Task</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Outcome */}
+                <div>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">3. The Finished Result</span>
+                  <div className="bg-[#0a0a0a] border border-green-500/30 rounded-lg p-3 flex items-center gap-4">
+                    <div className="w-8 h-10 bg-white/10 rounded border border-white/20 flex items-center justify-center text-[10px] font-bold">PDF</div>
+                    <div>
+                      <p className="text-white font-medium text-xs">Market_Entry_Report.pdf generated.</p>
+                      <p className="text-[10px] text-gray-500 font-mono mt-1">Delivered to Human</p>
+                    </div>
+                  </div>
+                </div>
+
               </div>
+
+              {/* Right Column: The Stack */}
+              <div className="flex-1 h-full flex flex-col justify-center gap-5 pl-2">
+                <div>
+                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Task Discovery</h3>
+                  <p className="text-base text-white font-light">WASM Edge Network</p>
+                </div>
+                <div className="w-8 h-px bg-white/10"></div>
+                <div>
+                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">AI2AI Communication</h3>
+                  <p className="text-base text-white font-light">Nyxa RPC / Escrow Ledger</p>
+                </div>
+                <div className="w-8 h-px bg-white/10"></div>
+                <div>
+                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Agent Execution</h3>
+                  <p className="text-base text-white font-light">Llama 3 / Anthropic</p>
+                </div>
+                <div className="w-8 h-px bg-white/10"></div>
+                <div>
+                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Backend & Data</h3>
+                  <p className="text-base text-white font-light">Supabase / PostgreSQL</p>
+                </div>
+              </div>
+
             </div>
-            
           </div>
         )}
 
