@@ -71,8 +71,9 @@ export default function PitchMock() {
 
             {/* Central Question */}
             <div className="text-center self-center max-w-4xl mt-6 mb-8">
-              <h2 className="text-4xl font-medium text-white leading-snug">
-                Why is getting work done still so fragmented?
+              <h2 className="text-4xl font-medium text-white/90 leading-snug">
+                We have a tool for everything.<br/>
+                <span className="text-white">Why is work still so disconnected?</span>
               </h2>
             </div>
 
