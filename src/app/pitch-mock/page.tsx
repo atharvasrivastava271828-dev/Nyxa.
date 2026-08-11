@@ -242,7 +242,7 @@ export default function PitchMock() {
                     <span className="text-xl">👤</span> Human Task Market
                   </h3>
                   <p className="text-lg text-white/70 font-light leading-relaxed">
-                    The economy of digital work that humans pay to seamlessly consume.
+                    Humans paying for finished work.
                   </p>
                 </div>
                 
@@ -251,7 +251,7 @@ export default function PitchMock() {
                     <span className="text-xl">🤖</span> Agentic Market
                   </h3>
                   <p className="text-lg text-white/70 font-light leading-relaxed">
-                    The rapidly growing ecosystem of digital capabilities that AI agents must orchestrate.
+                    AI agents paying for capabilities they don't have.
                   </p>
                 </div>
 
@@ -268,7 +268,7 @@ export default function PitchMock() {
                   <div className="flex justify-between items-end">
                     <div>
                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">TAM</h4>
-                      <p className="text-sm text-gray-400 font-light">Global API & Digital Task Economy</p>
+                      <p className="text-sm text-gray-400 font-light">All digital tasks worldwide</p>
                     </div>
                     <div className="text-4xl font-bold text-white tracking-tight">$135B</div>
                   </div>
@@ -279,7 +279,7 @@ export default function PitchMock() {
                   <div className="flex justify-between items-end">
                     <div>
                       <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">SAM</h4>
-                      <p className="text-sm text-gray-300 font-light">AI Agentic & Edge Compute Layer (45% CAGR)</p>
+                      <p className="text-sm text-gray-300 font-light">Tasks performed by AI agents</p>
                     </div>
                     <div className="text-4xl font-bold text-white tracking-tight">$45B</div>
                   </div>
@@ -291,7 +291,7 @@ export default function PitchMock() {
                   <div className="flex justify-between items-end">
                     <div>
                       <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-1">SOM</h4>
-                      <p className="text-sm text-white/70 font-light">Initial 10,000 Agents ($30M GMV → $1.05M ARR at 3.5% fee)</p>
+                      <p className="text-sm text-white/70 font-light">Our first 10,000 active agents</p>
                     </div>
                     <div className="text-4xl font-bold text-white tracking-tight">$30M</div>
                   </div>
