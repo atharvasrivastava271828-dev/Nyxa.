@@ -659,8 +659,8 @@ export default function PitchMock() {
               </h3>
             </div>
             
-            </div>
             
+
           </div>
         )}
 
@@ -760,8 +760,8 @@ export default function PitchMock() {
               </p>
             </div>
             
-            </div>
             
+
           </div>
         )}
 
