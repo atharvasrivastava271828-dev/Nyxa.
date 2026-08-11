@@ -32,7 +32,7 @@ export default function PitchMock() {
           <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-500">
             {/* Simple Yin-Yang Logo */}
             <div className="w-20 h-20 mb-10">
-              <img src="/yinyang.png" alt="Nyxa" className="w-full h-full object-contain" />
+              <img src="/yinyang_transparent.png" alt="Nyxa" className="w-full h-full object-contain" />
             </div>
             
             {/* Center Text */}
