@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 7; // Updated to 7 slides
+  const totalSlides = 8; // Updated to 8 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -24,7 +24,8 @@ export default function PitchMock() {
       
       {/* 16:9 Aspect Ratio Slide Container */}
       <div 
-        className="relative w-full max-w-6xl aspect-video bg-black overflow-hidden flex flex-col items-center justify-center p-12 transition-all duration-500"
+        className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10 flex flex-col items-center justify-center p-12 transition-all duration-500"
+        style={{ maxHeight: '85vh', maxWidth: 'min(1200px, calc(85vh * 16 / 9))' }}
       >
         
         {/* SLIDE 1: Title */}
@@ -583,6 +584,83 @@ export default function PitchMock() {
                 </p>
               </div>
 
+            </div>
+            
+          </div>
+        )}
+
+        {/* SLIDE 8: Team */}
+        {currentSlide === 8 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
+            
+            {/* Top Label */}
+            <div className="w-full text-center mb-6">
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
+                The Team
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-5xl mt-2 mb-16">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
+                Built by engineers obsessed with zero-friction systems.
+              </h2>
+            </div>
+
+            {/* 4-Column Layout (Inspired by the reference image's flow) */}
+            <div className="flex-1 w-full max-w-5xl mx-auto flex items-stretch justify-between gap-4 border-t border-b border-white/10 py-12">
+              
+              {/* Col 1 */}
+              <div className="flex-1 pr-6 border-r border-white/10 last:border-0">
+                <h3 className="text-lg font-bold text-white mb-6">Founders</h3>
+                <ul className="space-y-4 text-sm text-gray-400 font-light">
+                  <li>
+                    <strong className="text-white font-medium">[Name], CEO</strong><br/>
+                    <span className="text-white/60">Product & Vision</span>
+                  </li>
+                  <li>
+                    <strong className="text-white font-medium">[Name], CTO</strong><br/>
+                    <span className="text-white/60">WASM & Infrastructure</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Col 2 */}
+              <div className="flex-1 px-6 border-r border-white/10 last:border-0">
+                <h3 className="text-lg font-bold text-white mb-6">Execution Velocity</h3>
+                <p className="text-sm text-gray-400 font-light leading-relaxed">
+                  We don&apos;t just theorize about the agentic economy. We shipped the core WASM-edge protocol and Task Marketplace prototype in record time.
+                </p>
+              </div>
+
+              {/* Col 3 */}
+              <div className="flex-1 px-6 border-r border-white/10 last:border-0">
+                <h3 className="text-lg font-bold text-white mb-6">Domain Obsession</h3>
+                <p className="text-sm text-gray-400 font-light leading-relaxed">
+                  Decades of combined experience suffering through broken API integrations. We are building the exact autonomous layer we always needed.
+                </p>
+              </div>
+
+              {/* Col 4 */}
+              <div className="flex-1 pl-6">
+                <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-5 shadow-lg h-full">
+                  <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-wider border-b border-white/10 pb-2">Investors Evaluate:</h3>
+                  <ul className="space-y-3 text-sm font-light text-white/70 list-disc list-inside marker:text-white/30">
+                    <li>Deep domain understanding</li>
+                    <li>Execution ability</li>
+                    <li>Relentless passion</li>
+                    <li>High coachability</li>
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+            
+            {/* Bottom Statement */}
+            <div className="w-full text-center mt-12">
+              <h3 className="text-xl font-medium text-white/60 tracking-wide">
+                We have the passion and the technical chops to execute.
+              </h3>
             </div>
             
           </div>
