@@ -303,101 +303,109 @@ export default function PitchMock() {
           </div>
         )}
 
-        {/* SLIDE 5: Product & Stack */}
+        {/* SLIDE 5: One Task Layer */}
         {currentSlide === 5 && (
-          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-4 pb-4 relative">
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
             
             {/* Top Label */}
-            <div className="w-full text-center">
-              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
-                The Product
-              </span>
-            </div>
-
-            {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mt-2 mb-4">
-              <h2 className="text-3xl font-medium text-white/90 leading-snug">
-                One impressive journey.<br/>
-                <span className="text-white">Human Intent → Agents → Tasks → Outcome</span>
+            <div className="w-full text-center mb-6">
+              <h2 className="text-3xl font-medium text-white/90 tracking-wide">
+                One Task Layer. Two Users.
               </h2>
             </div>
 
-            <div className="flex w-full px-12 gap-12 flex-1 items-center overflow-hidden pb-4">
+            {/* Main Content Area */}
+            <div className="flex-1 w-full flex items-stretch gap-6 relative max-w-6xl mx-auto">
               
-              {/* Left Column: The Flow */}
-              <div className="flex-[1.5] h-full flex flex-col justify-center border border-white/10 rounded-xl p-6 bg-white/[0.02] shadow-[0_0_40px_rgba(255,255,255,0.02)]">
-                
-                {/* 1. Intent */}
-                <div className="mb-4">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">1. The Human Intent</span>
-                  <div className="bg-[#0a0a0a] border border-white/10 rounded-lg p-3">
-                    <p className="text-white/80 font-mono text-xs">&gt; Human: &quot;I need a market-entry report for Fintech in SEA.&quot;</p>
-                  </div>
+              {/* Left: Human */}
+              <div className="flex-1 flex flex-col items-center pt-4">
+                <div className="text-lg font-bold text-white flex items-center gap-2 mb-2">
+                  <span className="text-purple-400">👤</span> Human consumption
+                </div>
+                <div className="bg-white/10 px-3 py-1 rounded-md text-[11px] font-mono text-white/70 mb-8 tracking-widest">
+                  Intent → Task → Outcome
                 </div>
 
-                {/* 2. Execution (AI2AI) */}
-                <div className="mb-4 relative">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">2. Autonomous AI2AI Execution</span>
-                  <div className="space-y-2 pl-4 border-l-2 border-white/10 ml-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">🤖</span>
-                      <span className="text-xs font-medium text-white/70 w-28">Research Agent</span>
-                      <span className="text-white/30 text-[10px]">→</span>
-                      <div className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-[10px] font-mono text-white/90">📋 Web Scraper Task</div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">🤖</span>
-                      <span className="text-xs font-medium text-white/70 w-28">Analysis Agent</span>
-                      <span className="text-white/30 text-[10px]">→</span>
-                      <div className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-[10px] font-mono text-white/90">📋 Data Processing Task</div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">🤖</span>
-                      <span className="text-xs font-medium text-white/70 w-28">Report Agent</span>
-                      <span className="text-white/30 text-[10px]">→</span>
-                      <div className="bg-white/5 border border-white/10 rounded px-3 py-1.5 text-[10px] font-mono text-white/90">📋 PDF Generator Task</div>
-                    </div>
+                <div className="w-full max-w-sm flex flex-col items-center">
+                  <span className="text-sm text-gray-400 font-bold mb-2 self-start">I need:</span>
+                  <div className="bg-[#111] border border-white/20 rounded-md p-3 w-full text-sm text-white/90 text-center shadow-lg">
+                    &quot;Create a competitor analysis&quot;
                   </div>
-                </div>
-
-                {/* 3. Outcome */}
-                <div>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">3. The Finished Result</span>
-                  <div className="bg-[#0a0a0a] border border-green-500/30 rounded-lg p-3 flex items-center gap-4">
-                    <div className="w-8 h-10 bg-white/10 rounded border border-white/20 flex items-center justify-center text-[10px] font-bold">PDF</div>
-                    <div>
-                      <p className="text-white font-medium text-xs">Market_Entry_Report.pdf generated.</p>
-                      <p className="text-[10px] text-gray-500 font-mono mt-1">Delivered to Human</p>
-                    </div>
+                  
+                  <div className="h-8 w-px bg-white/20 my-2"></div>
+                  
+                  <span className="text-sm text-gray-400 font-bold mb-2">Task Market</span>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[11px] text-white/80">Research</div>
+                    <span className="text-white/40">→</span>
+                    <div className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[11px] text-white/80">Competitor Analysis</div>
+                    <span className="text-white/40">→</span>
+                    <div className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[11px] text-white/80">Report</div>
                   </div>
-                </div>
 
+                  <div className="h-8 w-px bg-white/20 my-2"></div>
+                  
+                  <span className="text-sm text-white font-bold tracking-widest mt-2">RESULT</span>
+                </div>
               </div>
 
-              {/* Right Column: The Stack */}
-              <div className="flex-1 h-full flex flex-col justify-center gap-5 pl-2">
-                <div>
-                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Task Discovery</h3>
-                  <p className="text-base text-white font-light">WASM Edge Network</p>
+              {/* Center: The Pill */}
+              <div className="w-48 flex flex-col items-center justify-center relative z-10 shrink-0">
+                {/* Horizontal connecting lines behind the pill */}
+                <div className="absolute w-[160%] h-px bg-white/10 top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10"></div>
+                
+                <div className="bg-black border border-white/20 rounded-[40px] py-12 px-4 flex flex-col items-center text-center shadow-[0_0_30px_rgba(255,255,255,0.05)] w-full">
+                  <span className="text-white font-bold tracking-widest mb-6">TASK LAYER</span>
+                  <ul className="text-xs text-gray-400 space-y-4 font-mono leading-relaxed">
+                    <li>Discoverable</li>
+                    <li>Defined</li>
+                    <li>Reusable</li>
+                    <li>Composable</li>
+                  </ul>
                 </div>
-                <div className="w-8 h-px bg-white/10"></div>
-                <div>
-                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">AI2AI Communication</h3>
-                  <p className="text-base text-white font-light">Nyxa RPC / Escrow Ledger</p>
+              </div>
+
+              {/* Right: Agent */}
+              <div className="flex-1 flex flex-col items-center pt-4">
+                <div className="text-lg font-bold text-white flex items-center gap-2 mb-2">
+                  <span className="text-pink-400">🤖</span> Agent consumption
                 </div>
-                <div className="w-8 h-px bg-white/10"></div>
-                <div>
-                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Agent Execution</h3>
-                  <p className="text-base text-white font-light">Llama 3 / Anthropic</p>
+                <div className="bg-white/10 px-3 py-1 rounded-md text-[11px] font-mono text-white/70 mb-8 tracking-widest">
+                  Objective → Task → Task → Task → Outcome
                 </div>
-                <div className="w-8 h-px bg-white/10"></div>
-                <div>
-                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Backend & Data</h3>
-                  <p className="text-base text-white font-light">Supabase / PostgreSQL</p>
+
+                <div className="w-full max-w-sm flex flex-col items-center">
+                  <span className="text-sm text-gray-400 font-bold mb-2 self-start">Agent objective:</span>
+                  <div className="bg-[#111] border border-white/20 rounded-md p-3 w-full text-sm text-white/90 text-center shadow-lg">
+                    &quot;Complete market-entry research&quot;
+                  </div>
+                  
+                  <div className="h-8 w-px bg-white/20 my-2"></div>
+                  
+                  <span className="text-sm text-gray-400 font-bold mb-2">Task Market</span>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[11px] text-white/80">Research Task</div>
+                    <span className="text-white/40">↔</span>
+                    <div className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[11px] text-white/80">Analysis Task</div>
+                    <span className="text-white/40">↔</span>
+                    <div className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[11px] text-white/80">Data Task</div>
+                  </div>
+
+                  <div className="h-8 w-px bg-white/20 my-2"></div>
+                  
+                  <span className="text-sm text-white font-bold tracking-widest mt-2">RESULT</span>
                 </div>
               </div>
 
             </div>
+
+            {/* Bottom Statement */}
+            <div className="w-full text-center mt-6">
+              <h3 className="text-[40px] font-medium text-white/95 tracking-tight">
+                &quot;Humans consume Tasks. Agents compose Tasks.&quot;
+              </h3>
+            </div>
+            
           </div>
         )}
 
