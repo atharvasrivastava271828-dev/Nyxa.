@@ -29,26 +29,32 @@ export default function PitchMock() {
         
         {/* SLIDE 1 */}
         {currentSlide === 1 && (
-          <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-500">
+          <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-500 relative">
+            
             {/* Simple Yin-Yang Logo */}
-            <div className="w-20 h-20 mb-10">
-              <img src="/yinyang_transparent.png" alt="Nyxa" className="w-full h-full object-contain" />
+            <div className="w-16 h-16 mb-12 opacity-80">
+              <img src="/favicon.svg" alt="Nyxa" className="w-full h-full object-contain" />
             </div>
             
-            {/* Center Text */}
-            <h1 className="text-[100px] font-bold text-white tracking-tighter mb-4 leading-none">
-              Nyxa.
-            </h1>
-            
-            {/* Tagline */}
-            <p className="text-3xl font-light text-gray-200 tracking-wide mb-8">
-              For the Light.
-            </p>
+            <div className="flex flex-col items-center gap-6">
+              {/* Center Text */}
+              <h1 className="text-8xl font-medium text-white tracking-tight leading-none">
+                Nyxa.
+              </h1>
+              
+              {/* Tagline */}
+              <p className="text-2xl font-light text-white/60 tracking-widest">
+                For the Light.
+              </p>
+            </div>
 
             {/* Subtle Subtext */}
-            <p className="text-sm font-medium text-gray-500 uppercase tracking-widest mt-4">
-              Making sure no one is left out.
-            </p>
+            <div className="absolute bottom-8 w-full text-center">
+              <p className="text-[10px] font-medium text-white/30 uppercase tracking-[0.4em]">
+                Making sure no one is left out.
+              </p>
+            </div>
+            
           </div>
         )}
 
