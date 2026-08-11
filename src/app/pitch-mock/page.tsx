@@ -267,7 +267,7 @@ export default function PitchMock() {
                 <div className="bg-white/5 border border-white/10 rounded-xl p-6 relative overflow-hidden transition-all hover:bg-white/10">
                   <div className="flex justify-between items-end">
                     <div>
-                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">TAM — Total Universe</h4>
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">TAM</h4>
                       <p className="text-sm text-gray-400 font-light">Global API & Digital Task Economy</p>
                     </div>
                     <div className="text-4xl font-bold text-white tracking-tight">$135B</div>
@@ -278,7 +278,7 @@ export default function PitchMock() {
                 <div className="bg-white/10 border border-white/20 rounded-xl p-6 relative overflow-hidden ml-8 transition-all hover:bg-white/15">
                   <div className="flex justify-between items-end">
                     <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">SAM — Reachable Market</h4>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">SAM</h4>
                       <p className="text-sm text-gray-300 font-light">AI Agentic & Edge Compute Layer (45% CAGR)</p>
                     </div>
                     <div className="text-4xl font-bold text-white tracking-tight">$45B</div>
@@ -290,7 +290,7 @@ export default function PitchMock() {
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
                   <div className="flex justify-between items-end">
                     <div>
-                      <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-1">SOM — Our Beachhead</h4>
+                      <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-1">SOM</h4>
                       <p className="text-sm text-white/70 font-light">Initial 10,000 Agents ($30M GMV → $1.05M ARR at 3.5% fee)</p>
                     </div>
                     <div className="text-4xl font-bold text-white tracking-tight">$30M</div>
