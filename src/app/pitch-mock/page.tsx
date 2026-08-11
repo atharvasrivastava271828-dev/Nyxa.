@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function PitchMock() {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const totalSlides = 2; // Updated to 2 slides
+  const totalSlides = 3; // Updated to 3 slides
 
   // Keyboard navigation
   useEffect(() => {
@@ -115,6 +115,98 @@ export default function PitchMock() {
               <h4 className="text-xl font-semibold text-white mb-1">Two users. One missing layer.</h4>
               <p className="text-gray-400 font-light text-base">
                 <span className="text-white/90 font-medium">Humans</span> need to discover outcomes. <span className="text-white/90 ml-3 font-medium">Agents</span> need to discover capabilities.
+              </p>
+            </div>
+            
+          </div>
+        )}
+
+        {/* SLIDE 3: The Solution */}
+        {currentSlide === 3 && (
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-4 pb-2 relative">
+            
+            {/* Top Label */}
+            <div className="w-full text-center">
+              <span className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">
+                The Solution
+              </span>
+            </div>
+
+            {/* Central Headline */}
+            <div className="text-center self-center max-w-4xl mt-6 mb-8">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug">
+                So we built one shared layer<br/>
+                <span className="text-white">between intent and execution.</span>
+              </h2>
+            </div>
+
+            {/* Converging Paths */}
+            <div className="flex w-full px-12 gap-6 mb-6 items-center justify-between">
+              
+              {/* Left Path: Human */}
+              <div className="flex-1 flex flex-col items-center text-center">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-white/20 pb-2 w-full">
+                  👤 Human
+                </h3>
+                <p className="text-base font-light italic text-white/70 mb-4 h-12 flex items-center justify-center">
+                  "I need a competitor report."
+                </p>
+                
+                <div className="text-white/30 my-2 text-xl">↓</div>
+                
+                <div className="bg-white/5 border border-white/10 rounded-lg p-3 w-full text-sm font-light text-gray-300">
+                  <span className="text-white font-medium">Discover</span> → Choose → Consume
+                </div>
+
+                <div className="text-white/30 my-2 text-xl">↓</div>
+
+                <div className="font-semibold text-white/90 text-lg uppercase tracking-wide">
+                  Predictable Outcome
+                </div>
+              </div>
+
+              {/* Centerpiece: TASKS */}
+              <div className="flex-[1.5] flex flex-col items-center text-center px-4">
+                <div className="bg-[#050505] border border-white/20 rounded-2xl p-6 shadow-[0_0_50px_rgba(255,255,255,0.05)] flex flex-col items-center w-full relative overflow-hidden">
+                  {/* Subtle highlight */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+                  
+                  <h3 className="text-4xl font-bold text-white tracking-widest mb-4">TASKS</h3>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-[0.2em] leading-relaxed">
+                    Defined Inputs • Defined Outputs<br/>
+                    <span className="text-white/70 mt-1 block">Discoverable • Reusable</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Path: AI Agent */}
+              <div className="flex-1 flex flex-col items-center text-center">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-white/20 pb-2 w-full">
+                  🤖 AI Agent
+                </h3>
+                <p className="text-base font-light italic text-white/70 mb-4 h-12 flex items-center justify-center">
+                  "I need to accomplish a larger objective."
+                </p>
+                
+                <div className="text-white/30 my-2 text-xl">↓</div>
+                
+                <div className="bg-white/5 border border-white/10 rounded-lg p-3 w-full text-sm font-light text-gray-300">
+                  <span className="text-white font-medium">Discover</span> → Select → Compose
+                </div>
+
+                <div className="text-white/30 my-2 text-xl">↓</div>
+
+                <div className="font-semibold text-white/90 text-lg uppercase tracking-wide">
+                  Larger Outcome
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Bridge */}
+            <div className="mt-auto flex flex-col items-center border-t border-white/10 pt-5 w-full">
+              <p className="text-gray-400 font-light text-xl">
+                <span className="text-white/90 font-medium">Humans</span> consume Tasks. <span className="text-white/90 ml-4 font-medium">Agents</span> compose Tasks.
               </p>
             </div>
             
