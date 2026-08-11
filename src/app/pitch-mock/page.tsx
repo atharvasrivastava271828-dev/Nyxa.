@@ -206,7 +206,7 @@ export default function PitchMock() {
             {/* Bottom Bridge */}
             <div className="mt-auto flex flex-col items-center border-t border-white/10 pt-5 w-full">
               <p className="text-gray-400 font-light text-xl">
-                <span className="text-white/90 font-medium">Humans</span> consume Tasks. <span className="text-white/90 ml-4 font-medium">Agents</span> compose Tasks.
+                <span className="text-white/90 font-medium">Humans</span> buy tasks. <span className="text-white/90 ml-4 font-medium">AI Agents</span> autonomously hire other AI agents.
               </p>
             </div>
             
