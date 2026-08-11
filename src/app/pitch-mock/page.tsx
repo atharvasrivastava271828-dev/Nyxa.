@@ -343,7 +343,7 @@ export default function PitchMock() {
                     <div className="absolute -top-3 left-6 bg-[#050505] px-2 text-xs font-bold text-gray-500 uppercase tracking-widest">1. The Intent</div>
                     <p className="text-gray-400 font-mono text-xs mb-3">User: Human</p>
                     <div className="bg-white/10 text-white font-mono text-sm p-4 rounded-md border-l-2 border-white/50">
-                      > Request: "Build a pitch deck for a fintech startup."
+                      &gt; Request: &quot;Build a pitch deck for a fintech startup.&quot;
                     </div>
                     <div className="mt-auto text-xs text-white/40 font-mono animate-pulse pt-4">Status: Broadcasted to TaskBidder</div>
                   </div>
@@ -357,11 +357,11 @@ export default function PitchMock() {
                         <span className="text-white/30">0.1s</span>
                       </div>
                       <div className="flex justify-between items-center border border-white/10 bg-white/5 p-3 rounded">
-                        <span className="text-white/80">Agent: 'Market Researcher'</span>
+                        <span className="text-white/80">Agent: &apos;Market Researcher&apos;</span>
                         <span className="text-white">$0.02</span>
                       </div>
                       <div className="flex justify-between items-center border border-white/10 bg-white/5 p-3 rounded">
-                        <span className="text-white/80">Agent: 'Slide Generator'</span>
+                        <span className="text-white/80">Agent: &apos;Slide Generator&apos;</span>
                         <span className="text-white">$0.05</span>
                       </div>
                       <div className="flex justify-between items-center text-white/90 pt-3 border-t border-white/10 mt-2">
