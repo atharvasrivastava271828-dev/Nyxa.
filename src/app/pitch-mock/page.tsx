@@ -86,7 +86,7 @@ export default function PitchMock() {
                   For Humans <span className="text-white/50 ml-2 normal-case tracking-normal">— Task Fragmentation</span>
                 </h3>
                 <p className="text-lg font-light italic text-white/70 mb-5 border-l-2 border-white/40 pl-4 py-1">
-                  "I know what I need, but not which tool can reliably get it done."
+                  &quot;I know what I need, but not which tool can reliably get it done.&quot;
                 </p>
                 <ul className="space-y-3 text-gray-400 text-base font-light list-disc list-inside marker:text-white/30">
                   <li>Trapped managing infinite apps and workflows</li>
@@ -100,7 +100,7 @@ export default function PitchMock() {
                   For AI Agents <span className="text-white/50 ml-2 normal-case tracking-normal">— Capability Fragmentation</span>
                 </h3>
                 <p className="text-lg font-light italic text-white/70 mb-5 border-l-2 border-white/40 pl-4 py-1">
-                  "The agent knows the objective, but finding the right tools is impossible."
+                  &quot;The agent knows the objective, but finding the right tools is impossible.&quot;
                 </p>
                 <ul className="space-y-3 text-gray-400 text-base font-light list-disc list-inside marker:text-white/30">
                   <li>Isolated in silos, unable to collaborate dynamically</li>
@@ -149,13 +149,13 @@ export default function PitchMock() {
                   👤 Human User
                 </h3>
                 <p className="text-base font-light italic text-white/70 mb-4 h-12 flex items-center justify-center">
-                  "I need a business plan."
+                  &quot;I need a business plan.&quot;
                 </p>
                 
                 <div className="text-white/30 my-2 text-xl">↓</div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3 w-full text-sm font-light text-gray-300">
-                  Buys a <span className="text-white font-medium">'Business Plan'</span> Task
+                  Buys a <span className="text-white font-medium">&apos;Business Plan&apos;</span> Task
                 </div>
 
                 <div className="text-white/30 my-2 text-xl">↓</div>
@@ -171,7 +171,7 @@ export default function PitchMock() {
                   {/* Subtle highlight */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
                   
-                  <h3 className="text-3xl font-bold text-white tracking-widest mb-4">A "TASK"</h3>
+                  <h3 className="text-3xl font-bold text-white tracking-widest mb-4">A &quot;TASK&quot;</h3>
                   <p className="text-xs font-medium text-gray-400 uppercase tracking-[0.15em] leading-relaxed">
                     A self-contained unit of work created by developers.<br/>
                     <span className="text-white/80 mt-2 block font-bold tracking-[0.2em]">INPUT → CODE EXECUTION → OUTPUT</span>
@@ -185,13 +185,13 @@ export default function PitchMock() {
                   🤖 AI Agent
                 </h3>
                 <p className="text-base font-light italic text-white/70 mb-4 h-12 flex items-center justify-center">
-                  "I need real-time flight data."
+                  &quot;I need real-time flight data.&quot;
                 </p>
                 
                 <div className="text-white/30 my-2 text-xl">↓</div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3 w-full text-sm font-light text-gray-300">
-                  Calls a <span className="text-white font-medium">'Flight Scraper'</span> Task
+                  Calls a <span className="text-white font-medium">&apos;Flight Scraper&apos;</span> Task
                 </div>
 
                 <div className="text-white/30 my-2 text-xl">↓</div>
@@ -227,8 +227,8 @@ export default function PitchMock() {
             {/* Central Headline */}
             <div className="text-center self-center max-w-5xl mt-6 mb-10">
               <h2 className="text-4xl font-medium text-white/90 leading-snug">
-                We're not entering one market.<br/>
-                <span className="text-white">We're building at the intersection of two.</span>
+                We&apos;re not entering one market.<br/>
+                <span className="text-white">We&apos;re building at the intersection of two.</span>
               </h2>
             </div>
 
@@ -251,7 +251,7 @@ export default function PitchMock() {
                     <span className="text-xl">🤖</span> Agentic Market
                   </h3>
                   <p className="text-lg text-white/70 font-light leading-relaxed">
-                    AI agents paying for capabilities they don't have.
+                    AI agents paying for capabilities they don&apos;t have.
                   </p>
                 </div>
 
