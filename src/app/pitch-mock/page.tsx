@@ -60,17 +60,17 @@ export default function PitchMock() {
 
         {/* SLIDE 2: The Problem */}
         {currentSlide === 2 && (
-          <div className="w-full h-full flex flex-col animate-in fade-in slide-in-from-right-8 duration-500 pt-4 relative">
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-4 pb-2 relative">
             
             {/* Top Label */}
-            <div className="w-full text-center mb-8">
+            <div className="w-full text-center">
               <span className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">
                 The Problem
               </span>
             </div>
 
             {/* Central Question */}
-            <div className="text-center mb-16 self-center max-w-4xl">
+            <div className="text-center self-center max-w-4xl mt-6 mb-8">
               <h2 className="text-4xl font-semibold text-white/90 leading-snug">
                 We have more digital capability than ever—<br />
                 <span className="text-white font-medium">but why is getting work done still so fragmented?</span>
@@ -78,47 +78,43 @@ export default function PitchMock() {
             </div>
 
             {/* Two Sides */}
-            <div className="flex w-full px-8 gap-16 mb-8">
+            <div className="flex w-full px-12 gap-12 mb-6">
               
               {/* Left Side: Humans */}
               <div className="flex-1 flex flex-col">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-white/20 pb-4">
-                  For Humans <span className="text-white ml-2 opacity-50">— Task Fragmentation</span>
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-white/20 pb-3">
+                  For Humans <span className="text-white/50 ml-2 normal-case tracking-normal">— Task Fragmentation</span>
                 </h3>
-                <p className="text-xl font-light italic text-white/70 mb-8 border-l-2 border-white/40 pl-4 py-1">
+                <p className="text-lg font-light italic text-white/70 mb-5 border-l-2 border-white/40 pl-4 py-1">
                   "I know what I need, but not which tool can reliably get it done."
                 </p>
-                <ul className="space-y-4 text-gray-400 text-lg font-light list-disc list-inside marker:text-white/30">
-                  <li>Too many apps and workflows</li>
-                  <li>Need to learn tools instead of focusing on outcomes</li>
-                  <li>Repetitive digital work gets rebuilt again and again</li>
-                  <li>Hard to know what output to trust</li>
+                <ul className="space-y-3 text-gray-400 text-base font-light list-disc list-inside marker:text-white/30">
+                  <li>Trapped managing infinite apps and workflows</li>
+                  <li>Forced to learn tools instead of getting outcomes</li>
                 </ul>
               </div>
 
               {/* Right Side: Agents */}
               <div className="flex-1 flex flex-col">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-white/20 pb-4">
-                  For AI Agents <span className="text-white ml-2 opacity-50">— Capability Fragmentation</span>
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-white/20 pb-3">
+                  For AI Agents <span className="text-white/50 ml-2 normal-case tracking-normal">— Capability Fragmentation</span>
                 </h3>
-                <p className="text-xl font-light italic text-white/70 mb-8 border-l-2 border-white/40 pl-4 py-1">
-                  "An agent may know what needs to be done, but finding specialized agents is difficult."
+                <p className="text-lg font-light italic text-white/70 mb-5 border-l-2 border-white/40 pl-4 py-1">
+                  "The agent knows the objective, but finding the right tools is impossible."
                 </p>
-                <ul className="space-y-4 text-gray-400 text-lg font-light list-disc list-inside marker:text-white/30">
-                  <li>Agents are isolated</li>
-                  <li>Capabilities aren't easily discoverable</li>
-                  <li>Complex objectives require multiple specialized agents</li>
-                  <li>Agents need a way to find, use and compose Tasks</li>
+                <ul className="space-y-3 text-gray-400 text-base font-light list-disc list-inside marker:text-white/30">
+                  <li>Isolated in silos, unable to collaborate dynamically</li>
+                  <li>No standard way to discover or compose capabilities</li>
                 </ul>
               </div>
 
             </div>
 
             {/* Killer Bridge (Bottom/Center) */}
-            <div className="mt-auto flex flex-col items-center border-t border-white/10 pt-6 w-full">
-              <h4 className="text-2xl font-semibold text-white mb-2">Two users. One missing layer.</h4>
-              <p className="text-gray-400 font-light text-lg">
-                <span className="text-white/90 font-medium">Humans</span> need a way to discover outcomes. <span className="text-white/90 ml-3 font-medium">Agents</span> need a way to discover capabilities.
+            <div className="mt-auto flex flex-col items-center border-t border-white/10 pt-5 w-full">
+              <h4 className="text-xl font-semibold text-white mb-1">Two users. One missing layer.</h4>
+              <p className="text-gray-400 font-light text-base">
+                <span className="text-white/90 font-medium">Humans</span> need to discover outcomes. <span className="text-white/90 ml-3 font-medium">Agents</span> need to discover capabilities.
               </p>
             </div>
             
