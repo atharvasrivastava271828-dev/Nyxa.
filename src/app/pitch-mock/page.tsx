@@ -411,78 +411,88 @@ export default function PitchMock() {
             </div>
             
           </div>
-        {/* SLIDE 6: Unit Economics */}
+        {/* SLIDE 6: Business Model */}
         {currentSlide === 6 && (
           <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
             
             {/* Top Label */}
-            <div className="w-full text-center mb-6">
+            <div className="w-full text-center mb-2">
               <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
-                Business Model & Unit Economics
+                Business Model
               </span>
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mt-2 mb-10">
-              <h2 className="text-4xl font-medium text-white/90 leading-snug">
-                Software margins.<br/>
-                <span className="text-white">Protocol economics.</span>
+            <div className="text-center self-center max-w-5xl mt-2 mb-6">
+              <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
+                One Marketplace, Two Customer Markets.
               </h2>
             </div>
 
-            <div className="flex w-full max-w-5xl mx-auto gap-12 flex-1 items-stretch pb-4">
+            {/* Center Diagram (The Marketplace Model) */}
+            <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center">
               
-              {/* Left Column: Protocol Take-Rate */}
-              <div className="flex-1 flex flex-col justify-center border border-white/10 rounded-2xl p-10 bg-white/[0.02] shadow-[0_0_40px_rgba(255,255,255,0.02)] relative overflow-hidden text-center items-center">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
-                <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4">Protocol Take-Rate</h3>
-                <div className="text-6xl font-medium text-white mb-6 tracking-tighter">3.5%</div>
-                <p className="text-lg text-white/70 font-light leading-relaxed max-w-sm">
-                  We take a transparent fee on every micro-utility executed across the network.
-                </p>
-                <div className="mt-8 bg-[#0a0a0a] border border-white/10 rounded-lg p-4 w-full flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-xs font-mono text-gray-500">
-                    <span>Task Cost</span><span>$0.10</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs font-mono text-gray-500 border-b border-white/10 pb-2">
-                    <span>Nyxa Fee</span><span className="text-blue-400">+$0.0035</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs font-mono text-white/90 pt-1">
-                    <span>Total Paid</span><span>$0.1035</span>
-                  </div>
-                </div>
-              </div>
+              <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 w-full max-w-3xl flex flex-col items-center relative shadow-[0_0_40px_rgba(255,255,255,0.02)]">
+                
+                {/* Task Creators */}
+                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">TASK CREATORS</div>
+                <div className="text-white/30 mb-2">↓</div>
 
-              {/* Right Column: Gross Margins */}
-              <div className="flex-1 flex flex-col justify-center border border-white/10 rounded-2xl p-10 bg-white/[0.02] shadow-[0_0_40px_rgba(255,255,255,0.02)] relative overflow-hidden text-center items-center">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent"></div>
-                <h3 className="text-xs font-bold text-green-400 uppercase tracking-widest mb-4">Gross Margins</h3>
-                <div className="text-6xl font-medium text-white mb-6 tracking-tighter">95%+</div>
-                <p className="text-lg text-white/70 font-light leading-relaxed max-w-sm">
-                  Tasks execute on WASM edge sandboxes. Our marginal compute cost approaches zero.
-                </p>
-                <div className="mt-8 flex flex-col gap-3 w-full items-center">
-                  <div className="w-full flex items-center justify-center gap-4">
-                    <span className="text-xs font-mono text-gray-500 w-24 text-right">Compute Cost</span>
-                    <div className="h-1 flex-1 bg-white/10 rounded overflow-hidden">
-                      <div className="w-[5%] h-full bg-gray-500"></div>
-                    </div>
-                  </div>
-                  <div className="w-full flex items-center justify-center gap-4">
-                    <span className="text-xs font-mono text-white/80 w-24 text-right">Net Margin</span>
-                    <div className="h-1 flex-1 bg-white/10 rounded overflow-hidden">
-                      <div className="w-[95%] h-full bg-green-500"></div>
-                    </div>
-                  </div>
+                {/* Task Market */}
+                <div className="border border-white/30 rounded px-6 py-2 mb-4 bg-white/5">
+                  <span className="text-white font-mono text-sm tracking-widest">TASK MARKET</span>
                 </div>
+
+                {/* Split line */}
+                <div className="w-px h-6 bg-white/30"></div>
+                <div className="w-96 h-px bg-white/30"></div>
+                <div className="w-96 flex justify-between">
+                  <div className="w-px h-4 bg-white/30"></div>
+                  <div className="w-px h-4 bg-white/30"></div>
+                </div>
+
+                {/* Left (B2C) & Right (B2B) */}
+                <div className="w-[480px] flex justify-between mt-2">
+                  
+                  {/* B2C */}
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-purple-400">👤</span>
+                      <span className="text-[11px] font-bold text-white uppercase tracking-widest">B2C HUMANS</span>
+                    </div>
+                    <span className="text-xs text-white/70 font-mono mb-2">Buy Tasks</span>
+                    <span className="text-white/30 text-[10px] mb-2">↓</span>
+                    <span className="text-xs text-white/90 font-mono font-bold">Outcome</span>
+                  </div>
+
+                  {/* B2B */}
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-pink-400">🤖</span>
+                      <span className="text-[11px] font-bold text-white uppercase tracking-widest">B2B AGENTS</span>
+                    </div>
+                    <span className="text-xs text-white/70 font-mono mb-2">Consume Tasks</span>
+                    <span className="text-white/30 text-[10px] mb-2">↓</span>
+                    <span className="text-xs text-white/90 font-mono font-bold">Larger Outcome</span>
+                  </div>
+
+                </div>
+
+              </div>
+              
+              {/* Strong statement */}
+              <div className="mt-8 px-12 text-center max-w-4xl border-l-4 border-white/20 pl-8 text-left bg-white/[0.02] py-4 rounded-r-lg">
+                <p className="text-lg text-white/80 font-light leading-relaxed">
+                  &quot;We&apos;re primarily B2C: humans come to the marketplace to buy Tasks and get things done. But the same marketplace can become B2B infrastructure for AI agents, allowing them to discover and consume Tasks as capabilities. So one Task marketplace serves two markets—and we monetize whenever digital work happens.&quot;
+                </p>
               </div>
 
             </div>
 
             {/* Bottom Statement */}
             <div className="w-full text-center mt-6">
-              <h3 className="text-xl font-light text-gray-400 tracking-wide">
-                LTV to CAC ratio projected at <span className="text-white font-medium">48:1+</span>
+              <h3 className="text-2xl font-medium text-white/95 tracking-tight">
+                B2C today. B2B for the agentic economy. <span className="text-white font-bold border-b-2 border-white/30 pb-1">One marketplace revenue model.</span>
               </h3>
             </div>
             
