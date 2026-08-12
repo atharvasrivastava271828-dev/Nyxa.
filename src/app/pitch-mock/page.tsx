@@ -433,7 +433,7 @@ export default function PitchMock() {
             </div>
 
             {/* Center Diagram (The Marketplace Model) */}
-            <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center scale-[0.90]">
+            <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center">
               
               <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl py-4 px-8 w-full max-w-3xl flex flex-col items-center relative shadow-[0_0_40px_rgba(255,255,255,0.02)]">
                 
@@ -514,7 +514,7 @@ export default function PitchMock() {
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mt-2 mb-10">
+            <div className="text-center self-center max-w-5xl mb-6">
               <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
                 From Idea → Validation → Momentum
               </h2>
@@ -524,7 +524,7 @@ export default function PitchMock() {
             <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center">
               
               {/* Huge Number Callout */}
-              <div className="mb-14 text-center">
+              <div className="mb-8 text-center">
                 <div className="text-7xl font-medium text-white tracking-tighter mb-2">2×</div>
                 <div className="text-xl text-white/80 font-bold tracking-widest uppercase mt-4">Competition Selections</div>
                 <p className="text-sm text-white/50 mt-2 font-mono">Our concept has been selected to advance in two competitive settings.</p>
@@ -569,7 +569,7 @@ export default function PitchMock() {
               </div>
               
               {/* Bottom Quote */}
-              <div className="mt-16 px-12 text-center max-w-4xl border-l-4 border-white/20 pl-8 text-left bg-white/[0.02] py-4 rounded-r-lg">
+              <div className="mt-8 px-12 text-center max-w-4xl border-l-4 border-white/20 pl-8 text-left bg-white/[0.02] py-4 rounded-r-lg">
                 <p className="text-lg text-white/80 font-light leading-relaxed italic">
                   &quot;We&apos;re no longer validating whether we can build it. We&apos;re validating whether people will repeatedly use and pay for it.&quot;
                 </p>
@@ -748,7 +748,7 @@ export default function PitchMock() {
             </div>
 
             {/* Content: Left Flowchart, Right Phases */}
-            <div className="flex-1 w-full max-w-6xl mx-auto flex items-start gap-12 scale-[0.90]">
+            <div className="flex-1 w-full max-w-6xl mx-auto flex items-start gap-12">
               
               {/* Left: Expanding Outward Visual */}
               <div className="flex-[0.8] bg-[#050505] border border-white/10 rounded-xl py-4 px-8 flex flex-col items-center justify-center relative shadow-lg">
