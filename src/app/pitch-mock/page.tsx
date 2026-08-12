@@ -416,7 +416,7 @@ export default function PitchMock() {
         
         {/* SLIDE 6: Business Model */}
         {currentSlide === 6 && (
-          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 py-4 relative px-12">
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 py-3 relative px-12">
             
             {/* Top Label */}
             <div className="w-full text-center mb-1">
@@ -426,8 +426,8 @@ export default function PitchMock() {
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mt-1 mb-2">
-              <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
+            <div className="text-center self-center max-w-5xl mb-1">
+              <h2 className="text-3xl font-medium text-white/90 leading-snug tracking-wide">
                 One Marketplace, Two Customer Markets.
               </h2>
             </div>
@@ -435,47 +435,47 @@ export default function PitchMock() {
             {/* Center Diagram (The Marketplace Model) */}
             <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center">
               
-              <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl py-4 px-8 w-full max-w-3xl flex flex-col items-center relative shadow-[0_0_40px_rgba(255,255,255,0.02)]">
+              <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl py-3 px-6 w-full max-w-3xl flex flex-col items-center relative shadow-[0_0_40px_rgba(255,255,255,0.02)]">
                 
                 {/* Task Creators */}
-                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">TASK CREATORS</div>
-                <div className="text-white/30 mb-2">↓</div>
+                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">TASK CREATORS</div>
+                <div className="text-white/30 mb-1 text-xs">↓</div>
 
                 {/* Task Market */}
-                <div className="border border-white/30 rounded px-6 py-2 mb-4 bg-white/5">
-                  <span className="text-white font-mono text-sm tracking-widest">TASK MARKET</span>
+                <div className="border border-white/30 rounded px-5 py-1.5 mb-2 bg-white/5">
+                  <span className="text-white font-mono text-xs tracking-widest">TASK MARKET</span>
                 </div>
 
                 {/* Split line */}
-                <div className="w-px h-6 bg-white/30"></div>
+                <div className="w-px h-4 bg-white/30"></div>
                 <div className="w-full max-w-md h-px bg-white/30"></div>
                 <div className="w-full max-w-md flex justify-between">
-                  <div className="w-px h-4 bg-white/30"></div>
-                  <div className="w-px h-4 bg-white/30"></div>
+                  <div className="w-px h-3 bg-white/30"></div>
+                  <div className="w-px h-3 bg-white/30"></div>
                 </div>
 
                 {/* Left (B2C) & Right (B2B) */}
-                <div className="w-full max-w-md flex justify-between mt-2 px-4">
+                <div className="w-full max-w-md flex justify-between mt-1 px-4">
                   
                   {/* B2C */}
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-purple-400">👤</span>
-                      <span className="text-[11px] font-bold text-white uppercase tracking-widest">B2C HUMANS</span>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-purple-400 text-xs">👤</span>
+                      <span className="text-[10px] font-bold text-white uppercase tracking-widest">B2C HUMANS</span>
                     </div>
-                    <span className="text-xs text-white/70 font-mono mb-2">Buy Tasks</span>
-                    <span className="text-white/30 text-[10px] mb-2">↓</span>
+                    <span className="text-[11px] text-white/70 font-mono mb-1">Buy Tasks</span>
+                    <span className="text-white/30 text-[9px] mb-1">↓</span>
                     <span className="text-xs text-white/90 font-mono font-bold">Outcome</span>
                   </div>
 
                   {/* B2B */}
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-pink-400">🤖</span>
-                      <span className="text-[11px] font-bold text-white uppercase tracking-widest">B2B AGENTS</span>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-pink-400 text-xs">🤖</span>
+                      <span className="text-[10px] font-bold text-white uppercase tracking-widest">B2B AGENTS</span>
                     </div>
-                    <span className="text-xs text-white/70 font-mono mb-2">Consume Tasks</span>
-                    <span className="text-white/30 text-[10px] mb-2">↓</span>
+                    <span className="text-[11px] text-white/70 font-mono mb-1">Consume Tasks</span>
+                    <span className="text-white/30 text-[9px] mb-1">↓</span>
                     <span className="text-xs text-white/90 font-mono font-bold">Larger Outcome</span>
                   </div>
 
@@ -484,8 +484,8 @@ export default function PitchMock() {
               </div>
               
               {/* Strong statement */}
-              <div className="mt-4 px-12 text-center max-w-4xl border-l-4 border-white/20 pl-8 text-left bg-white/[0.02] py-4 rounded-r-lg">
-                <p className="text-lg text-white/80 font-light leading-relaxed">
+              <div className="mt-2 px-8 text-center max-w-4xl border-l-2 border-white/20 pl-6 text-left bg-white/[0.02] py-2 rounded-r-lg">
+                <p className="text-xs md:text-sm text-white/80 font-light leading-relaxed">
                   &quot;We&apos;re primarily B2C: humans come to the marketplace to buy Tasks and get things done. But the same marketplace can become B2B infrastructure for AI agents, allowing them to discover and consume Tasks as capabilities. So one Task marketplace serves two markets—and we monetize whenever digital work happens.&quot;
                 </p>
               </div>
@@ -493,9 +493,9 @@ export default function PitchMock() {
             </div>
 
             {/* Bottom Statement */}
-            <div className="w-full text-center mt-6">
-              <h3 className="text-2xl font-medium text-white/95 tracking-tight">
-                B2C today. B2B for the agentic economy. <span className="text-white font-bold border-b-2 border-white/30 pb-1">One marketplace revenue model.</span>
+            <div className="w-full text-center mt-2 border-t border-white/10 pt-2">
+              <h3 className="text-base font-medium text-white/95 tracking-tight">
+                B2C today. B2B for the agentic economy. <span className="text-white font-bold border-b border-white/30 pb-0.5">One marketplace revenue model.</span>
               </h3>
             </div>
             
@@ -731,90 +731,90 @@ export default function PitchMock() {
 
         {/* SLIDE 10: Roadmap */}
         {currentSlide === 10 && (
-          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 py-4 relative px-12">
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 py-2 relative px-12">
             
             {/* Top Label */}
-            <div className="w-full text-center mb-2">
+            <div className="w-full text-center mb-1">
               <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
                 Roadmap
               </span>
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mb-4">
-              <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
+            <div className="text-center self-center max-w-5xl mb-2">
+              <h2 className="text-3xl font-medium text-white/90 leading-snug tracking-wide">
                 From Tasks to an Agentic Economy
               </h2>
             </div>
 
             {/* Content: Left Flowchart, Right Phases */}
-            <div className="flex-1 w-full max-w-6xl mx-auto flex items-start gap-12">
+            <div className="flex-1 w-full max-w-6xl mx-auto flex items-center justify-center gap-12">
               
               {/* Left: Expanding Outward Visual */}
-              <div className="flex-[0.8] bg-[#050505] border border-white/10 rounded-xl py-4 px-8 flex flex-col items-center justify-center relative shadow-lg">
+              <div className="flex-[0.8] bg-[#050505] border border-white/10 rounded-xl py-2 px-6 flex flex-col items-center justify-center relative shadow-lg">
                 
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">TODAY</div>
-                <div className="w-px h-6 bg-white/20 mb-4"></div>
+                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">TODAY</div>
+                <div className="w-px h-2 bg-white/20 mb-1"></div>
                 
-                <div className="border border-white/30 rounded px-6 py-4 text-center w-48 bg-white/[0.02]">
-                  <div className="text-sm font-bold text-white uppercase tracking-wider">TASK MARKET</div>
-                  <div className="text-xs text-gray-400 mt-1">B2C</div>
+                <div className="border border-white/30 rounded px-5 py-1.5 text-center w-44 bg-white/[0.02]">
+                  <div className="text-xs font-bold text-white uppercase tracking-wider">TASK MARKET</div>
+                  <div className="text-[10px] text-gray-400 mt-0.5">B2C</div>
                 </div>
 
-                <div className="w-px h-8 bg-white/20 my-2 relative">
-                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 text-white/30 text-[10px]">▼</div>
+                <div className="w-px h-2.5 bg-white/20 my-1 relative">
+                  <div className="absolute bottom-[-3px] left-1/2 -translate-x-1/2 text-white/30 text-[8px]">▼</div>
                 </div>
 
-                <div className="border border-white/30 rounded px-6 py-4 text-center w-48 bg-white/[0.02]">
-                  <div className="text-sm font-bold text-white uppercase tracking-wider">AGENT LAYER</div>
-                  <div className="text-xs text-gray-400 mt-1">AI2AI + Tasks</div>
+                <div className="border border-white/30 rounded px-5 py-1.5 text-center w-44 bg-white/[0.02]">
+                  <div className="text-xs font-bold text-white uppercase tracking-wider">AGENT LAYER</div>
+                  <div className="text-[10px] text-gray-400 mt-0.5">AI2AI + Tasks</div>
                 </div>
 
-                <div className="w-px h-8 bg-white/20 my-2 relative">
-                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 text-white/30 text-[10px]">▼</div>
+                <div className="w-px h-2.5 bg-white/20 my-1 relative">
+                  <div className="absolute bottom-[-3px] left-1/2 -translate-x-1/2 text-white/30 text-[8px]">▼</div>
                 </div>
 
                 {/* Fork */}
-                <div className="w-32 border-t border-white/20 h-4 flex justify-between relative">
-                   <div className="w-px h-4 bg-white/20 absolute left-0 top-0"></div>
-                   <div className="w-px h-4 bg-white/20 absolute right-0 top-0"></div>
+                <div className="w-32 border-t border-white/20 h-2 flex justify-between relative">
+                   <div className="w-px h-2 bg-white/20 absolute left-0 top-0"></div>
+                   <div className="w-px h-2 bg-white/20 absolute right-0 top-0"></div>
                 </div>
 
                 <div className="flex w-52 justify-between">
                   <div className="text-center w-20">
-                    <div className="text-[10px] font-bold text-white uppercase tracking-widest">HUMAN MARKET</div>
-                    <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
+                    <div className="text-[9px] font-bold text-white uppercase tracking-widest">HUMAN MARKET</div>
+                    <div className="w-px h-3 bg-white/20 mx-auto my-0.5"></div>
                   </div>
                   <div className="text-center w-20">
-                    <div className="text-[10px] font-bold text-white uppercase tracking-widest">AGENT MARKET</div>
-                    <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
+                    <div className="text-[9px] font-bold text-white uppercase tracking-widest">AGENT MARKET</div>
+                    <div className="w-px h-3 bg-white/20 mx-auto my-0.5"></div>
                   </div>
                 </div>
 
                 {/* Join */}
-                <div className="w-32 border-b border-white/20 h-4 flex justify-between relative mb-2">
-                   <div className="w-px h-4 bg-white/20 absolute left-0 bottom-0"></div>
-                   <div className="w-px h-4 bg-white/20 absolute right-0 bottom-0"></div>
+                <div className="w-32 border-b border-white/20 h-2 flex justify-between relative mb-1">
+                   <div className="w-px h-2 bg-white/20 absolute left-0 bottom-0"></div>
+                   <div className="w-px h-2 bg-white/20 absolute right-0 bottom-0"></div>
                 </div>
                 
-                <div className="w-px h-4 bg-white/20 mb-2 relative">
-                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 text-white/30 text-[10px]">▼</div>
+                <div className="w-px h-2 bg-white/20 mb-1 relative">
+                  <div className="absolute bottom-[-3px] left-1/2 -translate-x-1/2 text-white/30 text-[8px]">▼</div>
                 </div>
 
-                <div className="text-sm font-bold text-blue-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                  <span className="text-lg">🌐</span> AGENTIC ECONOMY
+                <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                  <span className="text-sm">🌐</span> AGENTIC ECONOMY
                 </div>
 
               </div>
 
               {/* Right: Phases List */}
-              <div className="flex-1 flex flex-col justify-center gap-2">
+              <div className="flex-1 flex flex-col justify-center gap-1.5">
                 
                 {/* Phase 1 */}
                 <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 1 — Prove Task Economy</h3>
-                  <div className="text-[10px] text-blue-400 font-mono mb-2">Now → 6 months</div>
-                  <ul className="space-y-1 text-xs text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                  <h3 className="text-[11px] font-bold text-white uppercase tracking-widest mb-0.5">PHASE 1 — Prove Task Economy</h3>
+                  <div className="text-[9px] text-blue-400 font-mono mb-1">Now → 6 months</div>
+                  <ul className="space-y-0.5 text-[11px] text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
                     <li>Launch B2C Task market</li>
                     <li>Onboard creators</li>
                     <li>Validate usage & pricing</li>
@@ -823,9 +823,9 @@ export default function PitchMock() {
 
                 {/* Phase 2 */}
                 <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 2 — Build Agent Layer</h3>
-                  <div className="text-[10px] text-blue-400 font-mono mb-2">6 → 12 months</div>
-                  <ul className="space-y-1 text-xs text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                  <h3 className="text-[11px] font-bold text-white uppercase tracking-widest mb-0.5">PHASE 2 — Build Agent Layer</h3>
+                  <div className="text-[9px] text-blue-400 font-mono mb-1">6 → 12 months</div>
+                  <ul className="space-y-0.5 text-[11px] text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
                     <li>Enable agent discovery</li>
                     <li>Reintroduce AI2AI</li>
                     <li>Pilot B2B agentic uses</li>
@@ -834,9 +834,9 @@ export default function PitchMock() {
 
                 {/* Phase 3 */}
                 <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 3 — Connect Markets</h3>
-                  <div className="text-[10px] text-blue-400 font-mono mb-2">12 → 24 months</div>
-                  <ul className="space-y-1 text-xs text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
+                  <h3 className="text-[11px] font-bold text-white uppercase tracking-widest mb-0.5">PHASE 3 — Connect Markets</h3>
+                  <div className="text-[9px] text-blue-400 font-mono mb-1">12 → 24 months</div>
+                  <ul className="space-y-0.5 text-[11px] text-gray-400 font-light list-disc list-inside marker:text-white/30 ml-2">
                     <li>Humans consume directly</li>
                     <li>Agents compose autonomously</li>
                     <li>Marketplace flywheel starts</li>
@@ -844,10 +844,10 @@ export default function PitchMock() {
                 </div>
 
                 {/* Phase 4 */}
-                <div className="bg-white/[0.03] border-l-2 border-blue-500/50 p-3 rounded-r-lg mt-2">
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">PHASE 4 — Agentic Economy</h3>
-                  <div className="text-[10px] text-blue-400 font-mono mb-2">24+ months</div>
-                  <p className="text-xs text-white/80 font-medium leading-relaxed">
+                <div className="bg-white/[0.03] border-l-2 border-blue-500/50 p-2 rounded-r-lg mt-1">
+                  <h3 className="text-[11px] font-bold text-white uppercase tracking-widest mb-0.5">PHASE 4 — Agentic Economy</h3>
+                  <div className="text-[9px] text-blue-400 font-mono mb-1">24+ months</div>
+                  <p className="text-[11px] text-white/80 font-medium leading-normal">
                     Humans ask for outcomes.<br/>Agents ask for capabilities.<br/>Tasks connect both.
                   </p>
                 </div>
@@ -856,8 +856,8 @@ export default function PitchMock() {
             </div>
             
             {/* Bottom Statement */}
-            <div className="w-full text-center mt-4 border-t border-white/10 pt-4">
-              <h3 className="text-2xl font-light text-white/80 tracking-wide italic">
+            <div className="w-full text-center mt-2 border-t border-white/10 pt-2">
+              <h3 className="text-base font-light text-white/80 tracking-wide italic">
                 &quot;Start with what humans want done. Build toward a world where agents can get it done for them.&quot;
               </h3>
             </div>
