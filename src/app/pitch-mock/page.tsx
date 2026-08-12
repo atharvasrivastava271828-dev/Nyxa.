@@ -306,17 +306,17 @@ export default function PitchMock() {
 
         {/* SLIDE 5: One Task Layer */}
         {currentSlide === 5 && (
-          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 py-4 relative px-12">
             
             {/* Top Label */}
-            <div className="w-full text-center mb-6">
+            <div className="w-full text-center mb-2">
               <h2 className="text-3xl font-medium text-white/90 tracking-wide">
                 One Task Layer. Two Users.
               </h2>
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 w-full flex items-stretch gap-6 relative max-w-6xl mx-auto">
+            <div className="flex-1 w-full flex items-center justify-center gap-4 relative max-w-6xl mx-auto scale-[0.90]">
               
               {/* Left: Human */}
               <div className="flex-1 flex flex-col items-center pt-4">
@@ -416,26 +416,26 @@ export default function PitchMock() {
         
         {/* SLIDE 6: Business Model */}
         {currentSlide === 6 && (
-          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 py-4 relative px-12">
             
             {/* Top Label */}
-            <div className="w-full text-center mb-2">
+            <div className="w-full text-center mb-1">
               <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
                 Business Model
               </span>
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mt-2 mb-6">
+            <div className="text-center self-center max-w-5xl mt-1 mb-2">
               <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
                 One Marketplace, Two Customer Markets.
               </h2>
             </div>
 
             {/* Center Diagram (The Marketplace Model) */}
-            <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center">
+            <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center scale-[0.90]">
               
-              <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 w-full max-w-3xl flex flex-col items-center relative shadow-[0_0_40px_rgba(255,255,255,0.02)]">
+              <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl py-4 px-8 w-full max-w-3xl flex flex-col items-center relative shadow-[0_0_40px_rgba(255,255,255,0.02)]">
                 
                 {/* Task Creators */}
                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">TASK CREATORS</div>
@@ -448,14 +448,14 @@ export default function PitchMock() {
 
                 {/* Split line */}
                 <div className="w-px h-6 bg-white/30"></div>
-                <div className="w-96 h-px bg-white/30"></div>
-                <div className="w-96 flex justify-between">
+                <div className="w-full max-w-md h-px bg-white/30"></div>
+                <div className="w-full max-w-md flex justify-between">
                   <div className="w-px h-4 bg-white/30"></div>
                   <div className="w-px h-4 bg-white/30"></div>
                 </div>
 
                 {/* Left (B2C) & Right (B2B) */}
-                <div className="w-[480px] flex justify-between mt-2">
+                <div className="w-full max-w-md flex justify-between mt-2 px-4">
                   
                   {/* B2C */}
                   <div className="flex flex-col items-center">
@@ -484,7 +484,7 @@ export default function PitchMock() {
               </div>
               
               {/* Strong statement */}
-              <div className="mt-8 px-12 text-center max-w-4xl border-l-4 border-white/20 pl-8 text-left bg-white/[0.02] py-4 rounded-r-lg">
+              <div className="mt-4 px-12 text-center max-w-4xl border-l-4 border-white/20 pl-8 text-left bg-white/[0.02] py-4 rounded-r-lg">
                 <p className="text-lg text-white/80 font-light leading-relaxed">
                   &quot;We&apos;re primarily B2C: humans come to the marketplace to buy Tasks and get things done. But the same marketplace can become B2B infrastructure for AI agents, allowing them to discover and consume Tasks as capabilities. So one Task marketplace serves two markets—and we monetize whenever digital work happens.&quot;
                 </p>
@@ -731,27 +731,27 @@ export default function PitchMock() {
 
         {/* SLIDE 10: Roadmap */}
         {currentSlide === 10 && (
-          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 pt-8 pb-10 relative px-12">
+          <div className="w-full h-full flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-500 py-4 relative px-12">
             
             {/* Top Label */}
-            <div className="w-full text-center mb-6">
+            <div className="w-full text-center mb-2">
               <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
                 Roadmap
               </span>
             </div>
 
             {/* Central Headline */}
-            <div className="text-center self-center max-w-5xl mb-12">
+            <div className="text-center self-center max-w-5xl mb-4">
               <h2 className="text-4xl font-medium text-white/90 leading-snug tracking-wide">
                 From Tasks to an Agentic Economy
               </h2>
             </div>
 
             {/* Content: Left Flowchart, Right Phases */}
-            <div className="flex-1 w-full max-w-6xl mx-auto flex items-start gap-12">
+            <div className="flex-1 w-full max-w-6xl mx-auto flex items-start gap-12 scale-[0.90]">
               
               {/* Left: Expanding Outward Visual */}
-              <div className="flex-[0.8] bg-[#050505] border border-white/10 rounded-xl p-8 flex flex-col items-center justify-center relative shadow-lg">
+              <div className="flex-[0.8] bg-[#050505] border border-white/10 rounded-xl py-4 px-8 flex flex-col items-center justify-center relative shadow-lg">
                 
                 <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">TODAY</div>
                 <div className="w-px h-6 bg-white/20 mb-4"></div>
@@ -775,24 +775,24 @@ export default function PitchMock() {
                 </div>
 
                 {/* Fork */}
-                <div className="w-48 border-t border-white/20 h-4 flex justify-between relative">
+                <div className="w-64 border-t border-white/20 h-4 flex justify-between relative">
                    <div className="w-px h-4 bg-white/20 absolute left-0 top-0"></div>
                    <div className="w-px h-4 bg-white/20 absolute right-0 top-0"></div>
                 </div>
 
-                <div className="flex w-full justify-center gap-12">
-                  <div className="text-center w-20">
+                <div className="flex w-64 justify-between">
+                  <div className="text-center w-24">
                     <div className="text-[10px] font-bold text-white uppercase tracking-widest">HUMAN MARKET</div>
                     <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
                   </div>
-                  <div className="text-center w-20">
+                  <div className="text-center w-24">
                     <div className="text-[10px] font-bold text-white uppercase tracking-widest">AGENT MARKET</div>
                     <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
                   </div>
                 </div>
 
                 {/* Join */}
-                <div className="w-48 border-b border-white/20 h-4 flex justify-between relative mb-2">
+                <div className="w-64 border-b border-white/20 h-4 flex justify-between relative mb-2">
                    <div className="w-px h-4 bg-white/20 absolute left-0 bottom-0"></div>
                    <div className="w-px h-4 bg-white/20 absolute right-0 bottom-0"></div>
                 </div>
@@ -808,7 +808,7 @@ export default function PitchMock() {
               </div>
 
               {/* Right: Phases List */}
-              <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-4" style={{ maxHeight: '50vh' }}>
+              <div className="flex-1 flex flex-col justify-center gap-2">
                 
                 {/* Phase 1 */}
                 <div>
@@ -856,7 +856,7 @@ export default function PitchMock() {
             </div>
             
             {/* Bottom Statement */}
-            <div className="w-full text-center mt-12 border-t border-white/10 pt-8">
+            <div className="w-full text-center mt-4 border-t border-white/10 pt-4">
               <h3 className="text-2xl font-light text-white/80 tracking-wide italic">
                 &quot;Start with what humans want done. Build toward a world where agents can get it done for them.&quot;
               </h3>
