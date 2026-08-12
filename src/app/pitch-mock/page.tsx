@@ -775,24 +775,24 @@ export default function PitchMock() {
                 </div>
 
                 {/* Fork */}
-                <div className="w-64 border-t border-white/20 h-4 flex justify-between relative">
+                <div className="w-32 border-t border-white/20 h-4 flex justify-between relative">
                    <div className="w-px h-4 bg-white/20 absolute left-0 top-0"></div>
                    <div className="w-px h-4 bg-white/20 absolute right-0 top-0"></div>
                 </div>
 
-                <div className="flex w-64 justify-between">
-                  <div className="text-center w-24">
+                <div className="flex w-52 justify-between">
+                  <div className="text-center w-20">
                     <div className="text-[10px] font-bold text-white uppercase tracking-widest">HUMAN MARKET</div>
                     <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
                   </div>
-                  <div className="text-center w-24">
+                  <div className="text-center w-20">
                     <div className="text-[10px] font-bold text-white uppercase tracking-widest">AGENT MARKET</div>
                     <div className="w-px h-6 bg-white/20 mx-auto my-2"></div>
                   </div>
                 </div>
 
                 {/* Join */}
-                <div className="w-64 border-b border-white/20 h-4 flex justify-between relative mb-2">
+                <div className="w-32 border-b border-white/20 h-4 flex justify-between relative mb-2">
                    <div className="w-px h-4 bg-white/20 absolute left-0 bottom-0"></div>
                    <div className="w-px h-4 bg-white/20 absolute right-0 bottom-0"></div>
                 </div>
